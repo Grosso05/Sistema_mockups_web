@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Watermark to PDF</title>
+</head>
+<body>
+    <h1>Add Watermark to PDF</h1>
+    <form action="/add_watermark" method="post" enctype="multipart/form-data">
+        <label for="pdf_file">Select PDF:</label>
+        <input type="file" name="pdf_file" accept=".pdf" required>
+        <br>
+        <label for="image_file">Select Watermark Image (PNG):</label>
+        <input type="file" name="image_file" accept=".png" required>
+        <br>
+        <button type="submit">Add Watermark</button>
+    </form>
+</body>
+</html>

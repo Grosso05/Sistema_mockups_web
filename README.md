@@ -3,3 +3,7 @@
 - Primer avance del proyecto que permitirá generar un catalogo con productos personalizados ingresando un logo.
 
 - actualmente solo genera un pdf, en binario.
+
+#Version 1.1.0
+
+- Version actual, genera pdf visualizable, superpone un logo sobre el pdf, sin coordenadas aún, y adicional, sin transparencia del logo.

@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, send_file,render_template
+from flask import Flask, request, redirect, url_for, send_file, render_template
 from PyPDF2 import PdfReader, PdfWriter
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
@@ -37,19 +37,40 @@ def add_watermark():
 
         pdf_writer = PdfWriter()
 
+        # Define the list of watermark positions and dimensions
+        watermark_positions = [
+            {'x': 4.3, 'y': 13.50, 'width': 100, 'height': 100,},
+            {'x': 15.51, 'y': 15.96, 'width': 35, 'height': 35},
+            {'x': 10.41, 'y': 4.79, 'width': 25, 'height': 25},
+            # Add more positions as needed
+        ]
+
         # Iterate through each page of the PDF
         for page_num in range(len(pdf_reader.pages)):
             # Get the page
             page = pdf_reader.pages[page_num]
 
-            # Create a watermark page from the PNG image
+            # Create a new canvas for each page
             watermark_page = BytesIO()
+            
+            # Create a single canvas for all positions on each page
             watermark_canvas = canvas.Canvas(watermark_page, pagesize=letter)
-            img_reader = ImageReader(image_temp_file.name)
 
-            # Draw the image with transparency
-            watermark_canvas.drawImage(img_reader, 100, 100, width=200, height=200, mask='auto', preserveAspectRatio=True)
+            for position in watermark_positions:
+                img_reader = ImageReader(image_temp_file.name)
 
+                # Draw the image with specified position and dimensions
+                watermark_canvas.drawImage(
+                    img_reader,
+                    position['x'] * 72 / 2.54,  # Convert coordinates to points
+                    position['y'] * 72 / 2.54,
+                    width=position['width'],
+                    height=position['height'],
+                    mask='auto',
+                    preserveAspectRatio=True
+                )
+
+            # Save the watermark canvas after all positions have been drawn
             watermark_canvas.showPage()
             watermark_canvas.save()
 

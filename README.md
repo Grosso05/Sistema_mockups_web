@@ -1,4 +1,4 @@
-## Generador de Catálogos Personalizados (Versión 1.3.0)
+## Generador de Catálogos Personalizados (Versión 1.3.0) desarrollada por: Brayan Grosso
 
 # Fecha de la última actualización: 11 de enero de 2024, 12:00 pm
 

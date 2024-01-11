@@ -3,6 +3,7 @@ from PyPDF2 import PdfReader, PdfWriter
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
 import os
 import tempfile
 
@@ -48,17 +49,24 @@ def add_watermark():
 
         pdf_writer = PdfWriter()
 
-        # Create a watermark page from the PNG image
-        watermark_page = BytesIO()
-        watermark_canvas = canvas.Canvas(watermark_page, pagesize=letter)
-        watermark_canvas.drawImage(image_temp_file.name, 100, 100, width=200, height=200)
-        watermark_canvas.showPage()
-        watermark_canvas.save()
-
         # Iterate through each page of the PDF
         for page_num in range(len(pdf_reader.pages)):
             # Get the page
             page = pdf_reader.pages[page_num]
+
+            # Create a watermark page from the PNG image
+            watermark_page = BytesIO()
+            watermark_canvas = canvas.Canvas(watermark_page, pagesize=letter)
+            img_reader = ImageReader(image_temp_file.name)
+
+            # Draw the image with transparency
+            watermark_canvas.drawImage(img_reader, 100, 100, width=200, height=200, mask='auto', preserveAspectRatio=True)
+
+            watermark_canvas.showPage()
+            watermark_canvas.save()
+
+            # Set the watermark page to the beginning
+            watermark_page.seek(0)
 
             # Merge the watermark with the original page
             page.merge_page(PdfReader(watermark_page).pages[0])

@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, send_file
+from flask import Flask, request, redirect, url_for, send_file,render_template
 from PyPDF2 import PdfReader, PdfWriter
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
@@ -11,19 +11,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return '''
-    <!doctype html>
-    <html>
-        <body>
-            <h1>PDF Watermark</h1>
-            <form action="/add_watermark" method="post" enctype="multipart/form-data">
-                <input type="file" name="pdf_file" accept=".pdf"><br>
-                <input type="file" name="image_file" accept=".png"><br>
-                <input type="submit" value="Add Watermark">
-            </form>
-        </body>
-    </html>
-    '''
+    return render_template('index.html')
 
 @app.route('/add_watermark', methods=['POST'])
 def add_watermark():

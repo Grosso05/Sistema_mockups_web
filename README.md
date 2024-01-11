@@ -7,3 +7,6 @@
 #Version 1.1.0
 
 - Version actual, genera pdf visualizable, superpone un logo sobre el pdf, sin coordenadas aún, y adicional, sin transparencia del logo.
+#version 1.3.0
+
+- Version actual, solucionada la transparencia del logo. actualmente es capaz de generar un pdf, superponer un logo transparente, sin coordenadas, y con fallos en las dimensiones.

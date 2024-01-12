@@ -6,6 +6,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 import os
 import tempfile
+import math
 
 app = Flask(__name__)
 
@@ -37,12 +38,18 @@ def add_watermark():
 
         pdf_writer = PdfWriter()
 
-        # Define the list of watermark positions and dimensions
+        # Define the list of watermark positions, dimensions, rotation, and opacity for each page
         watermark_positions = [
-            {'x': 4.3, 'y': 13.50, 'width': 100, 'height': 100,},
-            {'x': 15.51, 'y': 15.96, 'width': 35, 'height': 35},
-            {'x': 10.41, 'y': 4.79, 'width': 25, 'height': 25},
-            # Add more positions as needed
+            [
+                {'x': 7.75, 'y': 12.50, 'width': 100, 'height': 100, 'rotation': 0, 'opacity': 0.9},
+            ],
+            # Define positions for the second page
+            [
+                {'x': 9.62, 'y': 5.56, 'width': 30, 'height': 30, 'rotation': 0, 'opacity': 1.0},
+                {'x': 10.50, 'y': 21.00, 'width': 30, 'height': 30, 'rotation': 2, 'opacity': 1.0},
+                # Add more positions as needed
+            ],
+            # Add more pages as needed
         ]
 
         # Iterate through each page of the PDF
@@ -56,19 +63,24 @@ def add_watermark():
             # Create a single canvas for all positions on each page
             watermark_canvas = canvas.Canvas(watermark_page, pagesize=letter)
 
-            for position in watermark_positions:
+            for position in watermark_positions[page_num]:
                 img_reader = ImageReader(image_temp_file.name)
 
-                # Draw the image with specified position and dimensions
+                # Draw the image with specified position, dimensions, rotation, and opacity
+                watermark_canvas.saveState()
+                watermark_canvas.translate(position['x'] * 72 / 2.54, position['y'] * 72 / 2.54)
+                watermark_canvas.rotate(position.get('rotation', 0))
+                watermark_canvas.setFillAlpha(position.get('opacity', 1.0))  # Use 1.0 if opacity is not specified
                 watermark_canvas.drawImage(
                     img_reader,
-                    position['x'] * 72 / 2.54,  # Convert coordinates to points
-                    position['y'] * 72 / 2.54,
+                    0,
+                    0,
                     width=position['width'],
                     height=position['height'],
                     mask='auto',
                     preserveAspectRatio=True
                 )
+                watermark_canvas.restoreState()
 
             # Save the watermark canvas after all positions have been drawn
             watermark_canvas.showPage()

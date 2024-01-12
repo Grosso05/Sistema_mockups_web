@@ -1,6 +1,12 @@
 ## Generador de Catálogos Personalizados (Versión 1.3.0) desarrollada por: Brayan Grosso
 
-# Fecha de la última actualización: 11 de enero de 2024, 12:00 pm
+# Fecha de la última actualización: 12 de enero de 2024, 08:00 am
+
+Cambios Recientes
+v1.4.0
+En esta versión, se ha mejorado la maneja de superponer el logo, Ahora, se incluyeron opciones como girar el logo, manejar la opacidad, adicional, ya es posible indicar en que pagina se repetira el logo con cada uno de los parametros personalizados para cada logo.
+
+# Fecha de lanzamiento: 11 de enero de 2024, 12:00 pm
 
 Cambios Recientes
 v1.3.0

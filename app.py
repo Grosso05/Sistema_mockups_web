@@ -7,6 +7,8 @@ from reportlab.lib.utils import ImageReader
 import os
 import tempfile
 import math
+import cv2
+import numpy as np
 
 app = Flask(__name__)
 
@@ -16,6 +18,22 @@ FIXED_PDF_FILE_PATH = "./CATALOGO DE PRUEBA2pag.pdf"
 @app.route('/')
 def index():
     return render_template('index.html')
+
+def get_white_presence(image_path):
+    # Lee la imagen utilizando OpenCV
+    image = cv2.imread(image_path)
+
+    # Convierte la imagen de BGR a escala de grises
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Aplica un umbral para identificar píxeles blancos
+    _, thresholded = cv2.threshold(gray_image, 240, 255, cv2.THRESH_BINARY)
+
+    # Calcula el porcentaje de píxeles blancos en la imagen
+    white_percentage = (np.sum(thresholded == 255) / thresholded.size) * 100
+
+    # Imprime el porcentaje de presencia de blanco
+    print(f"El color blanco se encuentra en un : {white_percentage:.2f}%")    
 
 @app.route('/add_watermark', methods=['POST'])
 def add_watermark():
@@ -37,6 +55,9 @@ def add_watermark():
         # Create a temporary file for the image
         image_temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
         image_file.save(image_temp_file.name)
+
+        # Get white presence from the image and print it
+        get_white_presence(image_temp_file.name)
 
         pdf_writer = PdfWriter()
 

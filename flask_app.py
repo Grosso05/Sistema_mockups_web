@@ -48,7 +48,7 @@ def add_watermark():
             # Define positions for the second page
             [
                 {'x': 9.72, 'y': 5.60, 'width': 30, 'height': 30, 'rotation': 0, 'opacity': 1.0},
-                {'x': 10.50, 'y': 21.19, 'width': 30, 'height': 20, 'rotation': 5, 'opacity': 0.9},
+                {'x': 10.50, 'y': 21.00, 'width': 30, 'height': 30, 'rotation': 4, 'opacity': 1.0},
                 # Add more positions as needed
             ],
             # Add more pages as needed

@@ -1,11 +1,44 @@
-<!doctype html>
-<html>
-    <body>
-        <h1>PDF Watermark</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Catálogos Personalizados</title>
+    <meta name="description" content="Descargue nuestro catálogo personalizado con su propio estilo. Cree su catálogo único con su logotipo y destaque sus productos.">
+    <meta name="keywords" content="catálogo, personalizado, logotipo, productos, destacar, empresa">
+    <meta name="author" content="Brayan Grosso">
+
+    <!-- Agrega tu favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="{{ url_for('static', filename='images/LOGO.png') }}" alt="Your Logo" class="logo">
+            <h1>¡Cree su Catálogo Personalizado con Estilo!</h1>
+            <p>Descargue nuestro exclusivo catálogo con su logotipo y destaque sus productos de manera única.</p>
+        </header>
+
+        <section class="instructions">
+            <h2>Personalice su Experiencia</h2>
+            <p>Con nuestro sencillo Personalizador de Catálogos, puede agregar su logotipo en solo dos pasos:</p>
+        </section>
+
         <form action="/add_watermark" method="post" enctype="multipart/form-data">
-            <input type="file" name="pdf_file" accept=".pdf"><br>
-            <input type="file" name="image_file" accept=".png"><br>
-            <input type="submit" value="Add Watermark">
+            <label for="image_file">Paso 1: Inserte o Arrastre su Logotipo Aquí:</label>
+            <input type="file" name="image_file" id="image_file" accept=".png"><br>
+
+            <p>Paso 2: Haga clic en "Generar Catálogo Personalizado" para obtener su catálogo con el logotipo.</p>
+
+            <input type="submit" value="Generar Catálogo Personalizado">
         </form>
-    </body>
+
+        <footer>
+            <p>© 2024 Todos los derechos reservados. INNOVA PUBLICIDAD VISUAL S.A.S</p>
+        </footer>
+    </div>
+</body>
 </html>

@@ -1,6 +1,15 @@
 ## Generador de Catálogos Personalizados (Versión 1.3.0) desarrollada por: Brayan Grosso
 
-# Fecha de la última actualización: 12 de enero de 2024, 08:00 am
+# Fecha de la última actualización: 13 de enero de 2024, 08:00 am
+
+Cambios Recientes
+v1.5.0
+En esta versión, se ha mejorado el front (interfaz gráfica) del software. Adicional, se suprimio la opcion de seleccionar el catalogo y se dejo la ruta directa al directorio.
+
+
+
+
+# Fecha de lanzamiento: 12 de enero de 2024, 08:00 am
 
 Cambios Recientes
 v1.4.0

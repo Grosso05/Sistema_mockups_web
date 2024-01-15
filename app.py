@@ -13,7 +13,8 @@ import numpy as np
 app = Flask(__name__)
 
 # Set the constant PDF file path
-FIXED_PDF_FILE_PATH = "./CATALOGO DE PRUEBA2pag.pdf"
+FIXED_PDF_FILE_PATH = "./CATALOGO DE PRUEBA2pag_white.pdf"
+ANOTHER_PDF_FILE_PATH = "./CATALOGO DE PRUEBA2pag_black.pdf"
 
 @app.route('/')
 def index():
@@ -33,7 +34,10 @@ def get_white_presence(image_path):
     white_percentage = (np.sum(thresholded == 255) / thresholded.size) * 100
 
     # Imprime el porcentaje de presencia de blanco
-    print(f"El color blanco se encuentra en un : {white_percentage:.2f}%")    
+    print(f"El color blanco se encuentra en un : {white_percentage:.2f}%")
+    
+    # Return the white percentage
+    return white_percentage
 
 @app.route('/add_watermark', methods=['POST'])
 def add_watermark():
@@ -49,16 +53,23 @@ def add_watermark():
         # Create a BytesIO buffer to store the modified PDF
         output_buffer = BytesIO()
 
-        # Read the fixed PDF and create a PdfReader object
-        pdf_reader = PdfReader(FIXED_PDF_FILE_PATH)
-
         # Create a temporary file for the image
         image_temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
         image_file.save(image_temp_file.name)
 
         # Get white presence from the image and print it
-        get_white_presence(image_temp_file.name)
+        white_percentage = get_white_presence(image_temp_file.name)
 
+        # Conditionally choose the PDF file based on white presence percentage
+        if white_percentage >= 10:  # You can adjust the threshold as needed
+            pdf_path = ANOTHER_PDF_FILE_PATH  # Specify the path to the alternate PDF
+        else:
+            pdf_path = FIXED_PDF_FILE_PATH
+
+        # Read the PDF and create a PdfReader object
+        pdf_reader = PdfReader(pdf_path)
+
+        # Create a PdfWriter object for the modified PDF
         pdf_writer = PdfWriter()
 
         # Define the list of watermark positions, dimensions, rotation, and opacity for each page
@@ -119,7 +130,7 @@ def add_watermark():
             pdf_writer.add_page(page)
 
         # Write the modified PDF to the BytesIO buffer
-        pdf_writer.write(output_buffer)
+            pdf_writer.write(output_buffer)
 
         # Set the buffer position to the beginning for reading
         output_buffer.seek(0)

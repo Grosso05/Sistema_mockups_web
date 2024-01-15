@@ -1,0 +1,5 @@
+- Catalogo en pdf, las imagenes que se usarán serán de productos reales, se les quitará el logo.
+- Agregar marcas de agua de innova al catalogo.
+- Servicio de alojamiento.
+ 
+

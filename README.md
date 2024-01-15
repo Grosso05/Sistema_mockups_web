@@ -1,6 +1,6 @@
 ## Generador de Catálogos Personalizados (Versión 1.6.0) desarrollada por: Brayan Grosso
 
-# Fecha de la última actualización: 15 de enero de 2024, 10:35 am
+# Fecha de la última actualización: 15 de enero de 2024, 02:00 pm
 
 Cambios Recientes
 v1.6.0

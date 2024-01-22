@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 1.5.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 1.6.0) desarrollada por: Brayan Grosso
+
+# Fecha de la última actualización: 15 de enero de 2024, 02:00 pm
+
+Cambios Recientes
+v1.6.0
+
+En esta version, se creo una funcion, que teniendo como parametro el porcentaje de pixeles blancos en el logo, utiliza mockups blancos o negros para facilitar su visualizacion.
 
 # Fecha de la última actualización: 13 de enero de 2024, 10:35 am
 

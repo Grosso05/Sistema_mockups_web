@@ -18,17 +18,17 @@
     <div class="container">
         <header>
             <img src="{{ url_for('static', filename='images/LOGO.png') }}" alt="Your Logo" class="logo">
-            <h1>¡Cree su Catálogo Personalizado con Estilo!</h1>
-            <p>Descargue nuestro exclusivo catálogo con su logotipo y destaque sus productos de manera única.</p>
+            <h1>¡Cree un Catálogo Personalizado con Estilo!</h1>
+            <p>Descargue nuestro exclusivo catálogo con el logotipo de la empresa y destaque los productos de manera única.</p>
         </header>
 
         <section class="instructions">
             <h2>Personalice su Experiencia</h2>
-            <p>Con nuestro sencillo Personalizador de Catálogos, puede agregar su logotipo en solo dos pasos:</p>
+            <p>Con nuestro sencillo Personalizador de Catálogos, puede agregar el logotipo en solo dos pasos:</p>
         </section>
 
         <form action="/add_watermark" method="post" enctype="multipart/form-data">
-            <label for="image_file">Paso 1: Inserte o Arrastre su Logotipo Aquí:</label>
+            <label for="image_file">Paso 1: Inserte o Arrastre el Logotipo Aquí:</label>
             <input type="file" name="image_file" id="image_file" accept=".png"><br>
 
             <p>Paso 2: Haga clic en "Generar Catálogo Personalizado" e inmediatamente iniciara su descarga.</p>

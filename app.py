@@ -13,8 +13,9 @@ import numpy as np
 app = Flask(__name__)
 
 # Set the constant PDF file path
-FIXED_PDF_FILE_PATH = "./CATALOGO DE PRUEBA2pag_white.pdf"
-ANOTHER_PDF_FILE_PATH = "./CATALOGO DE PRUEBA2pag_black.pdf"
+FIXED_PDF_FILE_PATH = "./Catalogo_white.pdf"
+ANOTHER_PDF_FILE_PATH = "./Catalogo_black.pdf"
+
 
 @app.route('/')
 def index():
@@ -61,7 +62,7 @@ def add_watermark():
         white_percentage = get_white_presence(image_temp_file.name)
 
         # Conditionally choose the PDF file based on white presence percentage
-        if white_percentage >= 10:  # You can adjust the threshold as needed
+        if white_percentage >= 10:  
             pdf_path = ANOTHER_PDF_FILE_PATH  # Specify the path to the alternate PDF
         else:
             pdf_path = FIXED_PDF_FILE_PATH
@@ -74,15 +75,19 @@ def add_watermark():
 
         # Define the list of watermark positions, dimensions, rotation, and opacity for each page
         watermark_positions = [
+                #coordenadas pagina #1
             [
-                {'x': 7.15, 'y': 12.50, 'width': 120, 'height': 100, 'rotation': 359, 'opacity': 0.8},
+                {'x': 5.41, 'y': 09.48, 'width': 120, 'height': 100, 'rotation': 359, 'opacity': 0.8},
             ],
-            # Define positions for the second page
+            # Coordenadas paginas #2
             [
-                {'x': 9.72, 'y': 5.60, 'width': 30, 'height': 30, 'rotation': 0, 'opacity': 1.0},
-                {'x': 10.50, 'y': 21.19, 'width': 30, 'height': 20, 'rotation': 5, 'opacity': 0.9},
+                {'x': 6.48, 'y': 11.53, 'width': 40, 'height': 20, 'rotation': -5, 'opacity': 0.7},
                 # Add more positions as needed
             ],
+                #coordenadas pagina #3
+            [ 
+                {'x': 8.56, 'y': 10.80, 'width': 30, 'height': 25, 'rotation': 0, 'opacity': 0.7},
+            ]
             # Add more pages as needed
         ]
 

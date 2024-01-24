@@ -1,13 +1,21 @@
-## Generador de Catálogos Personalizados (Versión 1.6.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 1.7.0) desarrollada por: Brayan Grosso
 
-# Fecha de la última actualización: 15 de enero de 2024, 02:00 pm
+# Fecha de la última actualización: 22 de enero de 2024, 08:15 am
+
+Cambios Recientes
+v1.7.0
+
+En esta versión se agrego una nueva logica, teniendo como base la funcion de analisis de pixeles blancos, se selecciona uno u otro catalogo. adicional agregamos "catalogos con un poco de elaboración"
+
+
+# Fecha de lanzamiento: 15 de enero de 2024, 02:00 pm
 
 Cambios Recientes
 v1.6.0
 
 En esta version, se creo una funcion, que teniendo como parametro el porcentaje de pixeles blancos en el logo, utiliza mockups blancos o negros para facilitar su visualizacion.
 
-# Fecha de la última actualización: 13 de enero de 2024, 10:35 am
+# Fecha de lanzamiento: 13 de enero de 2024, 10:35 am
 
 Cambios Recientes
 v1.5.0

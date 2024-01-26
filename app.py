@@ -1,18 +1,35 @@
 # app.py
 from flask import Flask, request, redirect, url_for, send_file, render_template
+from flask_login import LoginManager,login_required
 from calculate import get_white_presence
 from set_logo import set_logo
 import tempfile
 import os
-from models import configure_db, test_db_connection, Users, UsersRol  
+from models import configure_db, test_db_connection, Users, UsersRol, db
+
+from flask_login import login_user
+import secrets
 
 
 app = Flask(__name__)
+
+# Genera una clave secreta aleatoria de 24 bytes (192 bits)
+app.config['SECRET_KEY'] = secrets.token_hex(24)
+
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'  # Vista de inicio de sesión
 
 configure_db(app)  # Configura la base de datos
 
 # Comprueba la conexión a la base de datos
 test_db_connection(app)
+
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    # Retorna el usuario correspondiente al ID de usuario
+    return db.session.get(Users, int(user_id))
 
 
 FIXED_PDF_FILE_PATH = "./Catalogo_white.pdf"
@@ -21,6 +38,45 @@ ANOTHER_PDF_FILE_PATH = "./Catalogo_black.pdf"
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/registrar_usuario')
+def registrar_usuario():
+    return render_template('registrar_usuario.html')
+
+@app.route('/admin')
+def admin():
+    return render_template('dashboard_admin.html')
+
+@app.route('/user')
+def user():
+    return render_template('dashboard_user.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user_email = request.form.get('user_email')
+        user_password = request.form.get('user_password')
+
+        # Verifica las credenciales del usuario
+        user = Users.query.filter_by(user_email=user_email, user_password=user_password).first()
+
+        if user:
+            login_user(user)  # Inicia sesión
+            return redirect(url_for('index'))
+        else:
+            # Credenciales inválidas, muestra un mensaje de error
+            return render_template('login.html', error='Credenciales inválidas')
+
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()  # Cierra la sesión
+    return redirect(url_for('index'))
+
+
 
 @app.route('/add_watermark', methods=['POST'])
 def add_watermark():

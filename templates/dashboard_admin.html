@@ -3,57 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Admin</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <title>Panel de Administrador</title>
 </head>
 <body>
-
-  <div id="wrapper">
-      <!-- Barra superior -->
-      <div id="topbar">
-          <button id="toggle-btn">&#9776; Menú</button>
-          <div>Usuario: Admin</div>
-      </div>
-  
-      <!-- Barra lateral -->
-      <div id="sidebar" class="active"> <!-- Agrega la clase 'active' aquí -->
-          <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Your Logo" class="logo">
-  
-          <ul>
-              <!-- Desplegable para Usuarios -->
-              <li><a href="#" class=""><i class="fas fa-home icons"></i><span class="text">Inicio</span></a></li>
-              <!-- Otras secciones -->
-              <li><a href="#"><i class="fas fa-cogs icons"></i><span class="text">Futuros Módulos</span></a></li>
-              <li><a href="#"><i class="fas fa-file-alt icons"></i><span class="text">Generar Catálogo</span></a></li>
-              <li><a href="#"><i class="fas fa-file-alt icons"></i><span class="text">Crear Usuario</span></a></li>
-              <!-- Agrega más secciones según sea necesario -->
-          </ul>
-      </div>
-  
-      <!-- Contenido principal -->
-      <div id="content">
-          <!-- Contenido -->
-          <h2>Contenido Principal</h2>
-          <p>Bienvenido al dashboard de administración.</p>
-      </div>
-  </div>
-  
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script>
-  // JavaScript para manejar el botón de alternar la barra lateral
-  document.getElementById('toggle-btn').addEventListener('click', function() {
-      var sidebar = document.getElementById('sidebar');
-      var content = document.getElementById('content');
-  
-      sidebar.classList.toggle('active');
-      content.classList.toggle('active'); 
-  });
-  
-  </script>
-  
-  </body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Panel de Administrador</a>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block bg-dark sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">
+                                Inicio <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">   
+                                Configuración
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Gestion de Usuarios
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="#">Ver Usuarios</a>
+                                <a class="dropdown-item" href="#">Agregar Usuario</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#">Estadísticas</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+                <h2>Bienvenido, Administrador</h2>
+                <p>Esta es la página de administrador. Puedes agregar más contenido aquí.</p>
+            </main>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 Innova Publicidad Visual S.A.S. Todos los derechos reservados.</p>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $('[data-toggle="collapse"]').on('click', function(){
+                $($(this).data('target')).toggleClass('show');
+            });
+        });
+    </script>
+</body>
 </html>

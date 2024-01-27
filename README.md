@@ -1,11 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 1.8.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 1.9.0) desarrollada por: Brayan Grosso
 
-# Fecha de la última actualización: 24 de enero de 2024, 12:50 pm
+# Fecha de la última actualización: 26 de enero de 2024, 05:00 pm
 
 Cambios Recientes
-v1.8.0
+v1.9.0
 
-Nueva version, organizada con POO, modularidad y separacion de archivos. Adicional se hace la primera conexion a bd, usando la version 1.0.0 de la misma.
+En esta version se incluyeron nuevas rutas, se empezaron a trabajar templates, sin embargo les faltan varios arreglos y correciones.
 
 # Fecha de lanzamiento: 22 de enero de 2024, 08:15 am
 

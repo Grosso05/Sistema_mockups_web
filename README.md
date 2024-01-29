@@ -1,11 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 1.9.1) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 1.10.1) desarrollada por: Brayan Grosso
 
-# Fecha de la última actualización: 27 de enero de 2024, 11:50 am
+# Fecha de la última actualización: 29 de enero de 2024, 02:50 pm
 
 Cambios Recientes
-v1.9.1
+v1.10.1
 
-Version ligeramente diferente, unicamente se cambio un poco de front de dashboard_admin
+En esta nueva version, se trabajó en el dashboard de administrador, actualmente esta la crud completa de usuarios, se agregaron nuevas rutas para su correcto funcionamiento
 
 # Fecha de lanzamiento: 22 de enero de 2024, 08:15 am
 

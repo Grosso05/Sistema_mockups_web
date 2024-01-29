@@ -6,6 +6,22 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <title>Panel de Administrador</title>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #E1DEDC;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
@@ -37,19 +53,71 @@
                             <a class="nav-link" href="#">   
                                 Futuros Modulos
                             </a>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('index') }}">   
+                                    Generar Catalogo
+                                </a>
+                            </li>
                         </li>
                     </ul>
                 </div>
             </nav>
             <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
-                <h2>Bienvenido, Administrador</h2>
-                <p>Esta es la página de inicio de administrador.</p>
+                <h1>Lista de Usuarios</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Email</th>
+            <th>Acciones</th>
+        </tr>
+        {% for usuario in usuarios %}
+        <tr>
+            <td>{{ usuario.user_id }}</td>
+            <td>{{ usuario.user_name }}</td>
+            <td>{{ usuario.user_last_name }}</td>
+            <td>{{ usuario.user_email }}</td>
+            <td>
+                <button onclick="editarUsuario({{ usuario.user_id }})">Editar</button>
+                <button onclick="eliminarUsuario({{ usuario.user_id }})">Eliminar</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
             </main>
         </div>
     </div>
     <footer class="footer-custom">
         <p>&copy; 2024 Innova Publicidad Visual S.A.S. Todos los derechos reservados.</p>
     </footer>
+    <script>
+        function editarUsuario(userId) {
+            window.location.href = '/editar_usuario/' + userId;  // Redirige a la ruta de edición del usuario con su ID
+        }
+
+        function eliminarUsuario(userId) {
+    if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+        // Enviar una solicitud al servidor para eliminar al usuario
+        fetch('/delete_user/' + userId, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                // Recargar la página después de eliminar al usuario
+                location.reload();
+            } else {
+                // Manejar el caso en el que la eliminación del usuario falle
+                console.error('Error al eliminar el usuario');
+            }
+        })
+        .catch(error => {
+            console.error('Error al eliminar el usuario:', error);
+        });
+    }
+}
+
+        </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>

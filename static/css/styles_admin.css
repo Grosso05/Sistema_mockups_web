@@ -3,17 +3,12 @@ body {
     margin: 0;
     padding: 0;
 }
-
-
-
 .container-fluid {
-    height: 90.8vh; /* Establece la altura al 100% de la altura visible del viewport */
+    height: 86.8vh; /* Establece la altura al 100% de la altura visible del viewport */
 }
-
 .row {
     height: 100%;
 }
-
 .sidebar {
     position: fixed;
     top: 0;
@@ -25,28 +20,43 @@ body {
     padding-right: 10px;
     overflow-x: hidden;
     overflow-y: auto; /* Scroll vertical si es necesario */
-    background-color: #000000;
     color: #fff;
 }
-
-
 .sidebar-sticky {
     position: relative;
     top: 56px; /* Altura de la barra de navegación en la parte superior */
     padding-top: 20px;
 }
-
 main {
     padding: 20px;
 }
-
-footer {
+.footer-custom {
     background-color: #000000;
     color: #fff;
     text-align: center;
     padding: 1em;
 }
-
-.navbar{
+.sidebar-custom {
     background-color: #000000;
+    color: #fff; /* Color del texto */
+}
+
+.sidebar-custom a {
+    color: #fff; /* Color de los enlaces dentro del sidebar */
+}
+
+.sidebar-custom a:hover {
+    color: #2782BA; /* Color de los enlaces al pasar el mouse por encima */
+}
+
+.sidebar-custom .dropdown-item {
+    color: #000000; /* Color del texto de los elementos de la lista desplegable */
+}
+
+.sidebar-custom .dropdown-item:hover {
+    color: #2782BA; /* Color del texto al pasar el mouse por encima de los elementos de la lista desplegable */
+}
+
+.navbar-custom {
+    background-color: #E6BF27;
 }

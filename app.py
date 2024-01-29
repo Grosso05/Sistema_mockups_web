@@ -39,10 +39,6 @@ ANOTHER_PDF_FILE_PATH = "./Catalogo_black.pdf"
 def index():
     return render_template('index.html')
 
-@app.route('/registrar_usuario')
-def registrar_usuario():
-    return render_template('registrar_usuario.html')
-
 @app.route('/admin')
 def admin():
     return render_template('dashboard_admin.html')
@@ -50,6 +46,52 @@ def admin():
 @app.route('/user')
 def user():
     return render_template('dashboard_user.html')
+
+# Ruta para mostrar la lista de usuarios
+@app.route('/listar_usuarios', methods=['DELETE','GET', 'POST'])
+def listar_usuarios():
+    usuarios = Users.query.all()  # Obtener todos los usuarios de la base de datos
+    return render_template('listar_usuarios.html', usuarios=usuarios)  # Renderizar la plantilla HTML con la lista de usuarios
+
+@app.route('/crear_usuario', methods=['GET', 'POST'])
+def crear_usuario():
+    if request.method == 'POST':
+        user_name = request.form['user_name']
+        user_last_name = request.form['user_last_name']
+        user_email = request.form['user_email']
+        user_password = request.form['user_password']
+        user_rol = request.form['user_rol']  # Asegúrate de tener un campo en el formulario para el rol del usuario
+
+        # Crear una instancia del modelo Users con los datos del formulario
+        new_user = Users(user_name=user_name, user_last_name=user_last_name, user_email=user_email, user_password=user_password, user_rol=user_rol)
+
+        # Agregar la nueva instancia a la sesión y hacer commit para guardarla en la base de datos
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(url_for('listar_usuarios'))  # Redirigir a la página principal después de registrar al usuario
+
+    return render_template('crear_usuario.html')
+
+@app.route('/editar_usuario/<int:user_id>', methods=['GET', 'POST'])
+def editar_usuario(user_id):
+    user = Users.query.get(user_id)
+    if request.method == 'POST':
+        user.user_name = request.form['user_name']
+        user.user_last_name = request.form['user_last_name']
+        user.user_email = request.form['user_email']
+        user.user_password = request.form['user_password']
+        user.user_rol = request.form['user_rol']
+        db.session.commit()
+        return redirect(url_for('listar_usuarios'))
+    return render_template('editar_usuario.html', user=user)
+
+@app.route('/delete_user/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    user = Users.query.get(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('listar_usuarios'))
 
 
 @app.route('/login', methods=['GET', 'POST'])

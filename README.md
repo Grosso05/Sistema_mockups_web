@@ -1,6 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 1.10.1) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 2.1.0) desarrollada por: Brayan Grosso
 
 # Fecha de la última actualización: 29 de enero de 2024, 02:50 pm
+
+Cambios Recientes
+v2.1.0
+
+Nueva version, se configuro la logica del login segun rol, se divide el front por partes para facilitar el mantenimiento.
+
 
 Cambios Recientes
 v1.10.1

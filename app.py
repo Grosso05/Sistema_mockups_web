@@ -11,6 +11,9 @@ from flask_login import login_user
 import secrets
 
 
+FIXED_PDF_FILE_PATH = "./Catalogo_white.pdf"
+ANOTHER_PDF_FILE_PATH = "./Catalogo_black.pdf"
+
 app = Flask(__name__)
 
 # Genera una clave secreta aleatoria de 24 bytes (192 bits)
@@ -21,9 +24,9 @@ login_manager.login_view = 'login'  # Vista de inicio de sesión
 
 configure_db(app)  # Configura la base de datos
 
+
 # Comprueba la conexión a la base de datos
 test_db_connection(app)
-
 
 
 @login_manager.user_loader
@@ -32,17 +35,22 @@ def load_user(user_id):
     return db.session.get(Users, int(user_id))
 
 
-FIXED_PDF_FILE_PATH = "./Catalogo_white.pdf"
-ANOTHER_PDF_FILE_PATH = "./Catalogo_black.pdf"
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
+#ruta para el dashboard de administrador
 @app.route('/admin')
 def admin():
     return render_template('dashboard_admin.html')
 
+@app.route('/generar_catalogo')
+def generar_catalogo():
+    return render_template('generar_catalogoregistrado.html')
+
+#ruta para el dashboard de usuario
 @app.route('/user')
 def user():
     return render_template('dashboard_user.html')
@@ -53,6 +61,7 @@ def listar_usuarios():
     usuarios = Users.query.all()  # Obtener todos los usuarios de la base de datos
     return render_template('listar_usuarios.html', usuarios=usuarios)  # Renderizar la plantilla HTML con la lista de usuarios
 
+#ruta del formulario para crear usuarios
 @app.route('/crear_usuario', methods=['GET', 'POST'])
 def crear_usuario():
     if request.method == 'POST':
@@ -73,6 +82,8 @@ def crear_usuario():
 
     return render_template('crear_usuario.html')
 
+#ruta para editar el formulario de usuarios
+
 @app.route('/editar_usuario/<int:user_id>', methods=['GET', 'POST'])
 def editar_usuario(user_id):
     user = Users.query.get(user_id)
@@ -86,6 +97,8 @@ def editar_usuario(user_id):
         return redirect(url_for('listar_usuarios'))
     return render_template('editar_usuario.html', user=user)
 
+
+#ruta para eliminar usuarios
 @app.route('/delete_user/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
     user = Users.query.get(user_id)
@@ -93,7 +106,7 @@ def delete_user(user_id):
     db.session.commit()
     return redirect(url_for('listar_usuarios'))
 
-
+#ruta para el inicio de sesion
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -105,13 +118,17 @@ def login():
 
         if user:
             login_user(user)  # Inicia sesión
-            return redirect(url_for('index'))
+            if user.user_rol == 1:
+                return redirect(url_for('admin'))  # Redirige al panel de administrador si el rol es 1
+            elif user.user_rol == 2:
+                return redirect(url_for('user'))  # Redirige al panel de usuario si el rol es 2
+            else:
+                return redirect(url_for('index'))  # Redirige a otra página si el rol no es 1 ni 2
         else:
             # Credenciales inválidas, muestra un mensaje de error
             return render_template('login.html', error='Credenciales inválidas')
 
     return render_template('login.html')
-
 @app.route('/logout')
 @login_required
 def logout():

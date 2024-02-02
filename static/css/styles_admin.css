@@ -1,62 +1,94 @@
-body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
+/* Estilos para el navbar, la barra lateral y el pie de página */
+.navbar {
+    background-color: #E6BF27;
+    color: #ff0000;
+    padding: 10px;
+    margin-left: 250px;
+    width: 87%;
+  }
+  
+
+img {
+    vertical-align:middle;
+    border-style: none;
+    max-width: 160px;
+    margin-left:40px;
 }
-.container-fluid {
-    height: 86.8vh; /* Establece la altura al 100% de la altura visible del viewport */
+
+.container {
+    position: relative;
+    min-height: 100vh; /* Asegura que el contenedor ocupe al menos toda la altura de la ventana */
 }
-.row {
-    height: 100%;
-}
+
 .sidebar {
     position: fixed;
-    top: 0;
+    top: 0px; /* Altura del navbar */
     bottom: 0;
     left: 0;
-    z-index: 1000;
-    padding-top: 56px; /* Altura de la barra de navegación en la parte superior */
-    padding-left: 10px;
-    padding-right: 10px;
-    overflow-x: hidden;
-    overflow-y: auto; /* Scroll vertical si es necesario */
-    color: #fff;
-}
-.sidebar-sticky {
-    position: relative;
-    top: 56px; /* Altura de la barra de navegación en la parte superior */
+    width: 250px;
+    z-index: 1;
+    background-color: #000000;
     padding-top: 20px;
+    overflow-y: auto;
 }
-main {
+
+.dropdown-toggle::after {
+    content: '\25BC'; /* flecha hacia abajo */
+    float: right;
+    
+}
+
+.sub-components {
+    display: none;
+}
+
+.inicio{
+    margin-left: 26px;
+    color: #c8c9ce;
+}
+
+.h6, h6 {
+    font-size: 1rem;
+    color: white;
+}
+
+.sidebar-header {
+    padding: 10px 15px;
+    background-color: #000000;
+}
+
+
+.sidebar .list-unstyled {
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .list-unstyled li a {
+    padding: 10px 15px;
+    display: block;
+    color: #c8c9ce;
+    text-decoration: none;
+    border-bottom: 1px solid #d6d8db;
+}
+
+.sidebar .list-unstyled li a i {
+    margin-right: 10px;
+    color: #fff; /* Color blanco para los iconos */
+}
+
+.sidebar-divider {
+    border-top: 1px solid #fff; /* Línea blanca entre categorías */
+}
+
+.content {
+    margin-left: 250px; /* Ajusta el margen para que el contenido principal no se superponga con el sidebar */
     padding: 20px;
 }
-.footer-custom {
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
     background-color: #000000;
-    color: #fff;
-    text-align: center;
-    padding: 1em;
-}
-.sidebar-custom {
-    background-color: #000000;
-    color: #fff; /* Color del texto */
-}
-
-.sidebar-custom a {
-    color: #fff; /* Color de los enlaces dentro del sidebar */
-}
-
-.sidebar-custom a:hover {
-    color: #2782BA; /* Color de los enlaces al pasar el mouse por encima */
-}
-
-.sidebar-custom .dropdown-item {
-    color: #000000; /* Color del texto de los elementos de la lista desplegable */
-}
-
-.sidebar-custom .dropdown-item:hover {
-    color: #2782BA; /* Color del texto al pasar el mouse por encima de los elementos de la lista desplegable */
-}
-
-.navbar-custom {
-    background-color: #E6BF27;
+    padding: 20px;
 }

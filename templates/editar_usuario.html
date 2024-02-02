@@ -66,47 +66,10 @@ input[type="submit"]:hover {
 
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
-        <a class="navbar-brand" href="#">Panel de Administrador</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">xd
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </nav>
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-2 d-none d-md-block sidebar sidebar-custom collapse" id="sidebar">
-                <div class="sidebar-sticky">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">
-                                Inicio <span class="sr-only">(current)</span>
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Gestion de Usuarios
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="{{ url_for('listar_usuarios') }}">Ver Usuarios</a>
-                                <a class="dropdown-item" href="{{ url_for('crear_usuario') }}">Agregar Usuario</a>
-                            </div>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">   
-                                Futuros Modulos
-                            </a>
 
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('index') }}">   
-                                    Generar Catalogo
-                                </a>
-                            </li>
+    {%include 'navbar.html'%}
 
-
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+    {% include 'sidebar.html' %}
             <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
                 <h2>Editar Usuarios</h2>
 
@@ -127,9 +90,9 @@ input[type="submit"]:hover {
             </main>
         </div>
     </div>
-    <footer class="footer-custom">
-        <p>&copy; 2024 Innova Publicidad Visual S.A.S. Todos los derechos reservados.</p>
-    </footer>
+
+    {% include 'footer.html' %}
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>

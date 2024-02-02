@@ -1,0 +1,67 @@
+<div class="sidebar">
+    <div class="logo">
+        <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Your Logo" class="logo">
+    </div>
+    <hr class="sidebar-divider">
+    <div class="inicio">
+        <a href="{{ url_for('admin') }}">
+            <i class="fas fa-home"></i> Inicio
+        </a>
+    </div>
+    <div class="sidebar-header">
+       <h6> Apartado de Gestiones </h6>
+    </div>
+    <ul class="list-unstyled components">
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
+                <i class="fas fa-home"></i> Gestion de Usuarios
+            </a>
+            <ul id="sub-components-1" class="list-unstyled sub-components">
+                <li>
+                    <a href="{{ url_for('listar_usuarios') }}">
+                        Ver Usuarios
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('crear_usuario') }}">
+                        Crear Usuario
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="">
+                <i class="fas fa-user"></i> Futuras Gestiones
+            </a>
+        </li>
+        <div class="sidebar-header">
+            <h6> Apartado Principal </h6>
+         </div>
+
+         <li>
+            <a href="{{ url_for('generar_catalogo') }}">
+                <i class="fas fa-user"></i> Generar Catalogo
+            </a>
+        </li>
+
+        <li>
+            <a href="">
+                <i class="fas fa-user"></i> Futuros Modulos
+            </a>
+        </li>
+
+    </ul>
+</div>
+
+<footer>
+    <script>
+        function toggleDropdown(id) {
+    var dropdown = document.getElementById(id);
+    if (dropdown.style.display === "block") {
+        dropdown.style.display = "none";
+    } else {
+        dropdown.style.display = "block";
+    }
+}
+    </script>
+</footer>

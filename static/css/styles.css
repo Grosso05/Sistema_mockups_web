@@ -16,6 +16,31 @@ body {
     
 }
 
+nav {
+    background-color: #E6BF27;
+    overflow: hidden;
+    height: 60px;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: flex-end; /* Esto alinea los elementos a la derecha */
+    margin-top: 10px;
+  }
+  
+  li {
+    margin: 10px;
+  }
+  
+  a {
+    text-decoration: none;
+    color: rgb(0, 0, 0);
+    padding: 10px 15px;
+  }
+
 header {
     margin-bottom: 20px;
 }

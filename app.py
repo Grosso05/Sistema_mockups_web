@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, request, redirect, url_for, send_file, render_template
 from flask_login import LoginManager,login_required
 from calculate import get_white_presence

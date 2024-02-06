@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="esp">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,6 +25,27 @@
 <!-- Footer -->
 {% include 'footer.html' %}
 
+
+<script>
+const sidebar = document.querySelector('.sidebar');
+const content = document.querySelector('.content');
+
+// Función para contraer el sidebar
+function collapseSidebar() {
+  sidebar.classList.add('collapsed');
+  content.style.marginLeft = '80px'; // Ajusta el margen izquierdo del contenido
+  content.style.width = 'calc(100% - 80px)'; // Ajusta el ancho del contenido en función del ancho del sidebar contraído
+}
+
+// Función para expandir el sidebar
+function expandSidebar() {
+  sidebar.classList.remove('collapsed');
+  content.style.marginLeft = '250px'; // Restaura el margen izquierdo del contenido
+  content.style.width = 'calc(100% - 250px)'; // Restaura el ancho del contenido en función del ancho del sidebar expandido
+}
+
+
+</script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

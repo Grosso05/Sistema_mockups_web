@@ -2,25 +2,46 @@
 .navbar {
     background-color: #E6BF27;
     color: #ff0000;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 10px;
-    margin-left: 250px;
-    width: 87%;
+    position: fixed; /* Asegura que el navbar esté fijo en la parte superior */
+    z-index: 1; /* Asegura que el navbar esté por encima del contenido */
   }
   
+  
+  .navbar .navbar-button button {
+    background-color: #2782BA;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1;
+    margin-left: 250px;
+  }
+
+
 
 img {
     vertical-align:middle;
     border-style: none;
     max-width: 160px;
-    margin-left:40px;
+    margin-left:20px;
 }
 
 .container {
     position: relative;
-    min-height: 100vh; /* Asegura que el contenedor ocupe al menos toda la altura de la ventana */
-}
+    padding-top: 60px; /* Ajusta el padding para evitar que el contenido se superponga con el navbar */
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: auto 1fr; /* El sidebar ocupa el ancho automático y el contenido ocupa el resto del espacio */
+    grid-gap: 20px; /* Espacio entre el sidebar y el contenido */
+  }
 
-.sidebar {
+  .sidebar {
     position: fixed;
     top: 0px; /* Altura del navbar */
     bottom: 0;
@@ -30,45 +51,20 @@ img {
     background-color: #000000;
     padding-top: 20px;
     overflow-y: auto;
-}
-
-.dropdown-toggle::after {
-    content: '\25BC'; /* flecha hacia abajo */
-    float: right;
-    
-}
-
-.sub-components {
-    display: none;
-}
-
-.inicio{
-    margin-left: 26px;
-    color: #c8c9ce;
-}
-
-.h6, h6 {
-    font-size: 1rem;
-    color: white;
-}
-
-.sidebar-header {
-    padding: 10px 15px;
-    background-color: #000000;
-}
-
-
-.sidebar .list-unstyled {
-    padding: 0;
-    margin: 0;
-}
+    padding: 20px;
+  }
 
 .sidebar .list-unstyled li a {
-    padding: 10px 15px;
+    padding: 20px 1px;
     display: block;
     color: #c8c9ce;
     text-decoration: none;
-    border-bottom: 1px solid #d6d8db;
+    font-size: 17px;
+}
+
+.sidebar .list-unstyled li a i {
+    margin-right: 10px;
+    color: #fff;
 }
 
 .sidebar .list-unstyled li a i {
@@ -80,15 +76,62 @@ img {
     border-top: 1px solid #fff; /* Línea blanca entre categorías */
 }
 
-.content {
-    margin-left: 250px; /* Ajusta el margen para que el contenido principal no se superponga con el sidebar */
-    padding: 20px;
+.sidebar-header {
+    padding: 10px 15px;
+    background-color: #000000;
+    border-bottom: 1px solid #ccc; /* Add a border to the bottom of the sidebar header */
+    padding: 10px 0; /* Add padding to the sidebar header */
+    text-align:justify ;
 }
 
-.footer {
-    position: absolute;
+.dropdown-toggle::after {
+    content: '\25BC'; /* flecha hacia abajo */
+    float: right;
+    
+}
+
+.dropdown a {
+    cursor: pointer;
+}
+
+.sub-components {
+    text-align: center; /* Centra el texto */
+    display: none;
+}
+
+.sub-components li a {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+}
+
+
+
+
+.inicio{
+    margin-left: 26px;
+    color: #c8c9ce;
+}
+
+.h6, h6 {
+    font-size: 1rem;
+    color: white;
+    text-align: center;
+}
+
+
+.content {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.3s ease; /* Agrega una transición para suavizar el ajuste del margen */
+    
+}
+
+  .footer {
+    position: fixed;
     bottom: 0;
     width: 100%;
     background-color: #000000;
     padding: 20px;
-}
+    color: white;
+    z-index: 1;
+    text-align: center;
+  }

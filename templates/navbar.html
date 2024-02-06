@@ -1,6 +1,22 @@
+
 <nav class="navbar navbar-light">
-      </li>
-  <a class="navbar-brand" href="#">Menú</a>
+  <div class="navbar-button">
+      <button onclick="toggleSidebar()">Menú</button>
+  </div>
+
+  <div class="navbar_user">
+    <h6></h6>
+  </div>
   <div class="collapse navbar-collapse" id="navbarNav">
   </div>
 </nav>
+
+<footer>
+  <script>
+    // Evento para contraer el sidebar al hacer clic en un botón, por ejemplo
+document.querySelector('.collapse-button').addEventListener('click', collapseSidebar);
+
+// Evento para expandir el sidebar al hacer clic en un botón, por ejemplo
+document.querySelector('.expand-button').addEventListener('click', expandSidebar);
+  </script>
+</footer>

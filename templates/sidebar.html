@@ -1,67 +1,86 @@
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        .sidebar {
+            width: 250px; /* Ancho inicial de la barra lateral */
+            transition: width 0.5s; /* Agregar transición para un efecto suave al cambiar el ancho */
+        }
+        .collapsed {
+            width: 80px; /* Ancho contraído de la barra lateral */
+        }
+    </style>
+
+</head>
+
 <div class="sidebar">
     <div class="logo">
         <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Your Logo" class="logo">
     </div>
     <hr class="sidebar-divider">
-    <div class="inicio">
-        <a href="{{ url_for('admin') }}">
-            <i class="fas fa-home"></i> Inicio
-        </a>
-    </div>
-    <div class="sidebar-header">
-       <h6> Apartado de Gestiones </h6>
-    </div>
     <ul class="list-unstyled components">
+        <li>
+            <a href="{{ url_for('admin') }}">
+                <i class="fas fa-home"></i> Inicio
+            </a>
+        </li>
+        <div class="sidebar-header">
+            <h6> Apartado de Gestiones </h6>
+        </div>
         <li class="dropdown">
-            <a href="#" class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
-                <i class="fas fa-home"></i> Gestion de Usuarios
+            <a  class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
+                <i class="fas fa-user"></i> Gestion de Usuarios
             </a>
             <ul id="sub-components-1" class="list-unstyled sub-components">
                 <li>
                     <a href="{{ url_for('listar_usuarios') }}">
-                        Ver Usuarios
+                        <i class="fas fa-eye"></i> Ver Usuarios
                     </a>
                 </li>
                 <li>
                     <a href="{{ url_for('crear_usuario') }}">
-                        Crear Usuario
+                        <i class="fas fa-plus"></i> Crear Usuario
                     </a>
                 </li>
             </ul>
         </li>
         <li>
             <a href="">
-                <i class="fas fa-user"></i> Futuras Gestiones
+                <i class="fas fa-wrench"></i> <s> Futuras Gestiones </s>
             </a>
         </li>
         <div class="sidebar-header">
             <h6> Apartado Principal </h6>
-         </div>
-
-         <li>
+        </div>
+        <li>
             <a href="{{ url_for('generar_catalogo') }}">
-                <i class="fas fa-user"></i> Generar Catalogo
+                <i class="fas fa-brush"></i> Generar Catalogo
             </a>
         </li>
-
         <li>
             <a href="">
-                <i class="fas fa-user"></i> Futuros Modulos
+                <i class="fas fa-wrench"></i> <s>Futuros Modulos</s>
             </a>
         </li>
-
     </ul>
 </div>
-
 <footer>
     <script>
         function toggleDropdown(id) {
-    var dropdown = document.getElementById(id);
-    if (dropdown.style.display === "block") {
-        dropdown.style.display = "none";
-    } else {
-        dropdown.style.display = "block";
-    }
-}
+            var dropdown = document.getElementById(id);
+            if (dropdown.style.display === "block") {
+                dropdown.style.display = "none";
+            } else {
+                dropdown.style.display = "block";
+            }
+        }
+
+        function toggleSidebar() {
+            var sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('collapsed'); // Alternar la clase 'collapsed' para cambiar el ancho
+        }
+
+        
+
     </script>
 </footer>

@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 2.1.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 2.1.1) desarrollada por: Brayan Grosso
+
+# Fecha de la última actualización: 6 de febrero de 2024, 03:20 pm
+
+Cambios Recientes
+v2.1.1
+
+En esta nueva versión se siguio en el front de admin, principalmente en el sidebar que se encuentra en un 90%
 
 # Fecha de la última actualización: 29 de enero de 2024, 02:50 pm
 

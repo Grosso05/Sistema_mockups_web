@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 2.2.1) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 2.2.2) desarrollada por: Brayan Grosso
+
+# Fecha de la última actualización: 9 de febrero de 2024, 04:57 pm
+
+Cambios Recientes
+v2.2.2
+
+En esta nueva versión se  trabajo en el Registro de cliente desde el index con el correo electronico, tambien en la asignacion de manera aleatoria de clientes a usuarios, los campos  del formulario inicial ahora obligatorios  y finalmente aho hay mensajes de error en el login
+
 
 # Fecha de la última actualización: 9 de febrero de 2024, 03:33 pm
 

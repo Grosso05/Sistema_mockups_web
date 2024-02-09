@@ -20,44 +20,21 @@
     <hr class="sidebar-divider">
     <ul class="list-unstyled components">
         <li>
-            <a href="{{ url_for('admin') }}">
+            <a href="{{ url_for('user') }}">
                 <i class="fas fa-home"></i> Inicio
             </a>
-        </li>
-        <div class="sidebar-header">
-            <h6> Apartado de Gestiones </h6>
-        </div>
-        <li class="dropdown">
-            <a  class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
-                <i class="fas fa-users"></i> Gestion de Usuarios
-            </a>
-            <ul id="sub-components-1" class="list-unstyled sub-components">
-                <li>
-                    <a href="{{ url_for('listar_usuarios') }}">
-                        <i class="fas fa-eye"></i> Ver Usuarios
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('crear_usuario') }}">
-                        <i class="fas fa-user-plus"></i> Crear Usuario
-                    </a>
-                </li>
-            </ul>
-        </li>
-        <li>
-
-            <li>
-                <a href="{{ url_for('admin') }}">
-                    <i class="fas fa-handshake"></i> Gestionar Clientes
-                </a>
-            </li>
         </li>
         <div class="sidebar-header">
             <h6> Apartado Principal </h6>
         </div>
         <li>
-            <a href="{{ url_for('generar_catalogo') }}">
+            <a href="{{ url_for('generar_catalogouser') }}">
                 <i class="fas fa-brush"></i> Generar Catalogo
+            </a>
+        </li>
+        <li>
+            <a href="">
+                <i class="fas fa-wrench"></i> <s>Futuros Modulos</s>
             </a>
         </li>
     </ul>

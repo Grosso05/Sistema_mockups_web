@@ -1,12 +1,48 @@
+<head>
+  <style>
+.navbar_user {
+  display: flex;
+  margin: 0 auto;
+  align-items: center;
+  padding: 0 20px; /* Ajusta el padding según tus necesidades */
+  margin-top: 4px;
+}
+
+.navbar_user h6 {
+  color: #000 !important; /* Cambia el color del texto a negro */
+}
+
+.navbar_logout a {
+  display: inline-block;
+  padding: 05px 10px;
+  background-color: #007bff;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.navbar_logout a:hover {
+  background-color: #0056b3;
+}
+
+  </style>
+
+</head>
+
 
 <nav class="navbar navbar-light">
-  <div class="navbar-button">
-      <button onclick="toggleSidebar()">Menú</button>
-  </div>
+
+
 
   <div class="navbar_user">
-    <h6></h6>
+    <h6>Bienvenido, {{ session['username'] }}</h6>
   </div>
+
+  <div class="navbar_logout">
+    <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+  </div>
+
   <div class="collapse navbar-collapse" id="navbarNav">
   </div>
 </nav>

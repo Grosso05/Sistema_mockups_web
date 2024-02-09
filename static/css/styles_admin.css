@@ -1,7 +1,6 @@
 /* Estilos para el navbar, la barra lateral y el pie de página */
 .navbar {
     background-color: #E6BF27;
-    color: #ff0000;
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -12,16 +11,7 @@
   }
   
   
-  .navbar .navbar-button button {
-    background-color: #2782BA;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 1;
-    margin-left: 250px;
-  }
+
 
 
 

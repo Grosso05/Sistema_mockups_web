@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Empresa XYZ</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <style>
+    .content {
+        margin-left: 250px;
+        margin-top: 140px;
+        padding: 20px;
+    }
+    .logo {
+        max-width: 160px;
+        margin-bottom: 10px;
+    }
+    h1 {
+        color: #2782BA;
+        font-size: 36px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    p {
+        color: #555;
+        font-size: 18px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .instructions {
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    form {
+        width: 90%;
+        max-width: 400px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    label {
+        display: block;
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 18px;
+    }
+    input[type="file"] {
+        width: calc(100% - 20px);
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 2px dashed #2782BA;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        color: #2782BA;
+        font-size: 18px;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.3s ease;
+    }
+    input[type="file"]:hover {
+        border-color: #0056b3;
+    }
+    input[type="submit"] {
+        width: 100%;
+        background-color: #2782BA;
+        color: #fff;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        transition: background-color 0.3s ease;
+    }
+    input[type="submit"]:hover {
+        background-color: #2782BA;
+    }
+  </style>
+</head>
+<body>
+<!-- Navbar -->
+{% include 'navbar.html' %}
+<!-- Sidebar -->
+{% include 'sidebar_user.html' %}
+<!-- Content -->
+<div class="content">
+    <header>
+        <h1>Bienvenido a la herramienta para crear catalogos personalizados</h1>
+    </header>
+    <section class="instructions">
+        <p>Personalice nuestro catálogo con el logotipo de las empresas en solo dos pasos:</p>
+    </section>
+    <form action="/add_watermark" method="post" enctype="multipart/form-data">
+        <label for="image_file">Paso 1: Seleccione el logotipo de la empresa:</label>
+        <input type="file" name="image_file" id="image_file" accept=".png"><br>
+        <p>Paso 2: Haga clic en "Generar Catálogo Personalizado" para iniciar la descarga.</p>
+        <input type="submit" value="Generar Catálogo Personalizado">
+    </form>
+</div>
+<!-- Footer -->
+{% include 'footer.html' %}
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,68 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="esp">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 20px;
-            text-align: center;
-        }
-        nav {
-            background-color: #f4f4f4;
-            padding: 10px;
-        }
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            text-align: center;
-        }
-        nav ul li {
-            display: inline;
-            margin: 0 10px;
-        }
-        section {
-            padding: 20px;
-        }
-        footer {
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            padding: 10px 20px;
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
 </head>
 <body>
-    <header>
-        <h1>User Dashboard</h1>
-    </header>
-    <nav>
-        <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Profile</a></li>
-            <li><a href="#">Settings</a></li>
-            <li><a href="#">Logout</a></li>
-        </ul>
-    </nav>
-    <section>
-        <h2>Welcome, User!</h2>
-        <p>This is your user dashboard. You can view and manage your profile and settings here.</p>
-    </section>
-    <footer>
-        <p>&copy; 2024 User Dashboard</p>
-    </footer>
+
+<!-- Navbar -->
+{% include 'navbar.html' %}
+
+<!-- Sidebar -->
+{% include 'sidebar_user.html' %}
+
+<!-- Content -->
+<div class="content">
+  <h1>Bienvenido al panel de usuario</h1>
+  <p>Contenido del panel.</p>
+</div>
+
+<!-- Footer -->
+{% include 'footer.html' %}
+
+
+<script>
+const sidebar = document.querySelector('.sidebar');
+const content = document.querySelector('.content');
+
+// Función para contraer el sidebar
+function collapseSidebar() {
+  sidebar.classList.add('collapsed');
+  content.style.marginLeft = '80px'; // Ajusta el margen izquierdo del contenido
+  content.style.width = 'calc(100% - 80px)'; // Ajusta el ancho del contenido en función del ancho del sidebar contraído
+}
+
+// Función para expandir el sidebar
+function expandSidebar() {
+  sidebar.classList.remove('collapsed');
+  content.style.marginLeft = '250px'; // Restaura el margen izquierdo del contenido
+  content.style.width = 'calc(100% - 250px)'; // Restaura el ancho del contenido en función del ancho del sidebar expandido
+}
+
+
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

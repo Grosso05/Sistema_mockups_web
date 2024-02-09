@@ -1,40 +1,34 @@
-from flask import Flask, request, redirect, url_for, send_file, render_template
-from flask_login import LoginManager,login_required
+from flask import Flask, request, redirect, url_for, send_file, render_template, session
+from flask_login import LoginManager, login_required, current_user, login_user
 from calculate import get_white_presence
 from set_logo import set_logo
+from datetime import datetime
 import tempfile
 import os
 from models import configure_db, test_db_connection, Users, UsersRol, db
-
-from flask_login import login_user
+from flask_login import UserMixin
+from datetime import datetime
+import PyPDF2
 import secrets
-
+from io import BytesIO
+from random import choice
 
 FIXED_PDF_FILE_PATH = "./Catalogo_white.pdf"
 ANOTHER_PDF_FILE_PATH = "./Catalogo_black.pdf"
 
 app = Flask(__name__)
 
-# Genera una clave secreta aleatoria de 24 bytes (192 bits)
 app.config['SECRET_KEY'] = secrets.token_hex(24)
 
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'  # Vista de inicio de sesión
+login_manager.login_view = 'login'
 
-configure_db(app)  # Configura la base de datos
-
-
-# Comprueba la conexión a la base de datos
+configure_db(app)
 test_db_connection(app)
-
 
 @login_manager.user_loader
 def load_user(user_id):
-    # Retorna el usuario correspondiente al ID de usuario
     return db.session.get(Users, int(user_id))
-
-
-
 
 @app.route('/')
 def index():
@@ -45,9 +39,14 @@ def index():
 def admin():
     return render_template('dashboard_admin.html')
 
+
 @app.route('/generar_catalogo')
 def generar_catalogo():
     return render_template('generar_catalogoregistrado.html')
+
+@app.route('/generar_catalogouser')
+def generar_catalogouser():
+    return render_template('generarcatalogouserregistrado.html')
 
 #ruta para el dashboard de usuario
 @app.route('/user')
@@ -61,6 +60,8 @@ def listar_usuarios():
     return render_template('listar_usuarios.html', usuarios=usuarios)  # Renderizar la plantilla HTML con la lista de usuarios
 
 #ruta del formulario para crear usuarios
+
+
 @app.route('/crear_usuario', methods=['GET', 'POST'])
 def crear_usuario():
     if request.method == 'POST':
@@ -117,6 +118,7 @@ def login():
 
         if user:
             login_user(user)  # Inicia sesión
+            session['username'] = user.user_name
             if user.user_rol == 1:
                 return redirect(url_for('admin'))  # Redirige al panel de administrador si el rol es 1
             elif user.user_rol == 2:
@@ -131,7 +133,7 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
-    logout_user()  # Cierra la sesión
+    session.pop('username', None)
     return redirect(url_for('index'))
 
 
@@ -171,10 +173,30 @@ def add_watermark():
         image_temp_file.close()
         os.remove(image_temp_file.name)
 
+    
+        # Obtener el correo electrónico del formulario
+        customer_email = request.form['customer_email']
+
+        # Obtener la fecha actual
+        current_date = datetime.now()
+
+        # Registrar el correo electrónico y el usuario en la tabla de clientes
+        new_customer = Customer(
+            CUSTOMER_EMAIL=customer_email,
+            CUSTOMER_DATE=current_date,
+        )
+
+        db.session.add(new_customer)
+        db.session.commit()
+
         return send_file(output_buffer, as_attachment=True, download_name="modified_pdf.pdf")
 
     except Exception as e:
         return f"Error: {str(e)}"
+
+
+    # Ruta para el formulario de registro completo del cliente
+
 
 if __name__ == '__main__':
     app.run(debug=True)

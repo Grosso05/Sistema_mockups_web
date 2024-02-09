@@ -36,11 +36,12 @@
         <form action="/add_watermark" method="post" enctype="multipart/form-data">
             <label for="image_file">Paso 1: Inserte o Arrastre el Logotipo Aquí:
             </label>
-            <input type="file" name="image_file" id="image_file" accept=".png"><br>
+            <input type="file" name="image_file" id="image_file" accept=".png" required><br>
 
             <p>Paso 2: Ingrese su correo al cual será enviado el catalogo.</p>
 
-            <input type="email">
+            <label for="customer_email">Ingrese su correo:</label>
+            <input type="email" name="customer_email" id="customer_email" required>
 
             <p>Paso 3: Haga clic en "Generar Catálogo Personalizado" e inmediatamente iniciara su descarga.</p>
 

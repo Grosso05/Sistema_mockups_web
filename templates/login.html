@@ -3,13 +3,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- ... otras etiquetas head ... -->
+    <style>
+        .error-message {
+        color: #fff; /* Cambiar el color del texto a blanco */
+        background-color: #ff6347; /* Cambiar el color de fondo a un tono de rojo */
+        padding: 10px; /* Agregar relleno alrededor del texto */
+        border-radius: 5px; /* Agregar bordes redondeados */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Agregar una sombra sutil */
+        animation: shake 0.5s ease-in-out; /* Agregar una animación de temblor */
+        }
+
+        @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+        }
+        
+    </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_login.css') }}">
 </head>
 <body>
-
     <img src="{{ url_for('static', filename='images/LOGO.png') }}" alt="Your Logo" class="logo">
-
     <div class="login-container">
         <div class="login-header">
             <h2><i class="fas fa-user"></i> Iniciar Sesión</h2>
@@ -26,6 +42,9 @@
             <div class="form-group">
                 <button type="submit"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</button>
             </div>
+            {% if error %}
+                <p class="error-message">{{ error }}</p> <!-- Mostrar mensaje de error si existe -->
+            {% endif %}
         </form>
     </div>
 </body>

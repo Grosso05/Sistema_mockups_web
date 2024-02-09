@@ -22,6 +22,19 @@ class Users(db.Model,UserMixin):
     def get_id(self):
         return str(self.user_id)
 
+
+class Customers(db.Model):
+    customer_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    customer_name = db.Column(db.String(50), nullable=True)
+    customer_last_name = db.Column(db.String(50), nullable=True)
+    customer_email = db.Column(db.String(80), nullable=False)
+    customer_phone = db.Column(db.String(15), nullable=True)
+    customer_date = db.Column(db.Date, nullable=False)
+    user = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
+    user_rel = db.relationship('Users', backref='customers', lazy=True)
+
+
+
 def configure_db(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1/software_innova'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

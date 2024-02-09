@@ -3,9 +3,10 @@ from flask_login import LoginManager, login_required, current_user, login_user
 from calculate import get_white_presence
 from set_logo import set_logo
 from datetime import datetime
+from random import choice
 import tempfile
 import os
-from models import configure_db, test_db_connection, Users, UsersRol, db
+from models import configure_db, test_db_connection, Users, UsersRol, db, Customers
 from flask_login import UserMixin
 from datetime import datetime
 import PyPDF2
@@ -173,18 +174,25 @@ def add_watermark():
         image_temp_file.close()
         os.remove(image_temp_file.name)
 
-    
+
+# Obtener una lista de usuarios con rol 2
+        eligible_users = Users.query.filter_by(user_rol=2).all()
+
+        # Seleccionar aleatoriamente un usuario de la lista
+        selected_user = choice(eligible_users)
+
         # Obtener el correo electrónico del formulario
         customer_email = request.form['customer_email']
 
         # Obtener la fecha actual
         current_date = datetime.now()
 
-        # Registrar el correo electrónico y el usuario en la tabla de clientes
-        new_customer = Customer(
-            CUSTOMER_EMAIL=customer_email,
-            CUSTOMER_DATE=current_date,
-        )
+        # Crear una nueva instancia de Customers
+        new_customer = Customers(
+        customer_email=customer_email,
+        customer_date=current_date,
+        user=selected_user.user_id  # Asignar el usuario seleccionado al cliente
+)
 
         db.session.add(new_customer)
         db.session.commit()

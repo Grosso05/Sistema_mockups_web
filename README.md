@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 2.2.2) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 2.2.3) desarrollada por: Brayan Grosso
+
+
+# Fecha de la última actualización: 10 de febrero de 2024, 12:00 pm
+
+Cambios Recientes
+v2.2.3
+
+En esta pequeña actualizacion, se agrego la nueva base de datos, adicional se agrego un carrusel que aun requiere de estilos igual que todo el login.
 
 # Fecha de la última actualización: 9 de febrero de 2024, 04:57 pm
 

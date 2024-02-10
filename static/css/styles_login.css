@@ -11,9 +11,12 @@ body {
     color: #333;
 }
 
-.logo{
-    margin-right: 85px;
+img.logo{
+    height: 100px;
 }
+
+
+
 .login-container {
     width: 400px;
     padding: 40px;
@@ -82,3 +85,5 @@ body {
 .signup-link a:hover {
     text-decoration: underline;
 }
+
+

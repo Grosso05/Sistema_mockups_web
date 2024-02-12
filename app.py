@@ -1,5 +1,10 @@
-from flask import Flask, request, redirect, url_for, send_file, render_template, session
+from flask import Flask, request, redirect, url_for, send_file, render_template, session, flash
 from flask_login import LoginManager, login_required, current_user, login_user
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email import encoders
 from calculate import get_white_presence
 from set_logo import set_logo
 from datetime import datetime
@@ -27,10 +32,12 @@ login_manager.login_view = 'login'
 configure_db(app)
 test_db_connection(app)
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(Users, int(user_id))
 
+#ruta principal (index), ruta para generar catalogo del lado del cliente
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -40,11 +47,12 @@ def index():
 def admin():
     return render_template('dashboard_admin.html')
 
-
+#Ruta para generar catalogo del lado del admin
 @app.route('/generar_catalogo')
 def generar_catalogo():
     return render_template('generar_catalogoregistrado.html')
 
+#ruta para generar catalogo del lado del usuario
 @app.route('/generar_catalogouser')
 def generar_catalogouser():
     return render_template('generarcatalogouserregistrado.html')
@@ -131,6 +139,8 @@ def login():
             return render_template('login.html', error='Credenciales inválidas')
 
     return render_template('login.html')
+
+#Ruta para la salida del usuario
 @app.route('/logout')
 @login_required
 def logout():
@@ -138,7 +148,7 @@ def logout():
     return redirect(url_for('index'))
 
 
-
+#funcion para ubicar el logo
 @app.route('/add_watermark', methods=['POST'])
 def add_watermark():
     try:
@@ -169,7 +179,10 @@ def add_watermark():
             [{'x': 8.56, 'y': 10.80, 'width': 30, 'height': 25, 'rotation': 0, 'opacity': 0.7}]
         ]
 
-        output_buffer = set_logo(image_temp_file, pdf_path, watermark_positions)
+        pdf_final_path = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False).name
+        output_buffer = set_logo(image_temp_file, pdf_path, watermark_positions)  # Genera el PDF final
+        with open(pdf_final_path, 'wb') as f:
+            f.write(output_buffer.getvalue())
 
         image_temp_file.close()
         os.remove(image_temp_file.name)
@@ -197,14 +210,51 @@ def add_watermark():
         db.session.add(new_customer)
         db.session.commit()
 
-        return send_file(output_buffer, as_attachment=True, download_name="modified_pdf.pdf")
+         # Llamar a la función enviar_correo para enviar el PDF por correo
+        enviar_correo(pdf_final_path, request.form['customer_email'])
 
+        # Después de enviar el correo electrónico con éxito, redirigir a la página "index" y mostrar un mensaje
+        flash('El correo se ha enviado correctamente', 'success')
+
+        return redirect(url_for('index'))
     except Exception as e:
         return f"Error: {str(e)}"
 
 
-    # Ruta para el formulario de registro completo del cliente
+def enviar_correo(pdf_final_path, customer_email):
+    # Configurar los detalles del correo electrónico
+    sender_email = 'brayangrosso05@gmail.com'  
+    receiver_email = customer_email
+    subject = 'Catalogo Innova'
+    body = MIMEText('Reciba un Cordial saludo por parte de Innova Publicidad Visual. Adjunto encontrará nuestro catalogo, esperamos que sea de su agrado.', 'plain', 'utf-8')
 
+    # Crear el mensaje
+    message = MIMEMultipart()
+    message['From'] = sender_email
+    message['To'] = receiver_email
+    message['Subject'] = subject
+    message.attach(body)  # Adjuntar el cuerpo del correo al mensaje
+
+    # Adjuntar el archivo PDF al mensaje
+    with open(pdf_final_path, 'rb') as attachment:
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(attachment.read())
+    encoders.encode_base64(part)
+    part.add_header('Content-Disposition', f'attachment; filename=Catalogo_Innova.pdf')
+    message.attach(part)
+
+    # Enviar el correo electrónico a través de un servidor SMTP
+    smtp_server = 'smtp.gmail.com'
+    smtp_port = 587
+    smtp_username = 'brayangrosso05@gmail.com'  # Reemplazar con tu dirección de correo electrónico
+    smtp_password = 'cubk rhdg yspy dvzz'  # Reemplazar con tu contraseña de correo electrónico
+
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.send_message(message)
+
+    return "Correo enviado con éxito"
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -16,9 +16,8 @@ img.logo{
 }
 
 
-
 .login-container {
-    width: 400px;
+    height: auto;
     padding: 40px;
     background-color: #0a1b6b;
     border-radius: 10px;

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - Empresa XYZ</title>
+  <title>Admin - Innova</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
@@ -88,11 +88,12 @@
         <h1>Bienvenido a la herramienta para crear catalogos personalizados</h1>
     </header>
     <section class="instructions">
-        <p>Personalice nuestro catálogo con el logotipo de las empresas en solo dos pasos:</p>
+        <p>Personalice nuestro catálogo con el logotipo de las empresas en solo tres pasos:</p>
     </section>
-    <form action="/add_watermark" method="post" enctype="multipart/form-data">
+    <form action="/agregar_logo_user" method="post" enctype="multipart/form-data">
         <label for="image_file">Paso 1: Seleccione el logotipo de la empresa:</label>
         <input type="file" name="image_file" id="image_file" accept=".png"><br>
+
         <p>Paso 2: Haga clic en "Generar Catálogo Personalizado" para iniciar la descarga.</p>
         <input type="submit" value="Generar Catálogo Personalizado">
     </form>

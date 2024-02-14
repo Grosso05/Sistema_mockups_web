@@ -1,16 +1,20 @@
 from flask import Flask, request, redirect, url_for, send_file, render_template, session, flash
+import fitz  # PyMuPDF
 from flask_login import LoginManager, login_required, current_user, login_user
 import smtplib
+from PyPDF2 import PdfReader, PdfWriter
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email import encoders
+import getpass
 from calculate import get_white_presence
 from set_logo import set_logo
 from datetime import datetime
 from random import choice
 import tempfile
 import os
+from reportlab.pdfgen import canvas
 from models import configure_db, test_db_connection, Users, UsersRol, db, Customers
 from flask_login import UserMixin
 from datetime import datetime
@@ -18,6 +22,14 @@ import PyPDF2
 import secrets
 from io import BytesIO
 from random import choice
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.colors import red
+from PyPDF2.generic import NameObject, createStringObject
+from PyPDF2 import PageObject
+from PyPDF2.generic import NameObject, createStringObject
+from PyPDF2 import PageObject
+from reportlab.lib import colors
 
 FIXED_PDF_FILE_PATH = "./Catalogo_white.pdf"
 ANOTHER_PDF_FILE_PATH = "./Catalogo_black.pdf"
@@ -128,6 +140,7 @@ def login():
         if user:
             login_user(user)  # Inicia sesión
             session['username'] = user.user_name
+            session['userlastname'] = user.user_last_name
             if user.user_rol == 1:
                 return redirect(url_for('admin'))  # Redirige al panel de administrador si el rol es 1
             elif user.user_rol == 2:
@@ -170,6 +183,7 @@ def add_watermark():
         else:
             pdf_path = FIXED_PDF_FILE_PATH
 
+    
         watermark_positions = [
             # Coordinates for page 1
             [{'x': 5.41, 'y': 09.48, 'width': 120, 'height': 100, 'rotation': 359, 'opacity': 0.8}],
@@ -221,6 +235,8 @@ def add_watermark():
         return f"Error: {str(e)}"
 
 
+
+
 def enviar_correo(pdf_final_path, customer_email):
     # Configurar los detalles del correo electrónico
     sender_email = 'brayangrosso05@gmail.com'  
@@ -256,5 +272,93 @@ def enviar_correo(pdf_final_path, customer_email):
 
     return "Correo enviado con éxito"
 
+
+
+
+@app.route('/agregar_logo_user', methods=['POST'])
+@login_required
+def agregar_logo_user():
+    
+    try:
+
+        if 'image_file' not in request.files:
+            return redirect(url_for('index'))
+
+        image_file = request.files['image_file']
+
+        if image_file.filename == '':
+            return redirect(url_for('index'))
+
+        image_temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+        image_file.save(image_temp_file.name)
+
+        white_percentage = get_white_presence(image_temp_file.name)
+
+        if white_percentage >= 10:  
+            pdf_path = ANOTHER_PDF_FILE_PATH
+        else:
+            pdf_path = FIXED_PDF_FILE_PATH
+
+        watermark_positions = [
+            # Coordinates for page 1
+            [{'x': 5.41, 'y': 09.48, 'width': 120, 'height': 100, 'rotation': 359, 'opacity': 0.8}],
+            # Coordinates for page 2
+            [{'x': 6.48, 'y': 11.53, 'width': 40, 'height': 20, 'rotation': -5, 'opacity': 0.7}],
+            # Coordinates for page 3
+            [{'x': 8.56, 'y': 10.80, 'width': 30, 'height': 25, 'rotation': 0, 'opacity': 0.7}]
+        ]
+
+        # Después de llamar a agregar_fecha_hora_a_pdf, guardar el resultado en un archivo temporal
+        output_buffer_fecha_hora = agregar_fecha_hora_usuario_a_pdf(pdf_path)
+        temp_file_path = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False).name
+        with open(temp_file_path, 'wb') as temp_file:
+            temp_file.write(output_buffer_fecha_hora.getbuffer())
+
+        # Luego, llamar a set_logo utilizando el archivo temporal como entrada
+        output_buffer_final = set_logo(image_temp_file, temp_file_path, watermark_positions)
+
+        # Finalmente, enviar el archivo final como respuesta
+        return send_file(output_buffer_final, as_attachment=True, download_name="catalogo_innova.pdf")
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+    
+
+
+def agregar_fecha_hora_usuario_a_pdf(pdf_path):
+
+    output_buffer = BytesIO()
+    packet = BytesIO()
+
+    # create a new PDF with Reportlab
+    can = canvas.Canvas(packet, pagesize=letter)
+    
+    username = session['username']
+    user_last_name = session['userlastname']
+    usuario_text = f"Generado por: {username} {user_last_name}"  # Agregar tanto el nombre de usuario como el apellido
+    fecha_hora_text = f"Fecha y hora: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
+    can.setFillColor(colors.white)  # Set text color to white
+    can.setFont("Helvetica", 12)  # Set font size
+    can.drawString(100, 100, fecha_hora_text)
+    can.drawString(100, 80, usuario_text)
+    can.save()
+
+    # move to the beginning of the StringIO buffer
+    packet.seek(0)
+    new_pdf = PdfReader(packet)
+    existing_pdf = PdfReader(pdf_path)
+    output = PdfWriter()
+
+    for page_number in range(len(existing_pdf.pages)):
+        page = existing_pdf.pages[page_number]
+        page.merge_page(new_pdf.pages[0])
+        output.add_page(page)
+
+    output.write(output_buffer)
+    output_buffer.seek(0)
+
+    return output_buffer  
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True)   

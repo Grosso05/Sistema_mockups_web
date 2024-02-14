@@ -141,6 +141,7 @@ def login():
             login_user(user)  # Inicia sesión
             session['username'] = user.user_name
             session['userlastname'] = user.user_last_name
+            session['usermail']=user.user_email
             if user.user_rol == 1:
                 return redirect(url_for('admin'))  # Redirige al panel de administrador si el rol es 1
             elif user.user_rol == 2:
@@ -335,12 +336,16 @@ def agregar_fecha_hora_usuario_a_pdf(pdf_path):
     
     username = session['username']
     user_last_name = session['userlastname']
+    user_email=session['usermail']
     usuario_text = f"Generado por: {username} {user_last_name}"  # Agregar tanto el nombre de usuario como el apellido
     fecha_hora_text = f"Fecha y hora: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
+    email_text=f"Correo: {user_email}"
     can.setFillColor(colors.white)  # Set text color to white
-    can.setFont("Helvetica", 12)  # Set font size
-    can.drawString(100, 100, fecha_hora_text)
-    can.drawString(100, 80, usuario_text)
+    can.setFont("Helvetica", 8)  # Set font size
+    
+    can.drawString(245, 70, usuario_text)
+    can.drawString(250, 60, fecha_hora_text)
+    can.drawString(255, 50, email_text)
     can.save()
 
     # move to the beginning of the StringIO buffer

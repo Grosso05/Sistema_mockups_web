@@ -1,14 +1,21 @@
-## Generador de Catálogos Personalizados (Versión 2.2.3) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 2.3.0) desarrollada por: Brayan Grosso
+
+# Fecha de la última actualización: 12 de febrero de 2024, 3:30 pm
+
+Cambios Recientes
+v2.3.0
+
+En esta nueva versión, se incluyo la logica de envio automatizado de correos electronicos con el catalogo final adjunto. 
 
 
-# Fecha de la última actualización: 10 de febrero de 2024, 12:00 pm
+# Fecha de lanzamiento 10 de febrero de 2024, 12:00 pm
 
 Cambios Recientes
 v2.2.3
 
 En esta pequeña actualizacion, se agrego la nueva base de datos, adicional se agrego un carrusel que aun requiere de estilos igual que todo el login.
 
-# Fecha de la última actualización: 9 de febrero de 2024, 04:57 pm
+# Fecha de lanzamiento: 9 de febrero de 2024, 04:57 pm
 
 Cambios Recientes
 v2.2.2
@@ -16,7 +23,7 @@ v2.2.2
 En esta nueva versión se  trabajo en el Registro de cliente desde el index con el correo electronico, tambien en la asignacion de manera aleatoria de clientes a usuarios, los campos  del formulario inicial ahora obligatorios  y finalmente aho hay mensajes de error en el login
 
 
-# Fecha de la última actualización: 9 de febrero de 2024, 03:33 pm
+# Fecha de lanzamiento: 9 de febrero de 2024, 03:33 pm
 
 Cambios Recientes
 v2.2.1
@@ -31,7 +38,7 @@ v2.1.1
 
 En esta nueva versión se siguio en el front de admin, principalmente en el sidebar que se encuentra en un 90%
 
-# Fecha de la última actualización: 29 de enero de 2024, 02:50 pm
+# Fecha de lanzamiento: 29 de enero de 2024, 02:50 pm
 
 Cambios Recientes
 v2.1.0

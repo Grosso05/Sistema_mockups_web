@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 2.3.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 2.4.0) desarrollada por: Brayan Grosso
+
+# Fecha de la última actualización: 14 de febrero de 2024, 11:35 am
+
+Cambios Recientes
+v2.4.0
+
+En esta nueva versión, se implemento la ruta para generar catalogo desde el lado de usuarios(tanto admin como usuario normal). Adicionalmente, se le incluyo la impresión del nombre y apellido del usuario que generó el catalogo, la fecha y hora y se espera incluir el email 
+
 
 # Fecha de la última actualización: 12 de febrero de 2024, 3:30 pm
 

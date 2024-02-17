@@ -1,7 +1,7 @@
 ## Generador de Catálogos Personalizados (Versión 2.4.2) desarrollada por: Brayan Grosso
 
 
-# Fecha de la última actualización: 14 de febrero de 2024, 02:40 pm
+# Fecha de la última actualización: 17 de febrero de 2024, 09:40 am
 
 Cambios Recientes
 v2.4.2
@@ -9,7 +9,7 @@ v2.4.2
 En esta versión se corrigio front, se trabajo en las versiones responsive, aún faltando algunas paginas.
 
 
-# Fecha de la última actualización: 14 de febrero de 2024, 02:40 pm
+# Fecha de lanzamiento: 14 de febrero de 2024, 02:40 pm
 
 Cambios Recientes
 v2.4.1

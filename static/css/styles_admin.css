@@ -1,19 +1,24 @@
 /* Estilos para el navbar, la barra lateral y el pie de página */
 .navbar {
-    background-color: #E6BF27;
+    background-color: #7BC9E2;
     width: 100%;
-    display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    position: fixed; /* Asegura que el navbar esté fijo en la parte superior */
+    padding: 20px;
+    position: relative; /* Asegura que el navbar esté fijo en la parte superior */
     z-index: 1; /* Asegura que el navbar esté por encima del contenido */
   }
   
-  
-
-
-
+  .footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #000000;
+    padding: 20px;
+    color: white;
+    z-index: 1;
+    text-align: center;
+  }
 
 img {
     vertical-align:middle;
@@ -31,6 +36,10 @@ img {
     grid-gap: 20px; /* Espacio entre el sidebar y el contenido */
   }
 
+  .collapsed {
+    width: 80px; /* Ancho contraído de la barra lateral */
+  }
+
   .sidebar {
     position: fixed;
     top: 0px; /* Altura del navbar */
@@ -43,6 +52,17 @@ img {
     overflow-y: auto;
     padding: 20px;
   }
+
+  .navbar_logout a {
+    position: absolute;
+    padding: 05px 10px;
+    background-color: #DC0070;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    bottom: 12%;
+    left: 25%;
+}
 
 .sidebar .list-unstyled li a {
     padding: 20px 1px;
@@ -94,8 +114,6 @@ img {
 }
 
 
-
-
 .inicio{
     margin-left: 26px;
     color: #c8c9ce;
@@ -109,19 +127,18 @@ img {
 
 
 .content {
-    margin-left: 250px;
+    margin-right: 10%;
     padding: 20px;
-    transition: margin-left 0.3s ease; /* Agrega una transición para suavizar el ajuste del margen */
+    margin-left: 20%;
     
 }
 
-  .footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background-color: #000000;
-    padding: 20px;
-    color: white;
-    z-index: 1;
-    text-align: center;
+
+
+
+  
+  /* Estilos para el menú hamburguesa */
+  .hamburger-menu {
+    display: block; /* Muestra el botón del menú hamburguesa */
+    /* Otros estilos para el botón del menú hamburguesa */
   }

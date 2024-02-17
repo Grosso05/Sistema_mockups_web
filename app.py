@@ -1,5 +1,5 @@
 from flask import Flask, request, redirect, url_for, send_file, render_template, session, flash
-import fitz  # PyMuPDF
+import fitz 
 from flask_login import LoginManager, login_required, current_user, login_user
 import smtplib
 from PyPDF2 import PdfReader, PdfWriter
@@ -80,9 +80,8 @@ def listar_usuarios():
     usuarios = Users.query.all()  # Obtener todos los usuarios de la base de datos
     return render_template('listar_usuarios.html', usuarios=usuarios)  # Renderizar la plantilla HTML con la lista de usuarios
 
+
 #ruta del formulario para crear usuarios
-
-
 @app.route('/crear_usuario', methods=['GET', 'POST'])
 def crear_usuario():
     if request.method == 'POST':
@@ -236,7 +235,7 @@ def add_watermark():
         return f"Error: {str(e)}"
 
 
-
+#ruta para el envio automatico de correos
 
 def enviar_correo(pdf_final_path, customer_email):
     # Configurar los detalles del correo electrónico
@@ -274,7 +273,7 @@ def enviar_correo(pdf_final_path, customer_email):
     return "Correo enviado con éxito"
 
 
-
+#ruta para generar catalogo del lado de los usuarios y admin
 
 @app.route('/agregar_logo_user', methods=['POST'])
 @login_required
@@ -324,7 +323,7 @@ def agregar_logo_user():
     except Exception as e:
         return f"Error: {str(e)}"
     
-
+#ruta para agregar el sello al pdf
 
 def agregar_fecha_hora_usuario_a_pdf(pdf_path):
 

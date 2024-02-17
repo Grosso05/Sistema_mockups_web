@@ -7,24 +7,23 @@
   padding: 0 20px; /* Ajusta el padding según tus necesidades */
   margin-top: 4px;
 }
-
+  
 .navbar_user h6 {
   color: #000 !important; /* Cambia el color del texto a negro */
 }
 
-.navbar_logout a {
-  display: inline-block;
-  padding: 05px 10px;
-  background-color: #007bff;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
-}
 
 .navbar_logout a:hover {
-  background-color: #0056b3;
+  background-color: #7BC9E2;
 }
+
+.menu-button {
+  position: absolute; /* Establecer posición absoluta para poder alinear a la derecha */
+  right: 20px; /* Alinear el botón de menú hamburguesa a la derecha con un margen de 20px */
+  top: 50%; /* Alinear verticalmente al centro */
+  transform: translateY(-50%); /* Alinear verticalmente al centro */
+}
+
 
   </style>
 
@@ -33,15 +32,17 @@
 
 <nav class="navbar navbar-light">
 
-
+  <nav>
+    <div class="navbar">
+      <div class="menu-button" onclick="toggleSidebar()">☰</div> <!-- Botón de menú hamburguesa -->
+    </div>
+  </nav>
 
   <div class="navbar_user">
     <h6>Bienvenido, {{ session['username'] }}</h6>
   </div>
 
-  <div class="navbar_logout">
-    <a href="{{ url_for('logout') }}">Cerrar sesión</a>
-  </div>
+
 
   <div class="collapse navbar-collapse" id="navbarNav">
   </div>
@@ -54,5 +55,12 @@ document.querySelector('.collapse-button').addEventListener('click', collapseSid
 
 // Evento para expandir el sidebar al hacer clic en un botón, por ejemplo
 document.querySelector('.expand-button').addEventListener('click', expandSidebar);
+
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  sidebar.style.display = (sidebar.style.display === 'none' || sidebar.style.display === '') ? 'block' : 'none';
+}
+
+
   </script>
 </footer>

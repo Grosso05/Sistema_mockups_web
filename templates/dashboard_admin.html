@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="esp">
+<html lang="eng">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,19 +30,7 @@
 const sidebar = document.querySelector('.sidebar');
 const content = document.querySelector('.content');
 
-// Función para contraer el sidebar
-function collapseSidebar() {
-  sidebar.classList.add('collapsed');
-  content.style.marginLeft = '80px'; // Ajusta el margen izquierdo del contenido
-  content.style.width = 'calc(100% - 80px)'; // Ajusta el ancho del contenido en función del ancho del sidebar contraído
-}
 
-// Función para expandir el sidebar
-function expandSidebar() {
-  sidebar.classList.remove('collapsed');
-  content.style.marginLeft = '250px'; // Restaura el margen izquierdo del contenido
-  content.style.width = 'calc(100% - 250px)'; // Restaura el ancho del contenido en función del ancho del sidebar expandido
-}
 
 
 </script>

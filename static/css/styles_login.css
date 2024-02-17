@@ -7,23 +7,21 @@ body {
     margin: 0;
     display: flex;
     align-items: center;
-    justify-content: right;
+    /* justify-content: right; */ /* Eliminar esta línea */
     color: #333;
 }
-
 img.logo{
     height: 100px;
 }
-
-
 .login-container {
-    height: auto;
+    width: 80%; /* Make the container less wide */
+    max-width: 400px; /* Set a maximum width for the container */
+    margin: 0 auto; /* Center the container on the page */
     padding: 40px;
-    background-color: #0a1b6b;
+    background-color: #000000;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     text-align: center;
-    margin-right: 120px;
 }
 
 .login-header h2 {
@@ -57,7 +55,7 @@ img.logo{
 }
 
 .form-group button {
-    background-color: #E3B93B;
+    background-color: #E4C008;
     color: #000000;
     padding: 12px;
     border: none;
@@ -67,7 +65,7 @@ img.logo{
 }
 
 .form-group button:hover {
-    background-color: #2980b9;
+    background-color: #ffffff;
 }
 
 .signup-link {
@@ -77,7 +75,7 @@ img.logo{
 }
 
 .signup-link a {
-    color: #3498db;
+    color: #ffffff;
     text-decoration: none;
 }
 
@@ -85,4 +83,29 @@ img.logo{
     text-decoration: underline;
 }
 
+.error-message {
+    background-color: #ffcccc; /* Color de fondo para resaltar el mensaje de error */
+    color: #cc0000; /* Color del texto */
+    padding: 10px; /* Espaciado interno para mayor claridad */
+    border: 1px solid #cc0000; /* Borde para resaltar el mensaje */
+    border-radius: 5px; /* Bordes redondeados */
+    margin-top: 10px; /* Margen superior para separación */
+    text-align: center; /* Alinear el texto al centro */
+    font-size: 16px; /* Tamaño de fuente */
+    font-weight: bold; /* Negrita para mayor énfasis */
+    box-shadow: 0 0 10px rgba(204, 0, 0, 0.5); /* Sombra para resaltar el mensaje */
+}
 
+
+@media (max-width: 768px) {
+    .login-container {
+        width: 90%; /* Adjust the width for smaller screens */
+    }
+}
+
+/* Additional media queries for smaller screens if needed */
+@media (max-width: 480px) {
+    .login-container {
+        width: 95%; /* Further adjust the width for very small screens */
+    }
+}

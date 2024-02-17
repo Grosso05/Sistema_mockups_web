@@ -74,6 +74,27 @@
     }
     input[type="submit"]:hover {
         background-color: #2782BA;
+
+
+        @media (max-width: 768px) {
+    .container {
+      max-width: 80%; /* Adjust the maximum width for smaller screens */
+    }
+  
+    .logo {
+      height: auto; /* Allow the logo to resize based on the width of the container */
+    }
+  
+    /* Adjust other styles as needed for smaller screens */
+  }
+  
+  /* Media query for even smaller screens */
+  @media (max-width: 480px) {
+    .container {
+      max-width: 90%; /* Further adjust the maximum width for even smaller screens */
+    }
+}
+
     }
   </style>
 </head>

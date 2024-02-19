@@ -1,5 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 2.4.2) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 2.5.0) desarrollada por: Brayan Grosso
 
+
+# Fecha de la última actualización: 19 de febrero de 2024, 11:30 am
+
+Cambios Recientes
+v2.5.0
+
+En esta nueva version se corrigieron los errores de front, las versiones responsive de todo el software. actualmente hay un error en la generacion de catalogos de usuario. se corregira en la siguiente actualizacion.
 
 # Fecha de la última actualización: 17 de febrero de 2024, 09:40 am
 

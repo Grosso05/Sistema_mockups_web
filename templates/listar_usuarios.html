@@ -16,7 +16,7 @@
 
         table {
             border-collapse: collapse;
-            width: 100%;
+            width: 90%;
         }
         th, td {
             border: 1px solid #b4aab3;
@@ -25,6 +25,9 @@
         }
         th {
             background-color: #7BC9E2;
+        }
+        button{
+            background-color:#d3d3d3;
         }
     </style>
 
@@ -35,6 +38,16 @@
     {% include 'navbar.html' %}
 
     {% include 'sidebar.html' %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+             {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 
 
             <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">

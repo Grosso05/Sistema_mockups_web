@@ -8,24 +8,42 @@
     <meta name="description" content="Descargue nuestro catálogo personalizado con su propio estilo. Cree su catálogo único con su logotipo y destaque sus productos.">
     <meta name="keywords" content="catálogo, personalizado, logotipo, productos, destacar, innova publicidad">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <style>
+                .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+    </style>
 </head>
 
 <nav>
     <ul>
       <li><a href="{{ url_for('login') }}">Acceso Innova</a></li>
     </ul>
-  </nav>
+</nav>
 
 <body>
 
 
-    {% if mensaje %}
-    <div class="alert alert-success">
-        {{ mensaje }}
-    </div>
-    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                 {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
     <div class="container">
         <header>
@@ -34,7 +52,7 @@
         </header>
 
         <section class="instructions">
-            <p>Con nuestro sencilla Herramienta, puede obtener nuestro catalogo personalizado para su empresa en 3 simples pasos:</p>
+            <p>Con nuestra sencilla herramienta, puede recibir en su correo electrónico un catálogo personalizado en tan solo 3 sencillos pasos:</p>
         </section>
 
         <form action="/add_watermark" method="post" enctype="multipart/form-data">
@@ -42,12 +60,11 @@
             </label>
             <input type="file" name="image_file" id="image_file" accept=".png" required><br>
 
-            <p>Paso 2: Ingrese el correo al cual será enviado el catalogo.</p>
 
-            <label for="customer_email">Ingrese su correo:</label>
+            <label for="customer_email">Paso 2: Ingrese su correo aqui:</label>
             <input type="email" name="customer_email" id="customer_email" required>
 
-            <p>Paso 3: Haga clic en "Generar Catálogo Personalizado" y este será enviado de inmediato.</p>
+            <p>Paso 3: Haga clic en "Generar Catálogo Personalizado" y este será enviado a su correo electrónico.</p>
 
             <input type="submit" value="Generar Catálogo Personalizado">
         </form>

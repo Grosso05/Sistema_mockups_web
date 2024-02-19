@@ -5,7 +5,6 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    position: relative; /* Asegura que el navbar esté fijo en la parte superior */
     z-index: 1; /* Asegura que el navbar esté por encima del contenido */
   }
   

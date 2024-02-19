@@ -9,16 +9,21 @@
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
   <style>
     .content {
-        margin-left: 250px;
-        margin-top: 140px;
+        margin-top: 10%;
+        margin-right: auto;
+        margin-bottom: 7px;
+        margin-left: 14%;
         padding: 20px;
+        text-align: center;
+        max-width: 80%; /* Cambiado a porcentaje para hacerlo adaptable */
+
     }
     .logo {
         max-width: 160px;
         margin-bottom: 10px;
     }
     h1 {
-        color: #2782BA;
+        color: rgb(0, 0, 0);
         font-size: 36px;
         margin-bottom: 20px;
         text-align: center;
@@ -75,6 +80,40 @@
     input[type="submit"]:hover {
         background-color: #2782BA;
     }
+
+    @media (max-width: 768px) {
+    .container {
+      max-width: 80%; /* Adjust the maximum width for smaller screens */
+    }
+  
+    .logo {
+      height: auto; /* Allow the logo to resize based on the width of the container */
+    }
+  
+    /* Adjust other styles as needed for smaller screens */
+  }
+  
+  /* Media query for even smaller screens */
+  @media (max-width: 768px) {
+    .container {
+      max-width: 80%; /* Adjust the maximum width for smaller screens */
+    }
+  
+    .logo {
+      height: auto; /* Allow the logo to resize based on the width of the container */
+    }
+  
+    /* Adjust other styles as needed for smaller screens */
+  }
+  
+  /* Media query for even smaller screens */
+  @media (max-width: 480px) {
+    .container {
+      max-width: 90%; /* Further adjust the maximum width for even smaller screens */
+    }
+}
+
+
   </style>
 </head>
 <body>
@@ -93,8 +132,8 @@
     <form action="/add_watermark" method="post" enctype="multipart/form-data">
         <label for="image_file">Paso 1: Seleccione el logotipo de la empresa:</label>
         <input type="file" name="image_file" id="image_file" accept=".png"><br>
-        <p>Paso 2: Haga clic en "Generar Catálogo Personalizado" para iniciar la descarga.</p>
-        <input type="submit" value="Generar Catálogo Personalizado">
+        <p>Paso 2: Haga clic en "Generar Catálogo" para iniciar la descarga.</p>
+        <input type="submit" value="Generar Catálogo">
     </form>
 </div>
 <!-- Footer -->

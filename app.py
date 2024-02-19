@@ -52,7 +52,8 @@ def load_user(user_id):
 #ruta principal (index), ruta para generar catalogo del lado del cliente
 @app.route('/')
 def index():
-    return render_template('index.html')
+    mensaje = request.args.get('mensaje', '')  # Obtener el mensaje de la URL
+    return render_template('index.html', mensaje=mensaje)
 
 #ruta para el dashboard de administrador
 @app.route('/admin')
@@ -97,6 +98,8 @@ def crear_usuario():
         # Agregar la nueva instancia a la sesión y hacer commit para guardarla en la base de datos
         db.session.add(new_user)
         db.session.commit()
+
+        flash('Usuario creado correctamente', 'success')
 
         return redirect(url_for('listar_usuarios'))  # Redirigir a la página principal después de registrar al usuario
 
@@ -227,9 +230,6 @@ def add_watermark():
          # Llamar a la función enviar_correo para enviar el PDF por correo
         enviar_correo(pdf_final_path, request.form['customer_email'])
 
-        # Después de enviar el correo electrónico con éxito, redirigir a la página "index" y mostrar un mensaje
-        flash('El correo se ha enviado correctamente', 'success')
-
         return redirect(url_for('index'))
     except Exception as e:
         return f"Error: {str(e)}"
@@ -270,7 +270,9 @@ def enviar_correo(pdf_final_path, customer_email):
         server.login(smtp_username, smtp_password)
         server.send_message(message)
 
-    return "Correo enviado con éxito"
+
+    flash('Catalogo enviado correctamente', 'success')
+    return redirect(url_for('index'))
 
 
 #ruta para generar catalogo del lado de los usuarios y admin

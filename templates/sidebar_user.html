@@ -2,18 +2,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <style>
-        .sidebar {
-            width: 250px; /* Ancho inicial de la barra lateral */
-            transition: width 0.5s; /* Agregar transición para un efecto suave al cambiar el ancho */
-        }
-        .collapsed {
-            width: 80px; /* Ancho contraído de la barra lateral */
-        }
+.sidebar {
+  width: 250px; /* Ancho inicial de la barra lateral */
+  transition: width 0.5s; /* Agregar transición para un efecto suave al cambiar el ancho */
+}
+
+.sidebar.active {
+  width: 0; /* Ocultar la barra lateral al cambiar el ancho a 0 */
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background-color: #DC0070;
+  color: #ffffff;
+  font-size: 20px;
+  text-align: center;
+  line-height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
     </style>
 
 </head>
 
 <div class="sidebar">
+
+    <div class="close-button" onclick="toggleSidebar()">X</div>
+
     <div class="logo">
         <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Your Logo" class="logo">
     </div>
@@ -37,11 +57,20 @@
                 <i class="fas fa-wrench"></i> <s>Futuros Modulos</s>
             </a>
         </li>
+
+        
+        <div class="navbar_logout">
+            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+          </div>
+
     </ul>
+
+    
+
 </div>
 <footer>
     <script>
-        function toggleDropdown(id) {
+function toggleDropdown(id) {
             var dropdown = document.getElementById(id);
             if (dropdown.style.display === "block") {
                 dropdown.style.display = "none";
@@ -50,12 +79,25 @@
             }
         }
 
-        function toggleSidebar() {
-            var sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle('collapsed'); // Alternar la clase 'collapsed' para cambiar el ancho
-        }
+        // Función para contraer el sidebar
+function collapseSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const content = document.querySelector('.content');
 
-        
+  sidebar.classList.add('collapsed');
+  content.style.marginLeft = '80px'; // Ajusta el margen izquierdo del contenido
+  content.style.width = 'calc(100% - 80px)'; // Ajusta el ancho del contenido en función del ancho del sidebar contraído
+}
+
+// Función para expandir el sidebar
+function expandSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const content = document.querySelector('.content');
+
+  sidebar.classList.remove('collapsed');
+  content.style.marginLeft = '250px'; // Restaura el margen izquierdo del contenido
+  content.style.width = 'calc(100% - 250px)'; // Restaura el ancho del contenido en función del ancho del sidebar expandido
+}
 
     </script>
 </footer>

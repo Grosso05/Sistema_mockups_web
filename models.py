@@ -44,10 +44,10 @@ def test_db_connection(app):
     with app.app_context():
         with db.engine.connect() as connection:
             try:
-                # Imprimir en consola el contenido de la tabla users
-                result = connection.execute(Users.query.statement)
-                for row in result.fetchall():
-                    print(row)
+                print("----------------------------------")
                 print("Conexión a la base de datos exitosa.")
+                print("----------------------------------")
             except Exception as e:
+                print("----------------------------------")
                 print(f"Error al conectar a la base de datos: {str(e)}")
+                print("----------------------------------")

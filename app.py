@@ -1,35 +1,27 @@
 from flask import Flask, request, redirect, url_for, send_file, render_template, session, flash
-import fitz 
-from flask_login import LoginManager, login_required, current_user, login_user
+from flask_login import LoginManager, login_required, login_user
 import smtplib
 from PyPDF2 import PdfReader, PdfWriter
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email import encoders
-import getpass
 from calculate import get_white_presence
 from set_logo import set_logo
 from datetime import datetime
 from random import choice
 import tempfile
 import os
+import bcrypt
 from reportlab.pdfgen import canvas
-from models import configure_db, test_db_connection, Users, UsersRol, db, Customers
-from flask_login import UserMixin
+from models import configure_db, test_db_connection, Users, db, Customers
 from datetime import datetime
-import PyPDF2
 import secrets
 from io import BytesIO
 from random import choice
-import io
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.colors import red
-from PyPDF2.generic import NameObject, createStringObject
-from PyPDF2 import PageObject
-from PyPDF2.generic import NameObject, createStringObject
-from PyPDF2 import PageObject
 from reportlab.lib import colors
+
 
 FIXED_PDF_FILE_PATH = "./Catalogo_white.pdf"
 ANOTHER_PDF_FILE_PATH = "./Catalogo_black.pdf"
@@ -92,8 +84,12 @@ def crear_usuario():
         user_password = request.form['user_password']
         user_rol = request.form['user_rol']  # Asegúrate de tener un campo en el formulario para el rol del usuario
 
+        # Encriptar la contraseña antes de guardarla en la base de datos
+        hashed_password = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
+    
+
         # Crear una instancia del modelo Users con los datos del formulario
-        new_user = Users(user_name=user_name, user_last_name=user_last_name, user_email=user_email, user_password=user_password, user_rol=user_rol)
+        new_user = Users(user_name=user_name, user_last_name=user_last_name, user_email=user_email, user_password=hashed_password, user_rol=user_rol)
 
         # Agregar la nueva instancia a la sesión y hacer commit para guardarla en la base de datos
         db.session.add(new_user)
@@ -136,20 +132,19 @@ def login():
         user_email = request.form.get('user_email')
         user_password = request.form.get('user_password')
 
-        # Verifica las credenciales del usuario
-        user = Users.query.filter_by(user_email=user_email, user_password=user_password).first()
+        # Busca al usuario por su correo electrónico
+        user = Users.query.filter_by(user_email=user_email).first()
 
-        if user:
+        if user and bcrypt.checkpw(user_password.encode('utf-8'), user.user_password.encode('utf-8')):
             login_user(user)  # Inicia sesión
             session['username'] = user.user_name
             session['userlastname'] = user.user_last_name
-            session['usermail']=user.user_email
+            session['usermail'] = user.user_email
+
             if user.user_rol == 1:
                 return redirect(url_for('admin'))  # Redirige al panel de administrador si el rol es 1
             elif user.user_rol == 2:
                 return redirect(url_for('user'))  # Redirige al panel de usuario si el rol es 2
-            else:
-                return redirect(url_for('index'))  # Redirige a otra página si el rol no es 1 ni 2
         else:
             # Credenciales inválidas, muestra un mensaje de error
             return render_template('login.html', error='Credenciales inválidas')
@@ -367,4 +362,4 @@ def agregar_fecha_hora_usuario_a_pdf(pdf_path):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)   
+    app.run(host='0.0.0.0', port=5000)

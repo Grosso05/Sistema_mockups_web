@@ -1,7 +1,15 @@
-## Generador de Catálogos Personalizados (Versión 2.5.1) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 2.6.0) desarrollada por: Brayan Grosso
 
 
-# Fecha de la última actualización: 19 de febrero de 2024, 11:51 am
+# Fecha de la última actualización: 20 de febrero de 2024, 02:30 pm
+
+Cambios Recientes
+v2.6.0
+
+En esta nueva version se agrego seguridad, manejando ahora las contraseñas encriptadas. 
+
+
+# Fecha de lanzamiento: 19 de febrero de 2024, 11:51 am
 
 Cambios Recientes
 v2.5.1

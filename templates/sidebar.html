@@ -46,7 +46,7 @@
     <hr class="sidebar-divider">
     <ul class="list-unstyled components">
         <li>
-            <a href="{{ url_for('admin') }}">
+            <a href="{{ url_for('routes.admin') }}">
                 <i class="fas fa-home"></i> Inicio
             </a>
         </li>
@@ -59,12 +59,12 @@
             </a>
             <ul id="sub-components-1" class="list-unstyled sub-components">
                 <li>
-                    <a href="{{ url_for('listar_usuarios') }}">
+                    <a href="{{ url_for('users.listar_usuarios') }}">
                         <i class="fas fa-eye"></i> Ver Usuarios
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('crear_usuario') }}">
+                    <a href="{{ url_for('users.crear_usuario') }}">
                         <i class="fas fa-user-plus"></i> Crear Usuario
                     </a>
                 </li>
@@ -73,7 +73,7 @@
         <li>
 
             <li>
-                <a href="{{ url_for('admin') }}">
+                <a href="{{ url_for('routes.admin') }}">
                     <i class="fas fa-handshake"></i> Gestionar Clientes
                 </a>
             </li>
@@ -82,13 +82,13 @@
             <h6> Apartado Principal </h6>
         </div>
         <li>
-            <a href="{{ url_for('generar_catalogo') }}">
+            <a href="{{ url_for('routes.generar_catalogo') }}">
                 <i class="fas fa-brush"></i> Generar Catalogo
             </a>
         </li>
 
         <div class="navbar_logout">
-            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+            <a href="{{ url_for('users.logout') }}">Cerrar sesión</a>
           </div>
 
     </ul>

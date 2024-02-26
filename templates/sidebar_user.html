@@ -40,7 +40,7 @@
     <hr class="sidebar-divider">
     <ul class="list-unstyled components">
         <li>
-            <a href="{{ url_for('user') }}">
+            <a href="{{ url_for('routes.user') }}">
                 <i class="fas fa-home"></i> Inicio
             </a>
         </li>
@@ -48,7 +48,7 @@
             <h6> Apartado Principal </h6>
         </div>
         <li>
-            <a href="{{ url_for('generar_catalogouser') }}">
+            <a href="{{ url_for('routes.generar_catalogouser') }}">
                 <i class="fas fa-brush"></i> Generar Catalogo
             </a>
         </li>
@@ -60,7 +60,7 @@
 
         
         <div class="navbar_logout">
-            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+            <a href="{{ url_for('users.logout') }}">Cerrar sesión</a>
           </div>
 
     </ul>

@@ -1,7 +1,15 @@
-## Generador de Catálogos Personalizados (Versión 2.6.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 3.0.0) desarrollada por: Brayan Grosso
 
 
-# Fecha de la última actualización: 20 de febrero de 2024, 02:30 pm
+# Fecha de la última actualización: 26 de febrero de 2024, 08:10 am
+
+Cambios Recientes
+v3.0.0
+
+En esta nueva version se modifico el archivo principal, separando toda la logica y usando el app unicamente para lanzarlo y llamar los blueprints
+
+
+# Fecha de lanzamiento: 20 de febrero de 2024, 02:30 pm
 
 Cambios Recientes
 v2.6.0
@@ -16,7 +24,7 @@ v2.5.1
 
 En este parche se corrigio el error en la generacion del catalogo de usuario.
 
-# Fecha de la última actualización: 19 de febrero de 2024, 11:30 am
+# Fecha de lanzamiento: 19 de febrero de 2024, 11:30 am
 
 Cambios Recientes
 v2.5.0

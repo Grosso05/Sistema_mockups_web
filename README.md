@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 3.0.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 3.1.0) desarrollada por: Brayan Grosso
+
+# Fecha de la última actualización: 01 de febrero de 2024, 11:20 am
+
+Cambios Recientes
+v3.1.0
+
+En esta nueva version se agregaron iconos, se modifico el usuario root de la bd y adicional se agrego un carrusel de fotos en la vista de admin y de user.
+
 
 
 # Fecha de la última actualización: 26 de febrero de 2024, 08:10 am

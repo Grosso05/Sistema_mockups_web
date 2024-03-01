@@ -19,11 +19,11 @@
     text-align: center;
   }
 
-img {
+.logo {
     vertical-align:middle;
     border-style: none;
     max-width: 160px;
-    margin-left:20px;
+    margin-left:10px;
 }
 
 .container {
@@ -126,18 +126,87 @@ img {
 
 
 .content {
+    margin-top: 1%;
     margin-right: 10%;
     padding: 20px;
     margin-left: 20%;
-    
+    background: linear-gradient(to bottom, #ffffff, #f2f2f2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 }
 
+h1 {
+    font-size: 2.0em; /* Aumenta el tamaño del título */
+    color: #333; /* Cambia el color del texto del título */
+    text-align: center; /* Centra el texto del título */
+    text-transform: uppercase; /* Convierte el texto del título a mayúsculas */
+    margin-bottom: 20px; /* Agrega espacio debajo del título */
+}
 
+.carrusel {
+    margin-top: 5%;
+    margin-right: 10%;
+    max-width: 100%;
+    max-height: 40%;
+    overflow: hidden;
+}
 
+.carrusel .car {
+    width: 100%;
+    max-height: 600px;
+    object-fit: cover;
+}
 
+.carrusel .car:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .carrusel {
+        width: 80%; /* Ajusta el ancho del carrusel al 80% del contenedor */
+        margin-top: 20%;
+        margin-left: 10%;
+
+    }
+
+    .carrusel .car {
+        width: 100%; /* Ajusta el ancho de las imágenes al 100% del carrusel */
+        height: 300px; /* Ajusta la altura de las imágenes para dispositivos móviles */
+        object-fit: cover;
+    }
+
+    h1 {
+        text-align: center;
+        margin-right: 10%;
+        text-transform: uppercase; /* Convierte el texto del título a mayúsculas */
+        margin-bottom: 20px; /* Agrega espacio debajo del título */
+    }
+
+    .content {
+        margin-top: 15%;
+        margin-right: 5%;
+        padding: 20px;
+        margin-left: 5%;
+        background: linear-gradient(to bottom, #ffffff, #f2f2f2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+
+    .navbar {
+        background-color: #7BC9E2;
+        width: 130%;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        z-index: 1; /* Asegura que el navbar esté por encima del contenido */
+      }
+
+}
   
   /* Estilos para el menú hamburguesa */
   .hamburger-menu {
     display: block; /* Muestra el botón del menú hamburguesa */
     /* Otros estilos para el botón del menú hamburguesa */
   }
+

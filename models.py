@@ -36,7 +36,7 @@ class Customers(db.Model):
 
 
 def configure_db(app):
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1/software_innova'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://AdminDb:M52eqEhiH3@127.0.0.1/software_innova'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 

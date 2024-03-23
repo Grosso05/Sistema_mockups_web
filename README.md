@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 3.1.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 4.0.0) desarrollada por: Brayan Grosso
+
+# Fecha de la última actualización: 23 de Marzo de 2024, 11:40 am
+
+Cambios Recientes
+v4.0.0
+
+En esta nueva version agregó el catalogo final con modificaciones, actualmente tiene todas las coordenadas necesarias y todo se encuentra funcional.
+
 
 # Fecha de la última actualización: 01 de febrero de 2024, 11:20 am
 

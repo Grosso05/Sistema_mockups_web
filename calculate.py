@@ -9,3 +9,4 @@ def get_white_presence(image_path):
     white_percentage = (np.sum(thresholded == 255) / thresholded.size) * 100
     print(f"El color blanco se encuentra en un : {white_percentage:.2f}%")
     return white_percentage
+    

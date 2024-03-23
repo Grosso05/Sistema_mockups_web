@@ -5,7 +5,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 import os
-import tempfile  # ¡Asegúrate de que esta línea esté presente!
+import tempfile
 
 def set_logo(image_temp_file, pdf_path, watermark_positions):
     output_buffer = BytesIO()
@@ -28,8 +28,8 @@ def set_logo(image_temp_file, pdf_path, watermark_positions):
                 img_reader,
                 0,
                 0,
-                width=position['width'],
-                height=position['height'],
+                width=position['width']* 72 / 2.54,
+                height=position['height']* 72 / 2.54,
                 mask='auto',
                 preserveAspectRatio=True
             )

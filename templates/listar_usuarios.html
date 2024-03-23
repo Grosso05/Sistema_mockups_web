@@ -11,23 +11,28 @@
     <style>
 
         h1{
+
             margin-top: 50px;
             margin-bottom: 20px;
         }
 
         table {
+            
             border-collapse: collapse;
             width: 90%;
         }
         th, td {
+            
             border: 1px solid #b4aab3;
             text-align: left;
             padding: 8px;
         }
         th {
+            
             background-color: #7BC9E2;
         }
         button{
+            
             background-color:#d3d3d3;
         }
     </style>
@@ -68,8 +73,8 @@
             <td>{{ usuario.user_last_name }}</td>
             <td>{{ usuario.user_email }}</td>
             <td>
-                <button onclick="editarUsuario({{ usuario.user_id }} )">Editar</button>
-                <button onclick="eliminarUsuario({{ usuario.user_id }})">Eliminar</button>
+                <button onclick="editarUsuario('{{ usuario.user_id }} ')">Editar</button>
+                <button onclick="eliminarUsuario('{{ usuario.user_id }}')">Eliminar</button>
             </td>
         </tr>
         {% endfor %}

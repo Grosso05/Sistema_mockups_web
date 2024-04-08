@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generando catalogo</title>
+    <meta name="description" content="Descargue nuestro catálogo personalizado con su propio estilo. Cree su catálogo único con su logotipo y destaque sus productos.">
+    <meta name="keywords" content="catálogo, personalizado, logotipo, productos, destacar, innova publicidad">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <style>
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+    </style>
+</head>
+
+
+<body>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                 {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        <header>
+            <img src="{{ url_for('static', filename='images/LOGO.gif') }}" alt="Your Logo" class="logo">
+            <h1>¡Estamos Generando su catalogo!</h1>
+        </header>
+
+        <section class="instructions">
+            <p>En un momento recibirá su catalogo en el correo registrado.</p>
+            <p>¡Gracias Por Usar Nuestros Servicios!</p>
+            <a href="{{ url_for('routes.index') }}">
+                 Volver al inicio
+            </a>
+        </section>
+
+    
+        <footer>
+            <p>© 2024 Todos los derechos reservados. INNOVA PUBLICIDAD VISUAL S.A.S</p>
+        </footer>
+    </div>
+</body>
+</html>

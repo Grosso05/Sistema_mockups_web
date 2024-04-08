@@ -100,3 +100,17 @@ def login():
 def logout():
     session.pop('username', None)
     return redirect(url_for('routes.index'))
+
+@users_blueprint.route('/generando_catalogod')
+def Generandod():
+    return render_template('generando_catalogod.html')
+
+@users_blueprint.route('/generando_catalogoc')
+def Generandoc():
+    return render_template('generando_catalogoc.html')
+
+@users_blueprint.route('/generando_catalogo_index')
+def Generando_catalogo_index():
+    return render_template('generando_catalogo_index.html')
+
+

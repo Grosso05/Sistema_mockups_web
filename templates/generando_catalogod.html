@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Descargando Catalogo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <style>
+    .content {
+
+        margin-top: 10%;
+        margin-right: auto;
+        margin-bottom: 7px;
+        margin-left: 16%;
+        padding: 20px;
+        text-align: center;
+        max-width: 80%; 
+
+    }   
+    .logo {
+
+        max-width: 160px;
+        margin-bottom: 10px;
+    }
+    h1 {
+
+        color: #000000;
+        font-size: 36px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    p {
+
+        color: #555;
+        font-size: 18px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .instructions {
+        
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    form {
+        
+        width: 90%;
+        max-width: 400px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    label {
+        
+        display: block;
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 18px;
+    }
+    input[type="file"] {
+        
+        width: calc(100% - 20px);
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 2px dashed #2782BA;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        color: #2782BA;
+        font-size: 18px;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.3s ease;
+    }
+    input[type="file"]:hover {
+        
+        border-color: #0056b3;
+    }
+    input[type="submit"] {
+        
+        width: 100%;
+        background-color: #7bc9e2;
+        color: #000000;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        transition: background-color 0.3s ease;
+        margin-bottom: 30%;
+    }
+    input[type="submit"]:hover {
+        
+        background-color: #2782BA;
+
+
+        @media (max-width: 768px) {
+    .container {
+      max-width: 80%; /* Adjust the maximum width for smaller screens */
+    }
+  
+    .logo {
+      height: auto; /* Allow the logo to resize based on the width of the container */
+    }
+
+    .content {
+        
+        margin-top: 10%;
+        margin-right: auto;
+        margin-bottom: 7px;
+        margin-left: 20%;
+        padding: 20px;
+        text-align: center;
+        max-width: 80%; /* Cambiado a porcentaje para hacerlo adaptable */
+
+    }
+  
+
+    /* Adjust other styles as needed for smaller screens */
+  }
+
+  
+    }
+
+/* Estilos para la barra de progreso */
+#progressBar {
+  width: 100%; /* Ancho completo */
+  height: 20px; /* Altura de la barra de progreso */
+  border: 1px solid #ccc; /* Borde de la barra de progreso */
+  border-radius: 5px; /* Bordes redondeados */
+}
+
+/* Estilo para el color de la barra de progreso */
+#progressBar::-webkit-progress-value {
+  background-color: #4CAF50; /* Color de fondo de la barra de progreso */
+}
+
+/* Estilo para el color del fondo de la barra de progreso */
+#progressBar::-webkit-progress-bar {
+  background-color: #f1f1f1; /* Color de fondo de la barra de progreso */
+}
+
+  </style>
+</head>
+<body>
+<!-- Navbar -->
+{% include 'navbar.html' %}
+<!-- Sidebar -->
+{% include 'sidebar.html' %}
+<!-- Content -->
+<div class="content">
+    <header>
+        <h1>El catalogo está siendo generado</h1>
+    </header>
+    <section class="instructions">
+        <p>La descarga iniciara de manera automatica</p>
+    </section>
+   
+        <!-- Agrega una barra de progreso -->
+<progress id="progressBar" value="0" max="100"></progress>
+
+    </form>
+</div>
+<!-- Footer -->
+{% include 'footer.html' %}
+<script>
+    // Agregar un evento 'submit' al formulario para capturar el inicio del proceso de generación del catálogo
+document.querySelector('form').addEventListener('submit', function() {
+    // Obtener la barra de progreso
+    var progressBar = document.getElementById('progressBar');
+
+    // Mostrar un mensaje de inicio de proceso
+    alert('El proceso de generación del catálogo ha comenzado. Por favor espere...');
+
+    // Simular un proceso de generación del catálogo
+    var progreso = 0;
+    var intervalo = setInterval(function() {
+        progreso += 10; // Simular un avance del 10% en cada iteración
+        progressBar.value = progreso; // Actualizar el valor de la barra de progreso
+
+        if (progreso >= 100) {
+            clearInterval(intervalo); // Detener la simulación cuando el progreso llegue al 100%
+            alert('El proceso de generación del catálogo ha sido completado');
+        }
+    }, 1000); // Simular un avance cada segundo (puedes ajustar este valor según el tiempo real que tome el proceso)
+});
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

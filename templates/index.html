@@ -74,5 +74,29 @@
         </footer>
     </div>
 </body>
+<script>
+    document.getElementById('catalogoForm').addEventListener('submit', function(event) {
+        // Evitar el envío del formulario por defecto
+        event.preventDefault();
+
+        // Redirigir al usuario a la otra página inmediatamente
+        window.location.href = '/generando_catalogo_index';
+
+        // Realizar la petición al servidor para el proceso normal en segundo plano
+        var formData = new FormData(this);
+        fetch('/add_watermark', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error('Error en la petición al servidor');
+            }
+        })
+        .catch(error => {
+            console.error('Error en la petición al servidor:', error);
+        });
+    });
+</script>
 
 </html>

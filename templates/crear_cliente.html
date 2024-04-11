@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/userplus.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <title>Crear Usuario</title>
+
+    <style>
+
+form {
+
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+ 
+    margin-top: 20px;
+    text-align: center;
+    color: #333;
+}
+
+label {
+ 
+    display: block;
+    margin-bottom: 8px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+input[type="submit"] {
+    background-color: #4bc9f1;
+    color: white;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+}
+
+input[type="submit"]:hover {
+    background-color: #2782BA;
+}
+
+/* Estilos adicionales para hacer el formulario responsivo en dispositivos móviles */
+@media (max-width: 600px) {
+    form {
+        padding: 10px;
+        margin-bottom: 100px; /* Aumentar el margen inferior en dispositivos móviles */
+    }
+}
+
+
+    </style>
+
+</head>
+<body>
+
+    
+
+
+    {% include 'navbar.html' %}
+
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+
+            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+                <h2>Crear Usuarios</h2>
+
+                <form method="POST" action="/crear_usuario">
+                    <label for="user_name">Nombre:</label>
+                    <input type="text" id="user_name" name="user_name" required><br><br>
+            
+                    <label for="user_last_name">Apellido:</label>
+                    <input type="text" id="user_last_name" name="user_last_name" required><br><br>
+            
+                    <label for="user_email">Correo Electrónico:</label>
+                    <input type="email" id="user_email" name="user_email" required><br><br>
+            
+                    <label for="user_password">Contraseña:</label>
+                    <input type="password" id="user_password" name="user_password" required><br><br>
+            
+                    <label for="user_rol">Rol:</label>
+                    <select id="user_rol" name="user_rol" required>
+                        <option value="1">Administrador</option>
+                        <option value="2">Usuario</option>
+                    </select><br><br>
+            
+                    <input type="submit" value="Registrar">
+                </form>     
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% include 'footer.html' %}
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

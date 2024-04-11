@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/userlist.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <title>Listado Clientes</title>
+
+    <style>
+        h1 {
+            margin-top: 50px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 90%;
+        }
+
+        th, td {
+            border: 1px solid #b4aab3;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #7BC9E2;
+        }
+
+        button {
+            background-color: #d3d3d3;
+        }
+    </style>
+
+</head>
+<body>
+
+{% include 'navbar.html' %}
+{% include 'sidebar.html' %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+    <h1>Lista de Clientes</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Fecha</th> 
+            <th>Asignado a</th>
+
+            <th>Estado</th> 
+            <th>Acciones</th>
+        </tr>
+        {% for cliente in clientes %}
+        <tr>
+            <td>{{ cliente.customer_id }}</td> 
+            <td>{{ cliente.customer_email }}</td> 
+            <td>{{ cliente.customer_date }}</td> 
+            <td>{{ cliente.user_rel.user_name }} {{ cliente.user_rel.user_last_name }}</td>
+            <td>{{ cliente.estado }}</td> 
+    <td>
+        {% if cliente.user_rel is none %}
+        <button onclick="contactarCliente('{{ cliente.customer_id }}')">Notificar Contacto</button>
+    {% else %}
+        <button disabled>Contactado</button>
+    {% endif %}
+        <button onclick="eliminarCliente('{{ cliente.customer_id }}')">Eliminar</button>
+    </td>
+        </tr>
+        {% endfor %}
+    </table>
+</main>
+
+{% include 'footer.html' %}
+
+<script>
+    function eliminarCliente(customerId) {
+        if (confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
+            fetch('/delete_customer/' + customerId, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    console.error('Error al eliminar el cliente');
+                }
+            })
+            .catch(error => {
+                console.error('Error al eliminar el cliente:', error);
+            });
+        }
+    }
+
+    function contactarCliente(customerId) {
+    fetch('/contactar_cliente/' + customerId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({}),
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            console.error('Error al contactar al cliente');
+        }
+    })
+    .catch(error => {
+        console.error('Error al contactar al cliente:', error);
+    });
+}
+</script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generar Catalogo</title>
+  <title>Generar Catalogo - Administrador </title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
@@ -121,23 +121,7 @@
   
     }
 
-/* Estilos para la barra de progreso */
-#progressBar {
-  width: 100%; /* Ancho completo */
-  height: 20px; /* Altura de la barra de progreso */
-  border: 1px solid #ccc; /* Borde de la barra de progreso */
-  border-radius: 5px; /* Bordes redondeados */
-}
 
-/* Estilo para el color de la barra de progreso */
-#progressBar::-webkit-progress-value {
-  background-color: #4CAF50; /* Color de fondo de la barra de progreso */
-}
-
-/* Estilo para el color del fondo de la barra de progreso */
-#progressBar::-webkit-progress-bar {
-  background-color: #f1f1f1; /* Color de fondo de la barra de progreso */
-}
 
   </style>
 </head>
@@ -154,42 +138,27 @@
     <section class="instructions">
         <p>Personalice nuestro catálogo con el logotipo de las empresas en solo 2 pasos:</p>
     </section>
-    <form action="/agregar_logo_user" method="post" enctype="multipart/form-data">
+    <form id="Formulario" action="/agregar_logo_user" method="post" enctype="multipart/form-data">
         <label for="image_file">Paso 1: Seleccione el logotipo de la empresa:</label>
         <input type="file" name="image_file" id="image_file" accept=".png" required><br>
 
         <p>Paso 2: Haga clic en "Generar Catálogo" para iniciar la descarga.</p>
-        <input type="submit" value="Generar Catálogo">
+        <input id="submitButton" type="submit" value="Generar Catálogo">
 
-        <!-- Agrega una barra de progreso -->
-<progress id="progressBar" value="0" max="100"></progress>
 
     </form>
 </div>
 <!-- Footer -->
 {% include 'footer.html' %}
 <script>
-    // Agregar un evento 'submit' al formulario para capturar el inicio del proceso de generación del catálogo
-document.querySelector('form').addEventListener('submit', function() {
-    // Obtener la barra de progreso
-    var progressBar = document.getElementById('progressBar');
-
-    // Mostrar un mensaje de inicio de proceso
-    alert('El proceso de generación del catálogo ha comenzado. Por favor espere...');
-
-    // Simular un proceso de generación del catálogo
-    var progreso = 0;
-    var intervalo = setInterval(function() {
-        progreso += 10; // Simular un avance del 10% en cada iteración
-        progressBar.value = progreso; // Actualizar el valor de la barra de progreso
-
-        if (progreso >= 100) {
-            clearInterval(intervalo); // Detener la simulación cuando el progreso llegue al 100%
-            alert('El proceso de generación del catálogo ha sido completado');
-        }
-    }, 1000); // Simular un avance cada segundo (puedes ajustar este valor según el tiempo real que tome el proceso)
-});
-</script>
+    document.getElementById('Formulario').addEventListener('submit', function() {
+        // Deshabilitar el botón de enviar una vez que se envíe el formulario
+        //document.getElementById('submitButton').disabled = true;
+        // O puedes ocultar el botón para que no sea visible
+      document.getElementById('submitButton').style.display = 'none';
+      alert("Generando Catalogo");
+    });
+  </script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

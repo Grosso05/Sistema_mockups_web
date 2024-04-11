@@ -49,6 +49,9 @@
         <div class="sidebar-header">
             <h6> Apartado de Gestiones </h6>
         </div>
+
+
+        
         <li class="dropdown">
             <a  class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
                 <i class="fas fa-users"></i> Gestion de Usuarios
@@ -65,6 +68,11 @@
                     </a>
                 </li>
             </ul>
+        </li>
+        <li>
+            <a href="{{ url_for('customers.listar_clientes') }}">
+                <i class="fas fa-handshake"></i> Gestion de Clientes
+            </a>
         </li>
         <li>
         </li>

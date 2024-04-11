@@ -47,6 +47,13 @@
         <div class="sidebar-header">
             <h6> Apartado Principal </h6>
         </div>
+
+        <li>
+            <a href="{{ url_for('customers.listar_clientes_v') }}">
+                <i class="fas fa-handshake"></i> Ver Clientes
+            </a>
+        </li>
+
         <li>
             <a href="{{ url_for('routes.generar_catalogouser') }}">
                 <i class="fas fa-brush"></i> Generar Catalogo

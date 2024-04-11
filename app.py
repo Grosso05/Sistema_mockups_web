@@ -5,8 +5,11 @@ import secrets
 from users import users_blueprint
 from routes import routes_blueprint
 from logos import logos_blueprint
-
-
+from functools import wraps
+from flask import redirect, url_for, abort
+from flask_login import current_user
+from utils import roles_required
+from customers import customers_blueprint
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = secrets.token_hex(24)
@@ -22,12 +25,10 @@ test_db_connection(app)
 def load_user(user_id):
     return db.session.get(Users, int(user_id))
 
-
+app.register_blueprint(customers_blueprint)
 app.register_blueprint(routes_blueprint)
 app.register_blueprint(users_blueprint)
 app.register_blueprint(logos_blueprint)
-
-  
 
 
 if __name__ == '__main__':

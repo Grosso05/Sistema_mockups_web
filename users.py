@@ -2,10 +2,12 @@ from flask import Blueprint, render_template, request, redirect, url_for,flash,s
 from flask_login import login_required, login_user
 from models import Users, db  # Importa las clases de modelos y la configuración de la base de datos
 import bcrypt
-
+from utils import roles_required
 users_blueprint = Blueprint('users', __name__)
 
 @users_blueprint.route('/users.listar_usuarios', methods=['DELETE','GET', 'POST'])
+@login_required
+@roles_required(1)
 def listar_usuarios():
     usuarios = Users.query.all()  # Obtener todos los usuarios de la base de datos
     return render_template('listar_usuarios.html', usuarios=usuarios)  # Renderizar la plantilla HTML con la lista de usuarios
@@ -13,6 +15,8 @@ def listar_usuarios():
 
 #ruta del formulario para crear usuarios
 @users_blueprint.route('/crear_usuario', methods=['GET', 'POST'])
+@login_required
+@roles_required(1)
 def crear_usuario():
     if request.method == 'POST':
         user_name = request.form['user_name']
@@ -41,6 +45,8 @@ def crear_usuario():
 #ruta para editar el formulario de usuarios
 
 @users_blueprint.route('/editar_usuario/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+@roles_required(1)
 def editar_usuario(user_id):
     user = Users.query.get(user_id)
     if request.method == 'POST':
@@ -62,11 +68,15 @@ def editar_usuario(user_id):
 
 #ruta para eliminar usuarios
 @users_blueprint.route('/delete_user/<int:user_id>', methods=['DELETE'])
+@login_required
+@roles_required(1)
 def delete_user(user_id):
     user = Users.query.get(user_id)
     db.session.delete(user)
     db.session.commit()
     return redirect(url_for('users.listar_usuarios'))
+
+
 
 #ruta para el inicio de sesion
 @users_blueprint.route('/login', methods=['GET', 'POST'])
@@ -102,14 +112,17 @@ def logout():
     return redirect(url_for('routes.index'))
 
 @users_blueprint.route('/generando_catalogod')
+
 def Generandod():
     return render_template('generando_catalogod.html')
 
 @users_blueprint.route('/generando_catalogoc')
+
 def Generandoc():
     return render_template('generando_catalogoc.html')
 
 @users_blueprint.route('/generando_catalogo_index')
+
 def Generando_catalogo_index():
     return render_template('generando_catalogo_index.html')
 

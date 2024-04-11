@@ -8,6 +8,8 @@ from io import BytesIO
 import os
 from random import choice
 import smtplib
+from smtplib import SMTP_SSL
+
 import tempfile
 from reportlab.pdfgen import canvas
 from flask import Blueprint, flash, redirect, request, send_file, url_for,session
@@ -31,6 +33,7 @@ ANOTHER_PDF_FILE_PATH = "./Catalogo_black.pdf"
 
 #funcion para ubicar el logo
 @logos_blueprint.route('/add_watermark', methods=['POST'])
+
 def add_watermark():
     try: 
         if 'image_file' not in request.files:
@@ -328,7 +331,7 @@ def comprimir_pdf(pdf_path, output_path):
 
 def enviar_correo(pdf_final_path, customer_email):
     # Configurar los detalles del correo electrónico
-    sender_email = 'brayangrosso05@gmail.com'  
+    sender_email = 'info@innovapublicidad.com.co'  
     receiver_email = customer_email
     subject = 'Catalogo Innova'
     body = MIMEText('Reciba un Cordial saludo por parte de Innova Publicidad Visual. Adjunto encontrará nuestro catalogo, esperamos que sea de su agrado.', 'plain', 'utf-8')
@@ -349,12 +352,12 @@ def enviar_correo(pdf_final_path, customer_email):
     message.attach(part)
 
     # Enviar el correo electrónico a través de un servidor SMTP
-    smtp_server = 'smtp.gmail.com'
-    smtp_port = 587
-    smtp_username = 'brayangrosso05@gmail.com'  # Reemplazar con tu dirección de correo electrónico
-    smtp_password = 'cubk rhdg yspy dvzz'  # Reemplazar con tu contraseña de correo electrónico
+    smtp_server = 'mail.innovapublicidad.com.co'
+    smtp_port = 465
+    smtp_username = 'info@innovapublicidad.com.co'  # Reemplazar con tu dirección de correo electrónico
+    smtp_password = '}zWoI1si;+/£%79'  # Reemplazar con tu contraseña de correo electrónico
 
-    with smtplib.SMTP(smtp_server, smtp_port) as server:
+    with SMTP_SSL(smtp_server, smtp_port) as server:
         server.starttls()
         server.login(smtp_username, smtp_password)
         server.send_message(message)
@@ -362,6 +365,7 @@ def enviar_correo(pdf_final_path, customer_email):
 
     flash('Catalogo enviado correctamente', 'success')
     return redirect(url_for('routes.index'))
+
 
 #ruta para generar catalogo del lado de los usuarios y admin
 
@@ -624,7 +628,7 @@ def agregar_logo_user():
         def compress_pdf(output_buffer_final):
             input_pdf = fitz.open("pdf", output_buffer_final)
             output_buffer_compressed = io.BytesIO()
-
+#
             # Comprimir el PDF con PyMuPDF
             input_pdf.save(output_buffer_compressed, deflate=True)
 
@@ -660,11 +664,11 @@ def agregar_fecha_hora_usuario_a_pdf(pdf_path):
     fecha_hora_text = f"Fecha y hora: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
     email_text=f"Correo: {user_email}"
     can.setFillColor(colors.black)  # Set text color to white
-    can.setFont("Helvetica", 8)  # Set font size
+    can.setFont("Helvetica", 7)  # Set font size
     
-    can.drawString(245, 70, usuario_text)
-    can.drawString(250, 60, fecha_hora_text)
-    can.drawString(255, 50, email_text)
+    can.drawString(355, 25, usuario_text)
+    can.drawString(350, 15, fecha_hora_text)
+    can.drawString(358, 5, email_text)
     can.save()
 
     # move to the beginning of the StringIO buffer

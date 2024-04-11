@@ -1,5 +1,15 @@
 ## Generador de Catálogos Personalizados (Versión 4.0.0) desarrollada por: Brayan Grosso
 
+
+# Fecha de lanzamiento: 08 de Abril de 2024, 02:10 pm
+
+Cambios Recientes
+v4.1.0
+
+En esta actualización se agrego una funcion para comprimir el pdf final, adicional se le bajo peso al pdf vacio, permitiendo que pase facilmente por correo.
+
+
+
 # Fecha de la última actualización: 23 de Marzo de 2024, 11:40 am
 
 Cambios Recientes

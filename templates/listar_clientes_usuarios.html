@@ -59,7 +59,6 @@
             <th>Fecha</th> 
          <th>Asignado a</th>
             <th>Estado</th>  
-            <th>Acciones</th>
         </tr>
         {% for cliente in clientes %}
         <tr>
@@ -67,15 +66,13 @@
             <td>{{ cliente.customer_email }}</td> 
             <td>{{ cliente.customer_date }}</td> 
             <td>{{ cliente.user_rel.user_name }} {{ cliente.user_rel.user_last_name }}</td>
-            <td>{{ cliente.estado }}</td> 
-    <td>
-        {% if cliente.user_rel is none %}
-        <button onclick="contactarCliente('{{ cliente.customer_id }}')">Notificar Contacto</button>
-    {% else %}
-        <button disabled>Contactado</button>
-    {% endif %}
-
-    </td>
+            <td id="estado-{{ cliente.customer_id }}">
+                {% if cliente.contactado %}
+                    Catalogo Enviado
+                {% else %}
+                    Sin Contactar
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>

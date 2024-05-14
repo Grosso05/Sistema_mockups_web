@@ -50,37 +50,43 @@
     {% endif %}
 {% endwith %}
 
-<main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
-    <h1>Lista de Clientes</h1>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Email</th>
-            <th>Fecha</th> 
-            <th>Asignado a</th>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% endwith %}
 
-            <th>Estado</th> 
-            <th>Acciones</th>
-        </tr>
-        {% for cliente in clientes %}
-        <tr>
-            <td>{{ cliente.customer_id }}</td> 
-            <td>{{ cliente.customer_email }}</td> 
-            <td>{{ cliente.customer_date }}</td> 
-            <td>{{ cliente.user_rel.user_name }} {{ cliente.user_rel.user_last_name }}</td>
-            <td>{{ cliente.estado }}</td> 
-    <td>
-        {% if cliente.user_rel is none %}
-        <button onclick="contactarCliente('{{ cliente.customer_id }}')">Notificar Contacto</button>
-    {% else %}
-        <button disabled>Contactado</button>
-    {% endif %}
-        <button onclick="eliminarCliente('{{ cliente.customer_id }}')">Eliminar</button>
-    </td>
-        </tr>
-        {% endfor %}
-    </table>
+<main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+  <h1>Lista de Clientes</h1>
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Email</th>
+      <th>Fecha</th>
+      <th>Asignado a</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+    {% for cliente in clientes %}
+      <tr>
+        <td>{{ cliente.customer_id }}</td>
+        <td>{{ cliente.customer_email }}</td>
+        <td>{{ cliente.customer_date }}</td>
+        <td>{{ cliente.user_rel.user_name }} {{ cliente.user_rel.user_last_name }}</td>
+        <td id="estado-{{ cliente.customer_id }}">
+            {% if cliente.contactado %}
+                Catalogo Enviado
+            {% else %}
+                Sin Contactar
+            {% endif %}
+        </td>
+        
+        <td>
+              
+          <button onclick="eliminarCliente('{{ cliente.customer_id }}')">Eliminar</button>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
 </main>
+
 
 {% include 'footer.html' %}
 
@@ -102,27 +108,9 @@
             });
         }
     }
-
-    function contactarCliente(customerId) {
-    fetch('/contactar_cliente/' + customerId, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({}),
-    })
-    .then(response => {
-        if (response.ok) {
-            location.reload();
-        } else {
-            console.error('Error al contactar al cliente');
-        }
-    })
-    .catch(error => {
-        console.error('Error al contactar al cliente:', error);
-    });
-}
+    
 </script>
+
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>

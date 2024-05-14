@@ -29,7 +29,7 @@ class Customers(db.Model):
     customer_date = db.Column(db.Date, nullable=False)
     user = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
     user_rel = db.relationship('Users', backref='customers', lazy=True)
-    estado=db.Column(db.String(20),nullable=True)
+    contactado = db.Column(db.Boolean, default=False, server_default=text('0'))  
 
 def configure_db(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://AdminDb:M52eqEhiH3@127.0.0.1/software_innova'
@@ -47,3 +47,4 @@ def test_db_connection(app):
                 print("----------------------------------")
                 print(f"Error al conectar a la base de datos: {str(e)}")
                 print("----------------------------------")
+

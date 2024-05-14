@@ -9,7 +9,6 @@ import os
 from random import choice
 import smtplib
 from smtplib import SMTP_SSL
-
 import tempfile
 from reportlab.pdfgen import canvas
 from flask import Blueprint, flash, redirect, request, send_file, url_for,session
@@ -330,18 +329,24 @@ def comprimir_pdf(pdf_path, output_path):
 #ruta para el envio automatico de correos
 
 def enviar_correo(pdf_final_path, customer_email):
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.base import MIMEBase
+    from email import encoders
+    from smtplib import SMTP
+
     # Configurar los detalles del correo electrónico
-    sender_email = 'info@innovapublicidad.com.co'  
+    sender_email = 'info@innovapublicidad.com.co'
     receiver_email = customer_email
     subject = 'Catalogo Innova'
-    body = MIMEText('Reciba un Cordial saludo por parte de Innova Publicidad Visual. Adjunto encontrará nuestro catalogo, esperamos que sea de su agrado.', 'plain', 'utf-8')
+    body = MIMEText('Reciba un Cordial saludo por parte de Innova Publicidad Visual. Adjunto encontrará nuestro catálogo, agradecemos su interés y esperamos poder atenderlo pronto.', 'plain', 'utf-8')
 
     # Crear el mensaje
     message = MIMEMultipart()
     message['From'] = sender_email
     message['To'] = receiver_email
     message['Subject'] = subject
-    message.attach(body)  
+    message.attach(body)
 
     # Adjuntar el archivo PDF al mensaje
     with open(pdf_final_path, 'rb') as attachment:
@@ -353,18 +358,22 @@ def enviar_correo(pdf_final_path, customer_email):
 
     # Enviar el correo electrónico a través de un servidor SMTP
     smtp_server = 'mail.innovapublicidad.com.co'
-    smtp_port = 465
-    smtp_username = 'info@innovapublicidad.com.co'  # Reemplazar con tu dirección de correo electrónico
-    smtp_password = '}zWoI1si;+/£%79'  # Reemplazar con tu contraseña de correo electrónico
+    smtp_port = 587
+    smtp_username = 'info@innovapublicidad.com.co'
+    smtp_password = 'R5LyN3EFayWx%DYxED&!RY'
 
-    with SMTP_SSL(smtp_server, smtp_port) as server:
-        server.starttls()
-        server.login(smtp_username, smtp_password)
-        server.send_message(message)
+    try:
+        with SMTP(smtp_server, smtp_port) as server:
+            server.starttls()  # Activar STARTTLS
+            server.login(smtp_username, smtp_password)
+            server.send_message(message)
+        flash('Correo enviado correctamente', 'success')
+    except Exception as e:
+        flash(f'Error al enviar el correo electrónico: {str(e)}', 'error')
 
-
-    flash('Catalogo enviado correctamente', 'success')
     return redirect(url_for('routes.index'))
+
+
 
 
 #ruta para generar catalogo del lado de los usuarios y admin

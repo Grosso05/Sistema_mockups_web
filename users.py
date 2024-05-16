@@ -93,6 +93,7 @@ def login():
             session['username'] = user.user_name
             session['userlastname'] = user.user_last_name
             session['usermail'] = user.user_email
+            session['userlink']= user.user_link
 
             if user.user_rol == 1:
                 return redirect(url_for('routes.admin'))  # Redirige al panel de administrador si el rol es 1

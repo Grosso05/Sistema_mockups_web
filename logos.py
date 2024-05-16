@@ -1,3 +1,4 @@
+from email.mime.image import MIMEImage
 from reportlab.lib.pagesizes import letter
 import datetime
 from email import encoders
@@ -8,7 +9,7 @@ from io import BytesIO
 import os
 from random import choice
 import smtplib
-from smtplib import SMTP_SSL
+from smtplib import SMTP, SMTP_SSL
 import tempfile
 from reportlab.pdfgen import canvas
 from flask import Blueprint, flash, redirect, request, send_file, url_for,session
@@ -16,6 +17,7 @@ from flask_login import login_required
 from PyPDF2 import PdfReader, PdfWriter
 from calculate import get_white_presence
 from models import Customers, Users, db
+from routes import user
 from set_logo import set_logo
 from reportlab.lib import colors
 import PyPDF2
@@ -279,42 +281,67 @@ def add_watermark():
 
         pdf_final_path = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False).name
         output_buffer = set_logo(image_temp_file, pdf_path, watermark_positions)  # Genera el PDF final
+        print("pdf generado")
         with open(pdf_final_path, 'wb') as f:
             f.write(output_buffer.getvalue())
 
         # Comprimir el PDF
         pdf_final_path_comprimido = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False).name
         comprimir_pdf(pdf_final_path, pdf_final_path_comprimido)
+        print("pdf comprimido")
         
 
         image_temp_file.close()
         os.remove(image_temp_file.name)
 
 
-# Obtener una lista de usuarios con rol 2
-        eligible_users = Users.query.filter_by(user_rol=2).all()
+        # Obtener solo los IDs de los usuarios con rol 2
+        eligible_user_ids = [user.user_id for user in Users.query.filter_by(user_rol=2).all()]
 
-        # Seleccionar aleatoriamente un usuario de la lista
-        selected_user = choice(eligible_users)
+        # Seleccionar aleatoriamente un ID de usuario
+        selected_user_id = choice(eligible_user_ids)
+
+        # Obtener el objeto de usuario completo utilizando el ID seleccionado
+        selected_user = Users.query.get(selected_user_id)
+
+        print(f"usuario elegido {selected_user}")
 
         # Obtener el correo electrónico del formulario
         customer_email = request.form['customer_email']
+        print(f"correo del cliente: {customer_email}")
 
         # Obtener la fecha actual
         current_date = datetime.datetime.now()
 
         # Crear una nueva instancia de Customers
         new_customer = Customers(
-        customer_email=customer_email,
-        customer_date=current_date,
-        user=selected_user.user_id  # Asignar el usuario seleccionado al cliente
-)
+            customer_email=customer_email,
+            customer_date=current_date,
+            user=selected_user.user_id  # Asignar el usuario seleccionado al cliente
+        )
 
         db.session.add(new_customer)
         db.session.commit()
 
-         # Llamar a la función enviar_correo para enviar el PDF por correo
-        enviar_correo(pdf_final_path_comprimido, request.form['customer_email'])
+        print("cliente creado")
+       # Acceder al correo electrónico del usuario seleccionado
+        selected_user_email = selected_user.user_email
+        print("Correo del usuario seleccionadoo:", selected_user_email)
+
+        selected_user_name = selected_user.user_name
+        selected_user_last_name = selected_user.user_last_name
+        # Llamar a la función enviar_correo para enviar el PDF por correo
+        enviar_correo(pdf_final_path_comprimido, request.form['customer_email'], selected_user_email,selected_user_name,selected_user_last_name)
+        print("Correo del cliente obtenido:", request.form['customer_email'])
+        print("Correo del usuario seleccionado:", selected_user_email)
+
+        # Llamar a la función enviar_correo para enviar el PDF por correo
+        print("Antes de llamar a enviar_correo")
+        enviar_correo(pdf_final_path_comprimido, request.form['customer_email'], selected_user.email)
+        print("Después de llamar a enviar_correo")
+        print("Correo del cliente:", request.form['customer_email'])
+        print("Correo del usuario seleccionado:", selected_user.email)
+
 
         return redirect(url_for('routes.index'))
     except Exception as e:
@@ -328,25 +355,90 @@ def comprimir_pdf(pdf_path, output_path):
 
 #ruta para el envio automatico de correos
 
-def enviar_correo(pdf_final_path, customer_email):
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-    from email.mime.base import MIMEBase
-    from email import encoders
-    from smtplib import SMTP
+def enviar_correo(pdf_final_path, customer_email, user_email,user_name,user_last_name):
 
+    print("Iniciado enviar_correo")
     # Configurar los detalles del correo electrónico
     sender_email = 'info@innovapublicidad.com.co'
-    receiver_email = customer_email
-    subject = 'Catalogo Innova'
-    body = MIMEText('Reciba un Cordial saludo por parte de Innova Publicidad Visual. Adjunto encontrará nuestro catálogo, agradecemos su interés y esperamos poder atenderlo pronto.', 'plain', 'utf-8')
+    receiver_emails = [customer_email, user_email]
+    subject = 'Catálogo Innova'
+    body_paragraphs = [
+        "Reciba un cordial saludo por parte de Innova Publicidad Visual S.A.S.\n",
+        "Adjunto encontrará nuestro catálogo personalizado con su logo suministrado.\n",
+        f"Agradecemos su interés, y esperamos generar pronto un contacto con usted. \n",
+        "\n",
+        "Nota: Este correo se envía automáticamente y con su previa autorización. Lo invitamos a no responderlo, y en caso de consultas realizarlas a su asesor asignado.\n"
+    ]
+
+    body_text = "\n\n".join(body_paragraphs)
 
     # Crear el mensaje
     message = MIMEMultipart()
     message['From'] = sender_email
-    message['To'] = receiver_email
+    message['To'] = ', '.join(receiver_emails)
     message['Subject'] = subject
-    message.attach(body)
+
+    # Crear el cuerpo del mensaje en formato HTML
+    body_html = """
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background-color: #f2f2f2;
+                margin: 0;
+                padding: 20px;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #fff;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }}
+            .content {{
+                padding-bottom: 50px; /* Espacio para el pie de página */
+            }}
+            .footer {{
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background-color: #ccc;
+                padding: 10px 20px;
+                text-align: center;
+                font-size: 12px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="content">
+                <p>Reciba un cordial saludo por parte de Innova Publicidad Visual S.A.S.</p>
+                <p>Adjunto encontrará nuestro catálogo personalizado con su logo suministrado.</p>
+                <p>Agradecemos su interés, y esperamos generar pronto un contacto con usted.</p>
+                <p></p>
+                <p>Nota: Este correo se envía automáticamente. Lo invitamos a comunicarse con nosotros por los medios indicados</p>
+            </div>
+            <div class="footer">
+                <img src="cid:image1" style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+    </body>
+    </html>
+    """.format("\n".join(body_paragraphs))
+
+    # Adjuntar el texto del cuerpo del mensaje
+    message.attach(MIMEText(body_html, 'html'))
+
+    # Adjuntar la imagen como parte del mensaje
+    image_path = 'static/images/FIRMA_CORREO.png'  # Ruta de la imagen en tu sistema
+    with open(image_path, 'rb') as img_file:
+        img = MIMEImage(img_file.read())
+    img.add_header('Content-Disposition', 'inline', filename='pie_de_pagina.png')
+    img.add_header('Content-ID', '<image1>')
+    message.attach(img)
 
     # Adjuntar el archivo PDF al mensaje
     with open(pdf_final_path, 'rb') as attachment:
@@ -372,6 +464,7 @@ def enviar_correo(pdf_final_path, customer_email):
         flash(f'Error al enviar el correo electrónico: {str(e)}', 'error')
 
     return redirect(url_for('routes.index'))
+
 
 
 
@@ -659,30 +752,42 @@ def agregar_logo_user():
 #ruta para agregar el sello al pdf
 
 def agregar_fecha_hora_usuario_a_pdf(pdf_path):
-
     output_buffer = BytesIO()
     packet = BytesIO()
 
     # create a new PDF with Reportlab   
     can = canvas.Canvas(packet, pagesize=letter)
     
-    username = session['username']
-    user_last_name = session['userlastname']
-    user_email=session['usermail']
-    usuario_text = f"Generado por: {username} {user_last_name}"  # Agregar tanto el nombre de usuario como el apellido
-    fecha_hora_text = f"Fecha y hora: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
-    email_text=f"Correo: {user_email}"
-    can.setFillColor(colors.black)  # Set text color to white
-    can.setFont("Helvetica", 7)  # Set font size
+    username = session.get('username')
+    user_last_name = session.get('userlastname')
+    user_email = session.get('usermail')
+    user_link = session.get('userlink')
+
     
-    can.drawString(355, 25, usuario_text)
-    can.drawString(350, 15, fecha_hora_text)
-    can.drawString(358, 5, email_text)
+    if username and user_last_name and user_email and user_link:
+        usuario_text = f"Generado por: {username} {user_last_name}"
+        fecha_hora_text = f"Fecha y hora: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
+        email_text = f"Correo: {user_email}"
+        link_text = f"Whatsapp: {user_link}"
+        
+        can.setFillColor(colors.black)
+        can.setFont("Helvetica", 7)
+        # x - y
+        can.drawString(350, 45, usuario_text)
+        can.drawString(342, 35, fecha_hora_text)
+        can.drawString(330, 25, email_text)
+        can.drawString(342, 15, link_text)
+    else:
+       print("algun dato no se obtuvo")
+
+    can.showPage()  # Mostrar la página actual antes de guardar el lienzo
     can.save()
 
     # move to the beginning of the StringIO buffer
     packet.seek(0)
     new_pdf = PdfReader(packet)
+    print(len(new_pdf.pages))  # Verificar la cantidad de páginas en el PDF
+
     existing_pdf = PdfReader(pdf_path)
     output = PdfWriter()
 

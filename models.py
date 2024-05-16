@@ -18,6 +18,7 @@ class Users(db.Model,UserMixin):
     user_rol = db.Column(db.Integer, db.ForeignKey('users_rol.id'), nullable=False)
     users_rol = db.relationship('UsersRol', backref='users', lazy=True)
     session_token = db.Column(db.String(50), unique=True)
+    user_link = db.Column(db.String(100), nullable=True)
 
     def get_id(self):
         return str(self.user_id)

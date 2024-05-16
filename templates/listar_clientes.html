@@ -32,6 +32,11 @@
         button {
             background-color: #d3d3d3;
         }
+        .contenedor-tabla {
+            width: 90%;  /* Ajuste el ancho según sea necesario */
+            height: 600px; /* Establezca una altura fija para el contenedor */
+            overflow: auto;
+        }
     </style>
 
 </head>
@@ -53,8 +58,9 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% endwith %}
 
-<main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
-  <h1>Lista de Clientes</h1>
+  <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+    <h1>Lista de Clientes</h1>
+    <div class="contenedor-tabla">
   <table>
     <tr>
       <th>ID</th>
@@ -85,6 +91,7 @@
       </tr>
     {% endfor %}
   </table>
+</div>
 </main>
 
 
@@ -110,7 +117,16 @@
     }
     
 </script>
+<script> 
+    const table = document.querySelector('table');
+table.style.height = '600px';  // Adjust height as needed
 
+// Get the table container (assuming it's the direct parent)
+const tableContainer = table.parentElement;
+
+// Enable vertical scrolling only
+tableContainer.style.overflowY = 'auto';
+</script>
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>

@@ -1,0 +1,233 @@
+/* Estilos generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5; /* Fondo suave */
+    color: #333;
+}
+
+header {
+    background-color: #7BC9E2;
+    padding: 20px;
+    text-align: center;
+    color: white;
+}
+
+h1 {
+    color: white;
+}
+
+/* Estilos para la sección principal */
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.seccion-izquierda,
+.seccion-derecha {
+    padding: 20px;
+}
+
+/* Estilos para la sección izquierda */
+.seccion-izquierda {
+    width: 100%;
+    max-width: 300px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Estilos para la sección derecha */
+.seccion-derecha {
+    flex: 1;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para los grupos de inputs */
+.grupo {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc; /* Borde suave */
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: #f9f9f9; /* Fondo suave */
+    color: #333;
+}
+
+/* Ajuste de espacio entre las columnas */
+.grupo-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.grupo-columna {
+    flex: 1;
+}
+
+/* Estilos para los botones */
+.botones {
+    text-align: right;
+}
+
+.botones button {
+    margin-right: 10px;
+    padding: 10px 20px;
+    background-color: #7BC9E2; /* Azul vibrante */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.botones button:hover {
+    background-color: #0056b3; /* Azul más oscuro al pasar el ratón */
+}
+
+/* Estilos para el resultado de la cotización */
+.resultado {
+    background-color: #fff;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para la flecha de botón */
+.flecha-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.3s;
+    color: #4CAF50;
+}
+
+.flecha-btn.expandido {
+    transform: rotate(90deg);
+}
+
+.header-cotizacion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Estilos para el formulario en dos columnas */
+.grupo-columns {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.grupo-columna {
+    flex: 1;
+    padding-right: 10px;
+}
+
+/* Estilos para los productos */
+.productos-cotizacion {
+    width: 100%;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+}
+
+.producto:nth-child(even) {
+    background-color: #f0f0f0; /* Fondo más claro para productos pares */
+}
+
+.producto:nth-child(odd) {
+    background-color: #e9e9e9; /* Fondo más oscuro para productos impares */
+}
+
+.producto {
+    margin-bottom: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    text-align: left;
+    padding: 10px;
+}
+
+th {
+    background-color: #7BC9E2; /* Azul vibrante */
+    color: white;
+}
+
+.item-descripcion-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc; /* Borde suave */
+    background-color: #f9f9f9; /* Fondo suave */
+}
+
+.item-number {
+    width: 50px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 8px;
+    background-color: #7BC9E2; /* Azul vibrante */
+    margin-right: 10px;
+    border-right: 1px solid #ccc; /* Borde suave */
+    color: white;
+}
+
+.descripcion-input {
+    width: calc(100% - 68px); /* Ajuste para el ancho del número */
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc; /* Borde suave */
+    border-radius: 4px;
+}
+
+/* Estilos para las tablas de selección de ítems */
+.seleccion-items-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.seleccion-items-table th, .seleccion-items-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.seleccion-items-table th {
+    background-color: #007bff; /* Azul vibrante */
+    color: white;
+}
+
+.seleccion-items-table td input[type="checkbox"] {
+    margin: 0;
+}

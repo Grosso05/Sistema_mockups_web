@@ -29,7 +29,7 @@ app.register_blueprint(customers_blueprint)
 app.register_blueprint(routes_blueprint)
 app.register_blueprint(users_blueprint)
 app.register_blueprint(logos_blueprint)
-
+    
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 4.0.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 4.2.0) desarrollada por: Brayan Grosso
+
+
+# Fecha de lanzamiento: 11 de Abril de 2024, 03:20 pm
+
+Cambios Recientes
+v4.2.0
+
+En esta actualización se agregó un modulo de clientes, con los requerimientos necesarios. Hay  un error en la conexion del servidor con el correo.
 
 
 # Fecha de lanzamiento: 08 de Abril de 2024, 02:10 pm

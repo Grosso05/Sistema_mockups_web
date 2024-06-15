@@ -108,7 +108,8 @@ def todos_los_items():
 
     query = Items.query
     if busqueda:
-        query = query.filter(Items.nombre.like(f'%{busqueda}%'))
+        # Usar `ilike` en lugar de `like` si MySQL soporta búsquedas insensibles a mayúsculas/minúsculas con `ilike`
+        query = query.filter(Items.nombre.ilike(f'%{busqueda}%'))
 
     total_items = query.count()
     total_paginas = (total_items // items_por_pagina) + (1 if total_items % items_por_pagina > 0 else 0)
@@ -126,7 +127,6 @@ def todos_los_items():
         'items': items_json,
         'totalPaginas': total_paginas
     })
-
 
 
 

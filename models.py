@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import current_app
 from sqlalchemy import DECIMAL, Column, Date, ForeignKey, Integer, String, text
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy import Index
 
 from flask_login import UserMixin  # Importa la clase UserMixin de flask_login
 db = SQLAlchemy()
@@ -74,19 +75,19 @@ class Cotizacion(db.Model):
 # The Customers model already exists, so we don't need to create it again
 
 class Items(db.Model):
-  """
-  This class represents the Items table in the database.
-  """
-  item_id = Column(Integer, primary_key=True, autoincrement=True)
-  nombre = Column(String(255), nullable=False)
-  categoria_id = Column(Integer, ForeignKey('categoria.CATEGORIA_ID'))
-  unidad = Column(String(255))
-  tipo = Column(String(255))
+    __tablename__ = 'items'
+    item_id = Column(Integer, primary_key=True, autoincrement=True)
+    nombre = Column(String(255), nullable=False)
+    categoria_id = Column(Integer, ForeignKey('categoria.CATEGORIA_ID'))
+    unidad = Column(String(255))
+    tipo = Column(String(255))
 
-  categoria = relationship("Categoria", backref="items")
+    categoria = relationship("Categoria", backref="items")
 
-  def __repr__(self):
-    return f"<Items {self.nombre}>"
+    __table_args__ = (Index('idx_nombre', 'nombre'),)
+
+    def __repr__(self):
+        return f"<Items {self.nombre}>"
   
 class ItemsPorProducto(db.Model):
   """

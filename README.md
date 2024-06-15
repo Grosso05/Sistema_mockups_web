@@ -1,5 +1,16 @@
 ## Generador de Catálogos Personalizados (Versión 4.2.0) desarrollada por: Brayan Grosso
 
+# Fecha de lanzamiento: 07 de Junio de 2024, 10:30 am
+
+Cambios Recientes
+v5.0.0
+
+Version del cotizador de mockups ya en produccion y funcionamiento al 100%, actualmente  se está trabajando en el modulo de cotizacion, donde hasta el momento llevamos la bd al 70%, una primera interfaz.
+
+
+# Fecha de lanzamiento: 08 de Abril de 2024, 02:10 pm
+
+
 
 # Fecha de lanzamiento: 11 de Abril de 2024, 03:20 pm
 

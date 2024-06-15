@@ -32,7 +32,7 @@ def user():
         return render_template(url_for('users.login'))
     return render_template('dashboard_user.html')
 
-#Ruta para generar catalogo del lado del admin
+#Ruta para generar catalogo del lado del administrador
 @routes_blueprint.route('/routes.generar_catalogo')
 @login_required
 @roles_required(1)
@@ -46,12 +46,14 @@ def generar_catalogo():
 def generar_catalogouser():
     return render_template('generarcatalogouserregistrado.html')
 
+#ruta para renderizar la vista de la cotizacion
 @routes_blueprint.route('/generar_cotizacion')
 def generar_cotizacion():
     lineas = Lineas.query.all()
     productos = Productos.query.all()
     return render_template('generar_cotizacion.html', lineas=lineas, productos=productos)
 
+#ruta que trae los items sugeridos para cada producto
 @routes_blueprint.route('/productos_por_linea/<int:linea_id>')
 def productos_por_linea(linea_id):
     productos = Productos.query.filter_by(linea_idFK=linea_id).all()
@@ -68,23 +70,65 @@ def productos_por_linea(linea_id):
         })
     return jsonify(productos_json)
 
+#ruta para traer 
 @routes_blueprint.route('/items_por_producto/<int:producto_id>')
 def items_por_producto(producto_id):
-    items_por_producto = ItemsPorProducto.query.filter_by(producto_idFK=producto_id).all()
-    items = []
-    for item_por_producto in items_por_producto:
-        item = Items.query.get(item_por_producto.item_idFK)
-        categoria = Categoria.query.get(item.categoria_id)  # Obtener el nombre de la categoría
-        if item and categoria:
-            items.append({
-                'id': item.item_id,
-                'descripcion': item.nombre,
-                'categoria_id': item.categoria_id,
-                'categoria_nombre': categoria.CATEGORIA_NOMBRE,
-                'unidad': item.unidad,
-                'tipo': item.tipo
-            })
-    return jsonify(items)
+    pagina = request.args.get('pagina', 1, type=int)
+    busqueda = request.args.get('busqueda', '', type=str)
+    items_por_pagina = 20
+
+    query = Items.query.join(ItemsPorProducto, ItemsPorProducto.item_idFK == Items.item_id)\
+                       .filter(ItemsPorProducto.producto_idFK == producto_id)
+    
+    if busqueda:
+        query = query.filter(Items.nombre.like(f'%{busqueda}%'))
+    
+    total_items = query.count()
+    total_paginas = (total_items // items_por_pagina) + (1 if total_items % items_por_pagina > 0 else 0)
+    
+    items = query.paginate(page=pagina, per_page=items_por_pagina).items
+
+    items_json = [{
+        'id': item.item_id,
+        'descripcion': item.nombre,
+        'categoria': item.categoria.CATEGORIA_NOMBRE,
+        'unidad': item.unidad
+    } for item in items]
+
+    return jsonify({
+        'items': items_json,
+        'totalPaginas': total_paginas
+    })
+
+@routes_blueprint.route('/todos_los_items')
+def todos_los_items():
+    pagina = request.args.get('pagina', 1, type=int)
+    busqueda = request.args.get('busqueda', '', type=str)
+    items_por_pagina = 20
+
+    query = Items.query
+    if busqueda:
+        query = query.filter(Items.nombre.like(f'%{busqueda}%'))
+
+    total_items = query.count()
+    total_paginas = (total_items // items_por_pagina) + (1 if total_items % items_por_pagina > 0 else 0)
+
+    items = query.paginate(page=pagina, per_page=items_por_pagina).items
+
+    items_json = [{
+        'id': item.item_id,
+        'descripcion': item.nombre,
+        'categoria': item.categoria.CATEGORIA_NOMBRE,
+        'unidad': item.unidad
+    } for item in items]
+
+    return jsonify({
+        'items': items_json,
+        'totalPaginas': total_paginas
+    })
+
+
+
 
 
 

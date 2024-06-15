@@ -1,325 +1,368 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cotizador Web</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador Web</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
+    <style>
+        .tabla-items-container {
+            display: flex;
+        }
+        .tabla-items {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .tabla-items input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Sistema De Costos</h1>
-  </header>
-
-  <section class="flex">
-    <div class="seccion-izquierda flex-item">
-      <h2>Productos</h2>
-      
-      <div class="item-descripcion-container">
-        <div class="item-number" id="itemNumber">1</div>
-        <textarea id="descripcion" name="descripcion" rows="3" class="descripcion-input" placeholder="Ingrese la descripción del producto" required></textarea>
-      </div>
-
-      <div class="grupo">
-        <label for="seleccionarLinea">Línea:</label>
-        <select id="seleccionarLinea" name="seleccionarLinea">
-            <option value="">Seleccionar</option>
-            {% for linea in lineas %}
-                <option value="{{ linea.linea_id }}">{{ linea.nombre }}</option>
-            {% endfor %}
-        </select>
-      </div>
-    
-      <div class="grupo">
-        <label for="seleccionarProducto">Producto:</label>
-        <select id="seleccionarProducto" name="seleccionarProducto">
-            <option value="">Seleccionar</option>
-            {% for producto in productos %}
-                <option value="{{ producto.producto_id }}">{{ producto.nombre }}</option>
-            {% endfor %}
-        </select>
-      </div>
-      <div class="grupo botones">
-        <button id="btnCrear">Añadir</button>
-        <button id="btnDuplicar">Duplicar</button>
-        <button id="btnEliminar">Eliminar</button>
-      </div>
-    </div>
-
-    <div class="seccion-derecha flex-item flex-grow">
-      <div class="header-cotizacion">
-        <h2>Datos de Cotización</h2>
-        <button id="toggleDatosBtn" class="flecha-btn">></button>
-      </div>
-      <div class="grupo-columns" id="formulario-cotizacion">
-        <div class="grupo-columna">
-          <div class="grupo">
-            <label for="fecha">Fecha:</label>
-            <input type="date" id="fecha" name="fecha" required>
-          </div>
-          <div class="grupo">
-            <label for="cliente">Cliente:</label>
-            <input type="text" id="cliente" name="cliente" required>
-          </div>
-          <div class="grupo">
-            <label for="contacto">Contacto:</label>
-            <input type="text" id="contacto" name="contacto" required>
-          </div>
-          <div class="grupo">
-            <label for="proyecto">Proyecto:</label>
-            <input type="text" id="proyecto" name="proyecto" required>
-          </div>
-          <div class="grupo">
-            <label for="vendor">Vendedor:</label>
-            <input type="text" id="vendor" name="vendor" required>
-          </div>
-          <div class="grupo">
-            <label for="negociacion">Negociación:</label>
-            <input type="text" id="negociacion" name="negociacion" required>
-          </div>
+    <header>
+        <h1>Sistema De Costos</h1>
+    </header>
+    <section class="flex">
+        <div class="seccion-izquierda flex-item">
+            <h2>Productos</h2>
+            <div class="item-descripcion-container">
+                <div class="item-number" id="itemNumber">1</div>
+                <textarea id="descripcion" name="descripcion" rows="3" class="descripcion-input" placeholder="Ingrese la descripción del producto" required></textarea>
+            </div>
+            <div class="grupo">
+                <label for="seleccionarLinea">Línea:</label>
+                <select id="seleccionarLinea" name="seleccionarLinea">
+                    <option value="">Seleccionar</option>
+                    {% for linea in lineas %}
+                        <option value="{{ linea.linea_id }}">{{ linea.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grupo">
+                <label for="seleccionarProducto">Producto:</label>
+                <select id="seleccionarProducto" name="seleccionarProducto">
+                    <option value="">Seleccionar</option>
+                </select>
+                <label for="alto">Alto:</label>
+                <input type="number" id="alto" name="alto" min="10" max="100" />
+                <label for="ancho">Ancho:</label>
+                <input type="number" id="ancho" name="ancho" min="10" max="100" />
+                <label for="fondo">Fondo:</label>
+                <input type="number" id="fondo" name="fondo" min="10" max="100" />
+            </div>
+            <div class="grupo botones">
+                <button id="btnCrear">Añadir</button>
+                <button id="btnDuplicar">Duplicar</button>
+                <button id="btnEliminar">Eliminar</button>
+            </div>
         </div>
-        <div class="grupo-columna">
-          <div class="grupo">
-            <label for="formaPago">Forma de Pago:</label>
-            <input type="text" id="formaPago" name="formaPago" required>
-          </div>
-          <div class="grupo">
-            <label for="validez">Validez:</label>
-            <input type="date" id="validez" name="validez" required>
-          </div>
-          <div class="grupo">
-            <label for="descuento">Porcentaje Descuento:</label>
-            <input type="number" id="descuento" name="descuento" min="0" max="100" required>
-          </div>
-          <div class="grupo">
-            <label for="personaRecibe">Persona que Recibe:</label>
-            <input type="text" id="personaRecibe" name="personaRecibe" required>
-          </div>
-          <div class="grupo">
-            <label for="numeroContacto">Número de Contacto:</label>
-            <input type="tel" id="numeroContacto" name="numeroContacto" required>
-          </div>
-          <div class="grupo">
-            <label for="direccion">Dirección:</label>
-            <textarea id="direccion" name="direccion" rows="3" required></textarea>
-          </div>
+        <div class="seccion-derecha flex-item flex-grow">
+            <div class="header-cotizacion">
+                <h2>Datos de Cotización</h2>
+                <button id="toggleDatosBtn" class="flecha-btn">></button>
+            </div>
+            <div class="grupo-columns" id="formulario-cotizacion" style="display: none;">
+                <div class="grupo-columns" id="formulario-cotizacion">
+                    <div class="grupo-columna">
+                        <div class="grupo">
+                            <label for="fecha">Fecha:</label>
+                            <input type="date" id="fecha" name="fecha" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="cliente">Cliente:</label>
+                            <input type="text" id="cliente" name="cliente" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="contacto">Contacto:</label>
+                            <input type="text" id="contacto" name="contacto" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="proyecto">Proyecto:</label>
+                            <input type="text" id="proyecto" name="proyecto" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="vendor">Vendedor:</label>
+                            <input type="text" id="vendor" name="vendor" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="negociacion">Negociación:</label>
+                            <input type="text" id="negociacion" name="negociacion" required>
+                        </div>
+                    </div>
+                    <div class="grupo-columna">
+                        <div class="grupo">
+                            <label for="formaPago">Forma de Pago:</label>
+                            <input type="text" id="formaPago" name="formaPago" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="validez">Validez:</label>
+                            <input type="date" id="validez" name="validez" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="descuento">Porcentaje Descuento:</label>
+                            <input type="number" id="descuento" name="descuento" min="0" max="100" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="personaRecibe">Persona que Recibe:</label>
+                            <input type="text" id="personaRecibe" name="personaRecibe" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="numeroContacto">Número de Contacto:</label>
+                            <input type="tel" id="numeroContacto" name="numeroContacto" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="direccion">Dirección:</label>
+                            <textarea id="direccion" name="direccion" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+    </section>
+    <div id="productos-cotizacion" class="productos-cotizacion">
+        <h2>Productos de la Cotización</h2>
+        <div id="productos-container"></div>
     </div>
-  </section>
-
-  <div id="productos-cotizacion" class="productos-cotizacion">
-    <h2>Productos de la Cotización</h2>
-    <div id="productos-container"></div>
-
-  </div>
-
-  <div id="resultado" class="resultado">
-    <h2>Resultado de la Cotización</h2>
-    <p>Subtotal:</p>
-    <p>IVA:</p>
-    <p>Total:</p>
-  </div>
-
-  <script>
-
-    document.getElementById('toggleDatosBtn').addEventListener('click', function() {
-        const formularioCotizacion = document.getElementById('formulario-cotizacion');
-        const isExpanded = formularioCotizacion.style.display !== 'none';
-    
-        if (isExpanded) {
-            formularioCotizacion.style.display = 'none';
-            this.textContent = '>';
-            this.classList.remove('expandido');
-        } else {
-            formularioCotizacion.style.display = 'flex';
-            this.textContent = 'v';
-            this.classList.add('expandido');
-        }
-    });
-    
-    let itemNumber = 0; // Cambio de nombre de contador a itemNumber
-    
-    document.getElementById('btnCrear').addEventListener('click', function() {
-        const descripcionInput = document.getElementById('descripcion');
-        const descripcion = descripcionInput.value.trim();
-        const productoSelect = document.getElementById('seleccionarProducto');
-        const productoId = productoSelect.value;
-    
-        if (descripcion === "") {
-            alert("Por favor, ingrese una descripción.");
-            return;
-        }
-    
-        if (productoId === "") {
-            alert("Por favor, seleccione un producto.");
-            return;
-        }
-    
-        // Incrementar el itemNumber
-        itemNumber++;
-    
-        // Añadir el nuevo producto al contenedor de productos
-        const productosContainer = document.getElementById('productos-container');
-        const nuevoProducto = document.createElement('div');
-        nuevoProducto.className = 'producto';
-        nuevoProducto.id = `producto-${itemNumber}`;
-    
-        nuevoProducto.innerHTML = `
-            <div id"titulo-producto">
-            <h3>Producto ${itemNumber}: ${descripcion}</h3>
-            </div>
-            <p>ID Producto: ${productoId}</p>
-            <div id="seleccion-items-container-${itemNumber}">
-                <h4>Seleccione los ítems necesarios:</h4>
-                <div id="seleccion-items-materia-prima-${itemNumber}"></div>
-                <div id="seleccion-items-consumibles-${itemNumber}"></div>
-                <div id="seleccion-items-servicios-${itemNumber}"></div>
-                <button onclick="agregarItemsSeleccionados(${itemNumber})">Agregar Ítems Seleccionados</button>
-            </div>
-            <div class="items-materia-prima">
-                <h4>Materia Prima</h4>
-                <table>
-                    <thead>
-                        <tr><th>ID Item</th><th>Descripción</th><th>Categoría</th><th>Unidad</th></tr>
-                    </thead>
-                    <tbody id="items-materia-prima-${itemNumber}"></tbody>
-                </table>
-            </div>
-            <div class="items-consumibles">
-                <h4>Consumibles</h4>
-                <table>
-                    <thead>
-                        <tr><th>ID Item</th><th>Descripción</th><th>Categoría</th><th>Unidad</th></tr>
-                    </thead>
-                    <tbody id="items-consumibles-${itemNumber}"></tbody>
-                </table>
-            </div>
-            <div class="items-servicios">
-                <h4>Servicios</h4>
-                <table>
-                    <thead>
-                        <tr><th>ID Item</th><th>Descripción</th><th>Categoría</th><th>Unidad</th></tr>
-                    </thead>
-                    <tbody id="items-servicios-${itemNumber}"></tbody>
-                </table>
-            </div>
-        `;
-        
-        productosContainer.appendChild(nuevoProducto);
-    
-        // Llamar a la función para cargar los ítems del producto seleccionado
-        cargarItemsPorProducto(productoId, itemNumber);
-    
-        // Limpiar el área de entrada de descripción
-        descripcionInput.value = "";
-    
-        // Restablecer la selección de producto a su valor predeterminado
-        productoSelect.value = "";
-    });
-    
-    function cargarItemsPorProducto(productoId, itemNumber) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/items_por_producto/' + productoId, true);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                var items = JSON.parse(xhr.responseText);
-                mostrarItemsParaSeleccion(items, itemNumber);
-            }
-        };
-        xhr.send();
-    }
-    
-    function mostrarItemsParaSeleccion(items, itemNumber) {
-        const contenedorMateriaPrima = document.getElementById(`seleccion-items-materia-prima-${itemNumber}`);
-        const contenedorConsumibles = document.getElementById(`seleccion-items-consumibles-${itemNumber}`);
-        const contenedorServicios = document.getElementById(`seleccion-items-servicios-${itemNumber}`);
-    
-        contenedorMateriaPrima.innerHTML = '<h5>Materia Prima</h5>';
-        contenedorConsumibles.innerHTML = '<h5>Consumibles</h5>';
-        contenedorServicios.innerHTML = '<h5>Servicios</h5>';
-    
-        items.forEach(function(item) {
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.value = item.id;
-            checkbox.dataset.descripcion = item.descripcion;
-            checkbox.dataset.categoria = item.categoria_nombre;
-            checkbox.dataset.unidad = item.unidad;
-            checkbox.dataset.tipo = item.tipo;
-    
-            const label = document.createElement('label');
-            label.textContent = `${item.descripcion} (ID: ${item.id})`;
-    
-            const itemContainer = document.createElement('div');
-            itemContainer.appendChild(checkbox);
-            itemContainer.appendChild(label);
-    
-            if (item.tipo === 'Materia Prima') {
-                contenedorMateriaPrima.appendChild(itemContainer);
-            } else if (item.tipo === 'Consumibles') {
-                contenedorConsumibles.appendChild(itemContainer);
-            } else if (item.tipo === 'Servicios') {
-                contenedorServicios.appendChild(itemContainer);
-            }
+    <div id="resultado" class="resultado">
+        <h2>Resultado de la Cotización</h2>
+        <p>Subtotal:</p>
+        <p>IVA:</p>
+        <p>Total:</p>
+    </div>
+    <script>
+        document.getElementById('toggleDatosBtn').addEventListener('click', function() {
+            const formularioCotizacion = document.getElementById('formulario-cotizacion');
+            formularioCotizacion.style.display = formularioCotizacion.style.display === 'none' ? 'flex' : 'none';
+            this.textContent = formularioCotizacion.style.display === 'none' ? '>' : 'v';
+            this.classList.toggle('expandido');
         });
-    }
-    
-    function agregarItemsSeleccionados(itemNumber) {
-        const contenedorMateriaPrima = document.getElementById(`items-materia-prima-${itemNumber}`);
-        const contenedorConsumibles = document.getElementById(`items-consumibles-${itemNumber}`);
-        const contenedorServicios = document.getElementById(`items-servicios-${itemNumber}`);
-        
-        const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${itemNumber}`);
-        const checkboxes = seleccionItemsContainer.querySelectorAll('input[type="checkbox"]:checked');
-    
-        checkboxes.forEach(function(checkbox) {
-            const newItem = document.createElement('tr');
-            newItem.innerHTML = `
-                <td>${checkbox.value}</td>
-                <td>${checkbox.dataset.descripcion}</td>
-                <td>${checkbox.dataset.categoria}</td>
-                <td>${checkbox.dataset.unidad}</td>
-            `;
-    
-            if (checkbox.dataset.tipo === 'Materia Prima') {
-                contenedorMateriaPrima.appendChild(newItem);
-            } else if (checkbox.dataset.tipo === 'Consumibles') {
-                contenedorConsumibles.appendChild(newItem);
-            } else if (checkbox.dataset.tipo === 'Servicios') {
-                contenedorServicios.appendChild(newItem);
-            }
-        });
-    
-        // Opcional: Limpiar la selección después de agregar los ítems
-        seleccionItemsContainer.innerHTML = '';
-    }
-    
-    document.getElementById('seleccionarLinea').addEventListener('change', function() {
-        var lineaId = this.value;
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/productos_por_linea/' + lineaId, true);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                var productos = JSON.parse(xhr.responseText);
-                var selectProducto = document.getElementById('seleccionarProducto');
-                selectProducto.innerHTML = '<option value="">Seleccionar</option>';
-                productos.forEach(function(producto) {
-                    var option = document.createElement('option');
-                    option.value = producto.id;
-                    option.textContent = producto.nombre;
-                    selectProducto.appendChild(option);
+
+        document.getElementById('seleccionarLinea').addEventListener('change', function() {
+            const lineaId = this.value;
+            const productoSelect = document.getElementById('seleccionarProducto');
+            productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Clear current options
+
+            fetch(`/productos_por_linea/${lineaId}`)
+                .then(response => response.json())
+                .then(productos => {
+                    productos.forEach(producto => {
+                        const option = document.createElement('option');
+                        option.value = producto.id;
+                        option.textContent = producto.nombre;
+                        productoSelect.appendChild(option);
+                    });
                 });
+        });
+
+        let itemNumber = 0;
+
+        document.getElementById('btnCrear').addEventListener('click', function() {
+            const descripcionInput = document.getElementById('descripcion');
+            const productoSelect = document.getElementById('seleccionarProducto');
+            const descripcion = descripcionInput.value.trim();
+            const productoId = productoSelect.value;
+
+            if (descripcion === "" || productoId === "") {
+                alert("Por favor, ingrese una descripción y seleccione un producto.");
+                return;
             }
-        };
-        xhr.send();
-    });
+
+            itemNumber++;
+
+            const productosContainer = document.getElementById('productos-container');
+            const nuevoProducto = document.createElement('div');
+            nuevoProducto.className = 'producto';
+            nuevoProducto.id = `producto-${itemNumber}`;
+            nuevoProducto.innerHTML = `
+                <h3>Producto ${itemNumber}: ${descripcion}</h3>
+                <div class="items-seleccionados">
+                    <h4>Items Seleccionados</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Descripción</th>
+                                <th>Categoría</th>
+                                <th>Unidad</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-seleccionados-${itemNumber}"></tbody>
+                    </table>
+                </div>
+        <div id="seleccion-items-container-${itemNumber}">
+            <div>
+                <h4>Seleccionar Ítems</h4>
+                <input type="text" id="buscar-item-${itemNumber}" placeholder="Buscar ítems">
+                <div id="seleccion-items-${itemNumber}"></div>
+                <div id="paginacion-items-${itemNumber}"></div>
+                <button onclick="agregarItemsSeleccionados(${itemNumber})">Agregar Ítems Seleccionados</button>
+                <button onclick="verTodosItems(${itemNumber}, 1, '')">Ver Todos los Ítems</button> <!-- Nuevo botón -->
+            </div>
+        </div>
+
+            `;
+
+            productosContainer.appendChild(nuevoProducto);
+
+            cargarItemsProducto(productoId, itemNumber, 1, '');
+
+            descripcionInput.value = '';
+            productoSelect.value = '';
+        });
+
+        function cargarItemsProducto(productoId, itemNumber, pagina, busqueda) {
+            fetch(`/items_por_producto/${productoId}?pagina=${pagina}&busqueda=${busqueda}`)
+                .then(response => response.json())
+                .then(data => {
+                    const items = data.items;
+                    const totalPaginas = data.totalPaginas;
+                    const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
+                    const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
+
+                    seleccionItemsContainer.innerHTML = '';
+
+                    const table = document.createElement('table');
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>Seleccionar</th>
+                                <th>ID</th>
+                                <th>Descripción</th>
+                                <th>Categoría</th>
+                                <th>Unidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(item => `
+                                <tr>
+                                    <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
+                                    <td>${item.id}</td>
+                                    <td>${item.descripcion}</td>
+                                    <td>${item.categoria}</td>
+                                    <td>${item.unidad}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    `;
+                    seleccionItemsContainer.appendChild(table);
+
+                    paginacionContainer.innerHTML = '';
+                    for (let i = 1; i <= totalPaginas; i++) {
+                        const button = document.createElement('button');
+                        button.textContent = i;
+                        button.disabled = i === pagina;
+                        button.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, i, busqueda));
+                        paginacionContainer.appendChild(button);
+                    }
+
+                    const buscador = document.getElementById(`buscar-item-${itemNumber}`);
+                    buscador.addEventListener('input', debounce(() => {
+                        const busqueda = buscador.value;
+                        cargarItemsProducto(productoId, itemNumber, 1, busqueda);
+                    }, 300));
+                });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        function agregarItemsSeleccionados(itemNumber) {
+            const itemsSeleccionados = document.querySelectorAll(`#seleccion-items-${itemNumber} input[type="checkbox"]:checked`);
+            const itemsSeleccionadosContainer = document.getElementById(`items-seleccionados-${itemNumber}`);
+
+            itemsSeleccionados.forEach(itemCheckbox => {
+                const itemId = itemCheckbox.value;
+                const itemLabel = itemCheckbox.closest('tr').querySelector('td:nth-child(3)').textContent;
+
+                const nuevaFila = document.createElement('tr');
+                nuevaFila.innerHTML = `
+                    <td>${itemId}</td>
+                    <td>${itemLabel}</td>
+                    <td>${itemCheckbox.closest('tr').querySelector('td:nth-child(4)').textContent}</td>
+                    <td>${itemCheckbox.closest('tr').querySelector('td:nth-child(5)').textContent}</td>
+                `;
+                itemsSeleccionadosContainer.appendChild(nuevaFila);
+            });
+        }
+
+        function verTodosItems(itemNumber, pagina, busqueda) {
+            fetch(`/todos_los_items?pagina=${pagina}&busqueda=${busqueda}`)
+                .then(response => response.json())
+                .then(data => {
+                    const items = data.items;
+                    const totalPaginas = data.totalPaginas;
+                    const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
+                    const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
+        
+                    seleccionItemsContainer.innerHTML = '';
+        
+                    const table = document.createElement('table');
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>Seleccionar</th>
+                                <th>ID</th>
+                                <th>Descripción</th>
+                                <th>Categoría</th>
+                                <th>Unidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(item => `
+                                <tr>
+                                    <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
+                                    <td>${item.id}</td>
+                                    <td>${item.descripcion}</td>
+                                    <td>${item.categoria}</td>
+                                    <td>${item.unidad}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    `;
+                    seleccionItemsContainer.appendChild(table);
+        
+                    paginacionContainer.innerHTML = '';
+                    for (let i = 1; i <= totalPaginas; i++) {
+                        const button = document.createElement('button');
+                        button.textContent = i;
+                        button.disabled = i === pagina;
+                        button.addEventListener('click', () => verTodosItems(itemNumber, i, busqueda));
+                        paginacionContainer.appendChild(button);
+                    }
+        
+                    const buscador = document.getElementById(`buscar-item-${itemNumber}`);
+                    buscador.addEventListener('input', debounce(() => {
+                        const busqueda = buscador.value;
+                        verTodosItems(itemNumber, 1, busqueda);
+                    }, 300));
+                });
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
     </script>
-    
-
-
-
-
-
 </body>
 </html>

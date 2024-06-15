@@ -3,7 +3,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f5f5f5; /* Fondo suave */
+    background-color: #ffffff; /* Fondo suave */
     color: #333;
 }
 
@@ -33,7 +33,7 @@ h1 {
 .seccion-izquierda {
     width: 100%;
     max-width: 300px;
-    background-color: #fff;
+    background-color: #f5f5f5;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
@@ -42,7 +42,7 @@ h1 {
 /* Estilos para la sección derecha */
 .seccion-derecha {
     flex: 1;
-    background-color: #fff;
+    background-color: #f5f5f5;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -66,7 +66,7 @@ textarea {
     border: 1px solid #ccc; /* Borde suave */
     border-radius: 4px;
     box-sizing: border-box;
-    background-color: #f9f9f9; /* Fondo suave */
+    background-color: #ffffff; /* Fondo suave */
     color: #333;
 }
 
@@ -103,7 +103,7 @@ textarea {
 
 /* Estilos para el resultado de la cotización */
 .resultado {
-    background-color: #fff;
+    background-color: #f5f5f5;
     padding: 20px;
     margin-top: 20px;
     border-radius: 8px;
@@ -146,7 +146,7 @@ textarea {
     width: 100%;
     margin-top: 20px;
     padding: 20px;
-    background-color: #fff;
+    background-color: #f5f5f5;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
@@ -162,6 +162,9 @@ textarea {
 
 .producto {
     margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 table {
@@ -231,3 +234,40 @@ th {
 .seleccion-items-table td input[type="checkbox"] {
     margin: 0;
 }
+
+        .producto h3, .producto h4, .producto h2 {
+            text-align: center;
+        }
+        .producto table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        .producto table, .producto th, .producto td {
+            border: 1px solid black;
+        }
+        .producto th, .producto td {
+            padding: 8px;
+            text-align: left;
+        }
+        .producto th {
+            background-color: #7BC9E2;
+        }
+
+        .tabla-items-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .tabla-items {
+            margin: 10px;
+        }
+        
+        @media (min-width: 768px) {
+            .tabla-items {
+                min-width: 45%;
+            }
+        }
+
+        

@@ -5,10 +5,6 @@ import secrets
 from users import users_blueprint
 from routes import routes_blueprint
 from logos import logos_blueprint
-from functools import wraps
-from flask import redirect, url_for, abort
-from flask_login import current_user
-from utils import roles_required
 from customers import customers_blueprint
 app = Flask(__name__)
 

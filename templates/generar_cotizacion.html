@@ -6,28 +6,27 @@
     <title>Cotizador Web</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
     <style>
-        .tabla-items-container {
-            display: flex;
+        /* Estilos CSS para los botones */
+        .botones-container {
+            margin-top: 20px;
         }
-        .tabla-items {
-            flex: 1;
-            margin-right: 10px;
+        .botones-container button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
         }
-        .tabla-items input[type="text"] {
-            width: 100%;
-            box-sizing: border-box;
+        .botones-container button:hover {
+            background-color: #45a049;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .botones-container .eliminar {
+            background-color: #f44336;
         }
-        th, td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f2f2f2;
+        .botones-container .eliminar:hover {
+            background-color: #da190b;
         }
     </style>
 </head>
@@ -37,7 +36,7 @@
     </header>
     <section class="flex">
         <div class="seccion-izquierda flex-item">
-            <h2>Productos</h2>
+            <h2> Productos </h2>
             <div class="item-descripcion-container">
                 <div class="item-number" id="itemNumber">1</div>
                 <textarea id="descripcion" name="descripcion" rows="3" class="descripcion-input" placeholder="Ingrese la descripción del producto" required></textarea>
@@ -65,8 +64,6 @@
             </div>
             <div class="grupo botones">
                 <button id="btnCrear">Añadir</button>
-                <button id="btnDuplicar">Duplicar</button>
-                <button id="btnEliminar">Eliminar</button>
             </div>
         </div>
         <div class="seccion-derecha flex-item flex-grow">
@@ -78,53 +75,52 @@
                 <div class="grupo-columns" id="formulario-cotizacion">
                     <div class="grupo-columna">
                         <div class="grupo">
-                            <label for="fecha">Fecha:</label>
+                            <label for="fecha"> Fecha  </label>
                             <input type="date" id="fecha" name="fecha" required>
                         </div>
                         <div class="grupo">
-                            <label for="cliente">Cliente:</label>
+                            <label for="cliente"> Cliente  </label>
                             <input type="text" id="cliente" name="cliente" required>
                         </div>
                         <div class="grupo">
-                            <label for="contacto">Contacto:</label>
+                            <label for="contacto"> Contacto  </label>
                             <input type="text" id="contacto" name="contacto" required>
                         </div>
                         <div class="grupo">
-                            <label for="proyecto">Proyecto:</label>
+                            <label for="proyecto"> Proyecto  </label>
                             <input type="text" id="proyecto" name="proyecto" required>
                         </div>
-                        <div class="grupo">
-                            <label for="vendor">Vendedor:</label>
-                            <input type="text" id="vendor" name="vendor" required>
+                        <div class="grupo"> 
+                            <label for="vendedor"> Vendedor  </label>
+                            <input type="text" id="vendedor" name="vendor" required>
                         </div>
-                        <div class="grupo">
-                            <label for="negociacion">Negociación:</label>
+                        <div class="grupo"> N° Negociacion  <label for="negociacion"> :</label>
                             <input type="text" id="negociacion" name="negociacion" required>
                         </div>
                     </div>
                     <div class="grupo-columna">
                         <div class="grupo">
-                            <label for="formaPago">Forma de Pago:</label>
+                            <label for="formaPago"> Forma de Pago  </label>
                             <input type="text" id="formaPago" name="formaPago" required>
                         </div>
                         <div class="grupo">
-                            <label for="validez">Validez:</label>
+                            <label for="validez"> Validez  </label>
                             <input type="date" id="validez" name="validez" required>
                         </div>
                         <div class="grupo">
-                            <label for="descuento">Porcentaje Descuento:</label>
+                            <label for="descuento"> Porcentaje Descuento  </label>
                             <input type="number" id="descuento" name="descuento" min="0" max="100" required>
                         </div>
                         <div class="grupo">
-                            <label for="personaRecibe">Persona que Recibe:</label>
+                            <label for="personaRecibe"> Persona que Recibe  </label>
                             <input type="text" id="personaRecibe" name="personaRecibe" required>
                         </div>
                         <div class="grupo">
-                            <label for="numeroContacto">Número de Contacto:</label>
+                            <label for="numeroContacto"> Número de Contacto </label>
                             <input type="tel" id="numeroContacto" name="numeroContacto" required>
                         </div>
                         <div class="grupo">
-                            <label for="direccion">Dirección:</label>
+                            <label for="direccion"> Dirección  </label>
                             <textarea id="direccion" name="direccion" rows="3" required></textarea>
                         </div>
                     </div>
@@ -137,7 +133,7 @@
         <div id="productos-container"></div>
     </div>
     <div id="resultado" class="resultado">
-        <h2>Resultado de la Cotización</h2>
+        <h2>Resumen Costos</h2>
         <p>Subtotal:</p>
         <p>IVA:</p>
         <p>Total:</p>
@@ -197,27 +193,69 @@
                                 <th>Descripción</th>
                                 <th>Categoría</th>
                                 <th>Unidad</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="items-seleccionados-${itemNumber}"></tbody>
                     </table>
                 </div>
-        <div id="seleccion-items-container-${itemNumber}">
-            <div>
-                <h4>Seleccionar Ítems</h4>
-                <input type="text" id="buscar-item-${itemNumber}" placeholder="Buscar ítems">
-                <div id="seleccion-items-${itemNumber}"></div>
-                <div id="paginacion-items-${itemNumber}"></div>
-                <button onclick="agregarItemsSeleccionados(${itemNumber})">Agregar Ítems Seleccionados</button>
-                <button onclick="verTodosItems(${itemNumber}, 1, '')">Ver Todos los Ítems</button> <!-- Nuevo botón -->
-            </div>
-        </div>
-
+                <div id="seleccion-items-container-${itemNumber}">
+                    <div>
+                        <h4>Seleccionar Ítems</h4>
+                        <input type="text" id="buscar-item-${itemNumber}" placeholder="Buscar ítems">
+                        <div id="seleccion-items-${itemNumber}"></div>
+                        <div id="paginacion-items-${itemNumber}"></div>
+                        <div class="botones-container">
+                            <button onclick="agregarItemsSeleccionados(${itemNumber})">Agregar Ítems Seleccionados</button>
+                            <button onclick="verTodosItems(${itemNumber}, 1, '')">Ver Todos los Ítems</button>
+                        </div>
+                    </div>
+                </div>
             `;
 
             productosContainer.appendChild(nuevoProducto);
 
             cargarItemsProducto(productoId, itemNumber, 1, '');
+
+            // Agregar botones de Confirmar, Editar, Eliminar y Duplicar
+            const botonesContainer = document.createElement('div');
+            botonesContainer.className = 'botones-container';
+            const confirmarProductoBtn = document.createElement('button');
+            confirmarProductoBtn.textContent = "Confirmar Producto";
+            confirmarProductoBtn.addEventListener('click', function() {
+                const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${itemNumber}`);
+                seleccionItemsContainer.style.display = 'none';
+            });
+            botonesContainer.appendChild(confirmarProductoBtn);
+
+            const editarProductoBtn = document.createElement('button');
+            editarProductoBtn.textContent = "Editar Producto";
+            editarProductoBtn.addEventListener('click', function() {
+                const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${itemNumber}`);
+                seleccionItemsContainer.style.display = 'block';
+            });
+            botonesContainer.appendChild(editarProductoBtn);
+
+            const eliminarProductoBtn = document.createElement('button');
+            eliminarProductoBtn.textContent = "Eliminar Producto";
+            eliminarProductoBtn.classList.add('eliminar');
+            eliminarProductoBtn.addEventListener('click', function() {
+                const producto = document.getElementById(`producto-${itemNumber}`);
+                producto.remove();
+            });
+            botonesContainer.appendChild(eliminarProductoBtn);
+
+            const duplicarProductoBtn = document.createElement('button');
+            duplicarProductoBtn.textContent = "Duplicar Producto";
+            duplicarProductoBtn.addEventListener('click', function() {
+                itemNumber++;
+                const nuevoProductoDuplicado = nuevoProducto.cloneNode(true);
+                nuevoProductoDuplicado.id = `producto-${itemNumber}`;
+                productosContainer.appendChild(nuevoProductoDuplicado);
+            });
+            botonesContainer.appendChild(duplicarProductoBtn);
+
+            nuevoProducto.appendChild(botonesContainer);
 
             descripcionInput.value = '';
             productoSelect.value = '';
@@ -298,9 +336,15 @@
                     <td>${itemLabel}</td>
                     <td>${itemCheckbox.closest('tr').querySelector('td:nth-child(4)').textContent}</td>
                     <td>${itemCheckbox.closest('tr').querySelector('td:nth-child(5)').textContent}</td>
+                    <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
                 `;
                 itemsSeleccionadosContainer.appendChild(nuevaFila);
             });
+        }
+
+        function eliminarItemSeleccionado(button) {
+            const fila = button.closest('tr');
+            fila.remove();
         }
 
         function verTodosItems(itemNumber, pagina, busqueda) {
@@ -311,9 +355,9 @@
                     const totalPaginas = data.totalPaginas;
                     const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
                     const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
-        
+
                     seleccionItemsContainer.innerHTML = '';
-        
+
                     const table = document.createElement('table');
                     table.innerHTML = `
                         <thead>
@@ -338,7 +382,7 @@
                         </tbody>
                     `;
                     seleccionItemsContainer.appendChild(table);
-        
+
                     paginacionContainer.innerHTML = '';
                     for (let i = 1; i <= totalPaginas; i++) {
                         const button = document.createElement('button');
@@ -347,7 +391,7 @@
                         button.addEventListener('click', () => verTodosItems(itemNumber, i, busqueda));
                         paginacionContainer.appendChild(button);
                     }
-        
+
                     const buscador = document.getElementById(`buscar-item-${itemNumber}`);
                     buscador.addEventListener('input', debounce(() => {
                         const busqueda = buscador.value;
@@ -355,7 +399,6 @@
                     }, 300));
                 });
         }
-        
         function debounce(func, wait) {
             let timeout;
             return function(...args) {
@@ -364,5 +407,4 @@
             };
         }
     </script>
-</body>
 </html>

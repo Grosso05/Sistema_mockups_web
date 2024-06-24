@@ -3,7 +3,7 @@ from flask_login import login_required, login_user, current_user
 from models import Categoria, Items, ItemsPorProducto, Lineas, Productos, Users, ItemProveedores
 from utils import roles_required
 
-
+    
 routes_blueprint = Blueprint('routes', __name__)
 
 #ruta principal (index), ruta para generar catalogo del lado del cliente
@@ -13,13 +13,14 @@ def index():
     return render_template('index.html', mensaje=mensaje)
 
 
+
 #ruta para el dashboard de administrador
 @routes_blueprint.route('/routes.admin')
 @login_required
 @roles_required(1)
 def admin():
     if current_user.user_rol != 1:  # Verifica si el rol del usuario es igual a 1 (ID del rol de administrador)
-        return redirect(url_for('users.login'))  # Redirige a la página de inicio de sesión u otra página según lo que prefieras
+        return redirect(url_for('users.login'))  # Redirige a la página de inicio de sesión u otra página 
     return render_template('/dashboard_admin.html')
 
 
@@ -45,6 +46,8 @@ def generar_catalogo():
 @roles_required(2)
 def generar_catalogouser():
     return render_template('generarcatalogouserregistrado.html')
+
+# <------------------------------------------------------------------ SISTEMA COTIZADOR --------------------------------------------------------------------------------->
 
 #ruta para renderizar la vista de la cotizacion
 @routes_blueprint.route('/generar_cotizacion')

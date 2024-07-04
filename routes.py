@@ -49,12 +49,13 @@ def generar_catalogouser():
 
 # <------------------------------------------------------------------ SISTEMA COTIZADOR --------------------------------------------------------------------------------->
 
-#ruta para renderizar la vista de la cotizacion
 @routes_blueprint.route('/generar_cotizacion')
 def generar_cotizacion():
     lineas = Lineas.query.all()
     productos = Productos.query.all()
-    return render_template('generar_cotizacion.html', lineas=lineas, productos=productos)
+    vendedores = Users.query.all() 
+    return render_template('generar_cotizacion.html', lineas=lineas, productos=productos, vendedores=vendedores)
+
 
 #ruta que trae los items sugeridos para cada producto
 @routes_blueprint.route('/productos_por_linea/<int:linea_id>')
@@ -130,7 +131,6 @@ def todos_los_items():
         'items': items_json,
         'totalPaginas': total_paginas
     })
-
 
 
 

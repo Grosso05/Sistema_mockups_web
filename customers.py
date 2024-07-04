@@ -8,6 +8,7 @@ from builtins import bool
 from utils import roles_required
 customers_blueprint = Blueprint('customers', __name__)
 import logging
+from sqlalchemy.orm.exc import NoResultFound
 
 # Define la función bool_func aquí
 def bool_func(value):
@@ -55,7 +56,7 @@ def delete_customer(customer_id):
     db.session.commit()
     return jsonify({'message': 'Cliente eliminado exitosamente'}), 200
 
-from sqlalchemy.orm.exc import NoResultFound
+
 
 @customers_blueprint.route('/cambiar_estado/<int:customer_id>', methods=['POST'])
 def cambiar_estado_cliente(customer_id):

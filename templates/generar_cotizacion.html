@@ -6,39 +6,17 @@
     <title>Cotizador Web</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
     <style>
-        /* Estilos CSS para los botones */
-        .botones-container {
-            margin-top: 20px;
-        }
-        .botones-container button {
-            margin: 5px;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-        }
-        .botones-container button:hover {
-            background-color: #45a049;
-        }
-        .botones-container .eliminar {
-            background-color: #f44336;
-        }
-        .botones-container .eliminar:hover {
-            background-color: #da190b;
-        }
+
     </style>
 </head>
 <body>
-    <header>
-        <h1>Sistema De Costos</h1>
-    </header>
+
+    <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
     <section class="flex">
         <div class="seccion-izquierda flex-item">
             <h2> Productos </h2>
             <div class="item-descripcion-container">
-                <div class="item-number" id="itemNumber">1</div>
+                <div class="item-number" id="itemNumber"></div>
                 <textarea id="descripcion" name="descripcion" rows="3" class="descripcion-input" placeholder="Ingrese la descripción del producto" required></textarea>
             </div>
             <div class="grupo">
@@ -56,11 +34,11 @@
                     <option value="">Seleccionar</option>
                 </select>
                 <label for="alto">Alto:</label>
-                <input type="number" id="alto" name="alto" min="10" max="100" />
+                <input type="number" id="alto" name="alto" min="10" max="1000" />
                 <label for="ancho">Ancho:</label>
-                <input type="number" id="ancho" name="ancho" min="10" max="100" />
+                <input type="number" id="ancho" name="ancho" min="10" max="1000" />
                 <label for="fondo">Fondo:</label>
-                <input type="number" id="fondo" name="fondo" min="10" max="100" />
+                <input type="number" id="fondo" name="fondo" min="10" max="1000" />
             </div>
             <div class="grupo botones">
                 <button id="btnCrear">Añadir</button>
@@ -69,59 +47,75 @@
         <div class="seccion-derecha flex-item flex-grow">
             <div class="header-cotizacion">
                 <h2>Datos de Cotización</h2>
-                <button id="toggleDatosBtn" class="flecha-btn">></button>
+        <button id="toggleDatosBtn" class="flecha-btn">></button>
+    </div>
+    <div class="grupo-columns" id="formulario-cotizacion" style="display: none;">
+        <div class="grupo-columns" id="formulario-cotizacion">
+            <div class="grupo-columna">
+                <div class="grupo">
+                    <label for="fecha"> Fecha  </label>
+                    <input type="date" id="fecha" name="fecha" value="" required>
+                </div>
+                <div class="grupo">
+                    <label for="cliente"> Cliente  </label>
+                    <input type="text" id="cliente" name="cliente" required>
+                </div>
+                <div class="grupo">
+                    <label for="contacto"> Contacto  </label>
+                    <input type="text" id="contacto" name="contacto" required>
+                </div>
+                <div class="grupo">
+                    <label for="proyecto"> Proyecto  </label>
+                    <input type="text" id="proyecto" name="proyecto" required>
+                </div>
+                <div class="grupo">
+                    <label for="vendedor"> Vendedor </label>
+                    <select id="vendedor" name="vendedor" required>
+                        <option value="">Seleccionar</option>
+                        {% for vendedor in vendedores %}
+                            <option value="{{ vendedor.user_id }}">{{ vendedor.user_name }} {{ vendedor.user_last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="grupo">
+                    <label for="negociacion">N° Negociacion</label>
+                    <input type="text" id="negociacion" name="negociacion" required>
+                </div>
             </div>
-            <div class="grupo-columns" id="formulario-cotizacion" style="display: none;">
-                <div class="grupo-columns" id="formulario-cotizacion">
-                    <div class="grupo-columna">
-                        <div class="grupo">
-                            <label for="fecha"> Fecha  </label>
-                            <input type="date" id="fecha" name="fecha" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="cliente"> Cliente  </label>
-                            <input type="text" id="cliente" name="cliente" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="contacto"> Contacto  </label>
-                            <input type="text" id="contacto" name="contacto" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="proyecto"> Proyecto  </label>
-                            <input type="text" id="proyecto" name="proyecto" required>
-                        </div>
-                        <div class="grupo"> 
-                            <label for="vendedor"> Vendedor  </label>
-                            <input type="text" id="vendedor" name="vendor" required>
-                        </div>
-                        <div class="grupo"> N° Negociacion  <label for="negociacion"> :</label>
-                            <input type="text" id="negociacion" name="negociacion" required>
-                        </div>
-                    </div>
-                    <div class="grupo-columna">
-                        <div class="grupo">
-                            <label for="formaPago"> Forma de Pago  </label>
-                            <input type="text" id="formaPago" name="formaPago" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="validez"> Validez  </label>
-                            <input type="date" id="validez" name="validez" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="descuento"> Porcentaje Descuento  </label>
-                            <input type="number" id="descuento" name="descuento" min="0" max="100" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="personaRecibe"> Persona que Recibe  </label>
-                            <input type="text" id="personaRecibe" name="personaRecibe" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="numeroContacto"> Número de Contacto </label>
-                            <input type="tel" id="numeroContacto" name="numeroContacto" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="direccion"> Dirección  </label>
-                            <textarea id="direccion" name="direccion" rows="3" required></textarea>
+            <div class="grupo-columna">
+                <div class="grupo">
+                    <label for="formaPago"> Forma de Pago  </label>
+                    <select id="formaPago" name="formaPago" required>
+                        <option value="">Seleccionar</option>
+                        <option value="Contado" selected>Contado</option>
+                        <option value="Credito 30 Dias">Crédito 30 Días</option>
+                        <option value="Credito 60 Dias">Crédito 60 Días</option>
+                        <option value="50% abono - 50% entrega">50% Abono - 50% Entrega</option>
+                    </select>
+                </div>
+                <div class="grupo">
+                    <label for="validez"> Validez  </label>
+                    <select id="validez" name="validez" required>
+                        <option value="15">15 días</option>
+                        <option value="30" selected>30 días</option>
+                        <option value="60">60 días</option>
+                    </select>
+                </div>
+                <div class="grupo">
+                    <label for="descuento"> Porcentaje Descuento  </label>
+                    <input type="number" id="descuento" name="descuento" min="0" max="100" required>
+                </div>
+                <div class="grupo">
+                    <label for="personaRecibe"> Persona que Recibe  </label>
+                    <input type="text" id="personaRecibe" name="personaRecibe" required>
+                </div>
+                <div class="grupo">
+                    <label for="numeroContacto"> Número de Contacto </label>
+                    <input type="tel" id="numeroContacto" name="numeroContacto" required>
+                </div>
+                <div class="grupo">
+                    <label for="direccion"> Dirección  </label>
+                    <textarea id="direccion" name="direccion" rows="3" required></textarea>
                         </div>
                     </div>
                 </div>
@@ -138,273 +132,346 @@
         <p>IVA:</p>
         <p>Total:</p>
     </div>
-    <script>
-        document.getElementById('toggleDatosBtn').addEventListener('click', function() {
-            const formularioCotizacion = document.getElementById('formulario-cotizacion');
-            formularioCotizacion.style.display = formularioCotizacion.style.display === 'none' ? 'flex' : 'none';
-            this.textContent = formularioCotizacion.style.display === 'none' ? '>' : 'v';
-            this.classList.toggle('expandido');
-        });
+</main>
 
-        document.getElementById('seleccionarLinea').addEventListener('change', function() {
-            const lineaId = this.value;
-            const productoSelect = document.getElementById('seleccionarProducto');
-            productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Clear current options
+<script>
+    // Obtener la fecha actual en formato YYYY-MM-DD
+    const today = new Date().toISOString().slice(0, 10);
 
-            fetch(`/productos_por_linea/${lineaId}`)
-                .then(response => response.json())
-                .then(productos => {
-                    productos.forEach(producto => {
-                        const option = document.createElement('option');
-                        option.value = producto.id;
-                        option.textContent = producto.nombre;
-                        productoSelect.appendChild(option);
-                    });
+    // Establecer la fecha actual como valor por defecto
+    document.getElementById('fecha').value = today;
+
+    document.getElementById('toggleDatosBtn').addEventListener('click', function() {
+        const formularioCotizacion = document.getElementById('formulario-cotizacion');
+        formularioCotizacion.style.display = formularioCotizacion.style.display === 'none' ? 'flex' : 'none';
+        this.textContent = formularioCotizacion.style.display === 'none' ? '>' : 'v';
+        this.classList.toggle('expandido');
+    });
+
+    document.getElementById('seleccionarLinea').addEventListener('change', function() {
+        const lineaId = this.value;
+        const productoSelect = document.getElementById('seleccionarProducto');
+        productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Clear current options
+
+        fetch(`/productos_por_linea/${lineaId}`)
+            .then(response => response.json())
+            .then(productos => {
+                productos.forEach(producto => {
+                    const option = document.createElement('option');
+                    option.value = producto.id;
+                    option.textContent = producto.nombre;
+                    productoSelect.appendChild(option);
                 });
-        });
+            });
+    });
 
-        let itemNumber = 0;
+    let itemNumber = 0;
 
-        document.getElementById('btnCrear').addEventListener('click', function() {
-            const descripcionInput = document.getElementById('descripcion');
-            const productoSelect = document.getElementById('seleccionarProducto');
-            const descripcion = descripcionInput.value.trim();
-            const productoId = productoSelect.value;
+    document.getElementById('btnCrear').addEventListener('click', function() {
+        const descripcionInput = document.getElementById('descripcion');
+        const productoSelect = document.getElementById('seleccionarProducto');
+        const descripcion = descripcionInput.value.trim();
+        const productoId = productoSelect.value;
+        const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
 
-            if (descripcion === "" || productoId === "") {
-                alert("Por favor, ingrese una descripción y seleccione un producto.");
-                return;
-            }
+        if (descripcion === "" || productoId === "") {
+            alert("Por favor, ingrese una descripción y seleccione un producto.");
+            return;
+        }
 
-            itemNumber++;
+        itemNumber++; // Incrementar el número de producto
 
-            const productosContainer = document.getElementById('productos-container');
-            const nuevoProducto = document.createElement('div');
-            nuevoProducto.className = 'producto';
-            nuevoProducto.id = `producto-${itemNumber}`;
-            nuevoProducto.innerHTML = `
-                <h3>Producto ${itemNumber}: ${descripcion}</h3>
-                <div class="items-seleccionados">
-                    <h4>Items Seleccionados</h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Descripción</th>
-                                <th>Categoría</th>
-                                <th>Unidad</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="items-seleccionados-${itemNumber}"></tbody>
-                    </table>
-                </div>
-                <div id="seleccion-items-container-${itemNumber}">
-                    <div>
-                        <h4>Seleccionar Ítems</h4>
-                        <input type="text" id="buscar-item-${itemNumber}" placeholder="Buscar ítems">
-                        <div id="seleccion-items-${itemNumber}"></div>
-                        <div id="paginacion-items-${itemNumber}"></div>
-                        <div class="botones-container">
-                            <button onclick="agregarItemsSeleccionados(${itemNumber})">Agregar Ítems Seleccionados</button>
-                            <button onclick="verTodosItems(${itemNumber}, 1, '')">Ver Todos los Ítems</button>
-                        </div>
+        const productosContainer = document.getElementById('productos-container');
+
+        // Crear el nuevo producto
+        const nuevoProducto = document.createElement('div');
+        nuevoProducto.className = 'producto';
+        nuevoProducto.id = `producto-${itemNumber}`;
+
+        // Crear el contenido del nuevo producto
+        nuevoProducto.innerHTML = `
+            <h3>Producto ${itemNumber}: ${productoNombre}</h3>
+            <h4>Descripción: ${descripcion}</h4>
+            <div class="items-seleccionados">
+                <h4>Items Seleccionados</h4>
+                <table>
+                    <thead> 
+                        <tr>
+                            <th>ID</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            <th>Unidad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-seleccionados-${itemNumber}"></tbody>
+                </table>
+            </div>
+            <div id="seleccion-items-container-${itemNumber}" style="display: none;">
+                <div>
+                    <h4>Seleccionar Ítems</h4>
+                    <input type="text" id="buscar-item-${itemNumber}" placeholder="Buscar ítems">
+                    <div id="seleccion-items-${itemNumber}"></div>
+                    <div id="paginacion-items-${itemNumber}"></div>
+                    <div class="botones-container">
+                        <button onclick="agregarItemsSeleccionados(${itemNumber})">Agregar Ítems Seleccionados</button>
+                        <button onclick="verTodosItems(${itemNumber}, 1, '')">Ver Todos los Ítems</button>
                     </div>
                 </div>
-            `;
+            </div>
+        `;
 
-            productosContainer.appendChild(nuevoProducto);
+        // Agregar el nuevo producto al contenedor de productos
+        productosContainer.appendChild(nuevoProducto);
 
-            cargarItemsProducto(productoId, itemNumber, 1, '');
+        // Actualizar el número de producto dentro del div itemNumber
+        actualizarNumeroProducto(itemNumber);
 
-            // Agregar botones de Confirmar, Editar, Eliminar y Duplicar
-            const botonesContainer = document.createElement('div');
-            botonesContainer.className = 'botones-container';
-            const confirmarProductoBtn = document.createElement('button');
-            confirmarProductoBtn.textContent = "Confirmar Producto";
-            confirmarProductoBtn.addEventListener('click', function() {
-                const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${itemNumber}`);
-                seleccionItemsContainer.style.display = 'none';
+        cargarItemsProducto(productoId, itemNumber, 1, '');
+
+        // Agregar botones de Confirmar, Editar, Eliminar y Duplicar
+        const botonesContainer = document.createElement('div');
+        botonesContainer.className = 'botones-container';
+        const confirmarProductoBtn = document.createElement('button');
+        confirmarProductoBtn.textContent = "Confirmar Producto";
+        confirmarProductoBtn.addEventListener('click', function() {
+            const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${nuevoProducto.id.split('-')[1]}`);
+            seleccionItemsContainer.style.display = 'none';
+        });
+        botonesContainer.appendChild(confirmarProductoBtn);
+
+        const editarProductoBtn = document.createElement('button');
+        editarProductoBtn.textContent = "Editar Producto";
+        editarProductoBtn.addEventListener('click', function() {
+            const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${nuevoProducto.id.split('-')[1]}`);
+            seleccionItemsContainer.style.display = 'block';
+        });
+        botonesContainer.appendChild(editarProductoBtn);
+
+        const eliminarProductoBtn = document.createElement('button');
+        eliminarProductoBtn.textContent = "Eliminar Producto";
+        eliminarProductoBtn.classList.add('eliminar');
+        eliminarProductoBtn.addEventListener('click', function() {
+            const producto = document.getElementById(`producto-${nuevoProducto.id.split('-')[1]}`);
+            producto.remove();
+        });
+        botonesContainer.appendChild(eliminarProductoBtn);
+
+        const duplicarProductoBtn = document.createElement('button');
+        duplicarProductoBtn.textContent = "Duplicar Producto";
+        duplicarProductoBtn.addEventListener('click', function() {
+            itemNumber++;
+            const nuevoProductoDuplicado = nuevoProducto.cloneNode(true);
+            nuevoProductoDuplicado.id = `producto-${itemNumber}`;
+            productosContainer.appendChild(nuevoProductoDuplicado);
+        });
+        botonesContainer.appendChild(duplicarProductoBtn);
+
+        nuevoProducto.appendChild(botonesContainer);
+        descripcionInput.value = '';
+        productoSelect.value = '';
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        actualizarNumeroProducto(itemNumber);
+    });
+
+    function actualizarNumeroProducto(numero) {
+        const itemNumberDiv = document.getElementById('itemNumber');
+        if (itemNumberDiv) {
+            itemNumberDiv.textContent = (numero + 1).toString();
+        }
+    }
+
+    function cargarItemsProducto(productoId, itemNumber, pagina, busqueda) {
+        fetch(`/items_por_producto/${productoId}?pagina=${pagina}&busqueda=${busqueda}`)
+            .then(response => response.json())
+            .then(data => {
+                const items = data.items;
+                const totalPaginas = data.totalPaginas;
+                const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
+                const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
+
+                seleccionItemsContainer.innerHTML = '';
+
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Seleccionar</th>
+                            <th>ID</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            <th>Unidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
+                            <tr>
+                                <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
+                                <td>${item.id}</td>
+                                <td>${item.descripcion}</td>
+                                <td>${item.categoria}</td>
+                                <td>${item.unidad}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                seleccionItemsContainer.appendChild(table);
+
+                paginacionContainer.innerHTML = '';
+                for (let i = 1; i <= totalPaginas; i++) {
+                    const button = document.createElement('button');
+                    button.textContent = i;
+                    button.disabled = i === pagina;
+                    button.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, i, busqueda));
+                    paginacionContainer.appendChild(button);
+                }
+
+                const buscador = document.getElementById(`buscar-item-${itemNumber}`);
+                buscador.addEventListener('input', debounce(() => {
+                    const busqueda = buscador.value;
+                    cargarItemsProducto(productoId, itemNumber, 1, busqueda);
+                }, 300));
             });
-            botonesContainer.appendChild(confirmarProductoBtn);
+    }
 
-            const editarProductoBtn = document.createElement('button');
-            editarProductoBtn.textContent = "Editar Producto";
-            editarProductoBtn.addEventListener('click', function() {
-                const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${itemNumber}`);
-                seleccionItemsContainer.style.display = 'block';
-            });
-            botonesContainer.appendChild(editarProductoBtn);
+    function agregarItemsSeleccionados(itemNumber) {
+        const itemsSeleccionados = document.querySelectorAll(`#seleccion-items-${itemNumber} input[type="checkbox"]:checked`);
+        const itemsSeleccionadosContainer = document.getElementById(`items-seleccionados-${itemNumber}`);
 
-            const eliminarProductoBtn = document.createElement('button');
-            eliminarProductoBtn.textContent = "Eliminar Producto";
-            eliminarProductoBtn.classList.add('eliminar');
-            eliminarProductoBtn.addEventListener('click', function() {
-                const producto = document.getElementById(`producto-${itemNumber}`);
-                producto.remove();
-            });
-            botonesContainer.appendChild(eliminarProductoBtn);
-
-            const duplicarProductoBtn = document.createElement('button');
-            duplicarProductoBtn.textContent = "Duplicar Producto";
-            duplicarProductoBtn.addEventListener('click', function() {
-                itemNumber++;
-                const nuevoProductoDuplicado = nuevoProducto.cloneNode(true);
-                nuevoProductoDuplicado.id = `producto-${itemNumber}`;
-                productosContainer.appendChild(nuevoProductoDuplicado);
-            });
-            botonesContainer.appendChild(duplicarProductoBtn);
-
-            nuevoProducto.appendChild(botonesContainer);
-
-            descripcionInput.value = '';
-            productoSelect.value = '';
+        // Obtener conjunto de IDs de ítems ya seleccionados para este producto
+        const idsSeleccionados = new Set();
+        itemsSeleccionadosContainer.querySelectorAll('tr').forEach(fila => {
+            const itemId = fila.querySelector('td:first-child').textContent;
+            idsSeleccionados.add(itemId);
         });
 
-        function cargarItemsProducto(productoId, itemNumber, pagina, busqueda) {
-            fetch(`/items_por_producto/${productoId}?pagina=${pagina}&busqueda=${busqueda}`)
-                .then(response => response.json())
-                .then(data => {
-                    const items = data.items;
-                    const totalPaginas = data.totalPaginas;
-                    const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
-                    const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
+        itemsSeleccionados.forEach(itemCheckbox => {
+            const itemId = itemCheckbox.value;
+            if (idsSeleccionados.has(itemId)) {
+                alert(`El ítem con ID ${itemId} ya ha sido agregado.`);
+                return; // Salir de la función si el ítem ya está en la lista
+            }
 
-                    seleccionItemsContainer.innerHTML = '';
+            const itemLabel = itemCheckbox.closest('tr').querySelector('td:nth-child(3)').textContent;
 
-                    const table = document.createElement('table');
-                    table.innerHTML = `
-                        <thead>
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td>${itemId}</td>
+                <td>${itemLabel}</td>
+                <td>${itemCheckbox.closest('tr').querySelector('td:nth-child(4)').textContent}</td>
+                <td>${itemCheckbox.closest('tr').querySelector('td:nth-child(5)').textContent}</td>
+                <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+            `;
+            itemsSeleccionadosContainer.appendChild(nuevaFila);
+
+            idsSeleccionados.add(itemId);
+        });
+
+        alert('Ítems agregados correctamente.');
+    }
+
+    function eliminarItemSeleccionado(button) {
+        const fila = button.closest('tr');
+        fila.remove();
+    }
+
+    function verTodosItems(itemNumber, pagina, busqueda) {
+        fetch(`/todos_los_items?pagina=${pagina}&busqueda=${busqueda}`)
+            .then(response => response.json())
+            .then(data => {
+                const items = data.items;
+                const totalPaginas = data.totalPaginas;
+                const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
+                const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
+
+                seleccionItemsContainer.innerHTML = '';
+
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Seleccionar</th>
+                            <th>ID</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            <th>Unidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
                             <tr>
-                                <th>Seleccionar</th>
-                                <th>ID</th>
-                                <th>Descripción</th>
-                                <th>Categoría</th>
-                                <th>Unidad</th>
+                                <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
+                                <td>${item.id}</td>
+                                <td>${item.descripcion}</td>
+                                <td>${item.categoria}</td>
+                                <td>${item.unidad}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            ${items.map(item => `
-                                <tr>
-                                    <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
-                                    <td>${item.id}</td>
-                                    <td>${item.descripcion}</td>
-                                    <td>${item.categoria}</td>
-                                    <td>${item.unidad}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    `;
-                    seleccionItemsContainer.appendChild(table);
-
-                    paginacionContainer.innerHTML = '';
-                    for (let i = 1; i <= totalPaginas; i++) {
-                        const button = document.createElement('button');
-                        button.textContent = i;
-                        button.disabled = i === pagina;
-                        button.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, i, busqueda));
-                        paginacionContainer.appendChild(button);
-                    }
-
-                    const buscador = document.getElementById(`buscar-item-${itemNumber}`);
-                    buscador.addEventListener('input', debounce(() => {
-                        const busqueda = buscador.value;
-                        cargarItemsProducto(productoId, itemNumber, 1, busqueda);
-                    }, 300));
-                });
-        }
-
-        function debounce(func, wait) {
-            let timeout;
-            return function(...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
-            };
-        }
-
-        function agregarItemsSeleccionados(itemNumber) {
-            const itemsSeleccionados = document.querySelectorAll(`#seleccion-items-${itemNumber} input[type="checkbox"]:checked`);
-            const itemsSeleccionadosContainer = document.getElementById(`items-seleccionados-${itemNumber}`);
-
-            itemsSeleccionados.forEach(itemCheckbox => {
-                const itemId = itemCheckbox.value;
-                const itemLabel = itemCheckbox.closest('tr').querySelector('td:nth-child(3)').textContent;
-
-                const nuevaFila = document.createElement('tr');
-                nuevaFila.innerHTML = `
-                    <td>${itemId}</td>
-                    <td>${itemLabel}</td>
-                    <td>${itemCheckbox.closest('tr').querySelector('td:nth-child(4)').textContent}</td>
-                    <td>${itemCheckbox.closest('tr').querySelector('td:nth-child(5)').textContent}</td>
-                    <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+                        `).join('')}
+                    </tbody>
                 `;
-                itemsSeleccionadosContainer.appendChild(nuevaFila);
+                seleccionItemsContainer.appendChild(table);
+
+                paginacionContainer.innerHTML = '';
+                const maxPagesToShow = 5; 
+                const half = Math.floor(maxPagesToShow / 2);
+                let startPage = Math.max(1, pagina - half);
+                let endPage = Math.min(totalPaginas, pagina + half);
+
+                if (pagina - half < 1) {
+                    endPage = Math.min(totalPaginas, endPage + (half - pagina + 1));
+                }
+                if (pagina + half > totalPaginas) {
+                    startPage = Math.max(1, startPage - (pagina + half - totalPaginas));
+                }
+
+                if (pagina > 1) {
+                    const firstButton = document.createElement('button');
+                    firstButton.textContent = '<<';
+                    firstButton.addEventListener('click', () => verTodosItems(itemNumber, 1, busqueda));
+                    paginacionContainer.appendChild(firstButton);
+
+                    const prevButton = document.createElement('button');
+                    prevButton.textContent = '<';
+                    prevButton.addEventListener('click', () => verTodosItems(itemNumber, pagina - 1, busqueda));
+                    paginacionContainer.appendChild(prevButton);
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    const button = document.createElement('button');
+                    button.textContent = i;
+                    button.disabled = i === pagina;
+                    button.addEventListener('click', () => verTodosItems(itemNumber, i, busqueda));
+                    paginacionContainer.appendChild(button);
+                }
+
+                if (pagina < totalPaginas) {
+                    const nextButton = document.createElement('button');
+                    nextButton.textContent = '>';
+                    nextButton.addEventListener('click', () => verTodosItems(itemNumber, pagina + 1, busqueda));
+                    paginacionContainer.appendChild(nextButton);
+
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = '>>';
+                    lastButton.addEventListener('click', () => verTodosItems(itemNumber, totalPaginas, busqueda));
+                    paginacionContainer.appendChild(lastButton);
+                }
+
+                const buscador = document.getElementById(`buscar-item-${itemNumber}`);
+                buscador.addEventListener('input', debounce(() => {
+                    const busqueda = buscador.value;
+                    verTodosItems(itemNumber, 1, busqueda);
+                }, 300));
             });
-        }
+    }
 
-        function eliminarItemSeleccionado(button) {
-            const fila = button.closest('tr');
-            fila.remove();
-        }
-
-        function verTodosItems(itemNumber, pagina, busqueda) {
-            fetch(`/todos_los_items?pagina=${pagina}&busqueda=${busqueda}`)
-                .then(response => response.json())
-                .then(data => {
-                    const items = data.items;
-                    const totalPaginas = data.totalPaginas;
-                    const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
-                    const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
-
-                    seleccionItemsContainer.innerHTML = '';
-
-                    const table = document.createElement('table');
-                    table.innerHTML = `
-                        <thead>
-                            <tr>
-                                <th>Seleccionar</th>
-                                <th>ID</th>
-                                <th>Descripción</th>
-                                <th>Categoría</th>
-                                <th>Unidad</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${items.map(item => `
-                                <tr>
-                                    <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
-                                    <td>${item.id}</td>
-                                    <td>${item.descripcion}</td>
-                                    <td>${item.categoria}</td>
-                                    <td>${item.unidad}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    `;
-                    seleccionItemsContainer.appendChild(table);
-
-                    paginacionContainer.innerHTML = '';
-                    for (let i = 1; i <= totalPaginas; i++) {
-                        const button = document.createElement('button');
-                        button.textContent = i;
-                        button.disabled = i === pagina;
-                        button.addEventListener('click', () => verTodosItems(itemNumber, i, busqueda));
-                        paginacionContainer.appendChild(button);
-                    }
-
-                    const buscador = document.getElementById(`buscar-item-${itemNumber}`);
-                    buscador.addEventListener('input', debounce(() => {
-                        const busqueda = buscador.value;
-                        verTodosItems(itemNumber, 1, busqueda);
-                    }, 300));
-                });
-        }
-        function debounce(func, wait) {
-            let timeout;
-            return function(...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
-            };
-        }
-    </script>
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+</script>
 </html>

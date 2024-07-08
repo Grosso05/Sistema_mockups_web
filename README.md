@@ -1,4 +1,15 @@
-## Generador de Catálogos Personalizados (Versión 5.2.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.3.0) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 4 de julio de 2024, 09:10 am
+
+Cambios Recientes
+v5.3.0
+
+Se optimizan los datos de la cotización
+Se incluye el nombre del producto junto con la descripcion
+Se mejora la paginacion de los items
+
+
 
 # Fecha de lanzamiento: 24 de Junio de 2024, 11:01 am
 

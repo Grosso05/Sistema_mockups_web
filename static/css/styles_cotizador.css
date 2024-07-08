@@ -7,6 +7,49 @@ body {
     color: #f1f1f1;
 }
 
+/*Estilos notificacion */
+
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 3px;
+    color: #fff;
+    opacity: 0.9;
+    transition: opacity 0.5s;
+}
+.notification.success {
+    background-color: #4caf50;
+}
+.notification.warning {
+    background-color: #ff9800;
+}
+.notification.error {
+    background-color: #f44336;
+}
+.notification:hover {
+    opacity: 1;
+}
+
+table tr td[colspan="5"] {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    text-align: center;
+}
+
+@keyframes fadeout {
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
 nav {
     background-color: #7BC9E2;
     overflow: hidden;

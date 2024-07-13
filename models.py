@@ -1,8 +1,7 @@
 # models.py
 from flask_sqlalchemy import SQLAlchemy
-from flask import current_app
 from sqlalchemy import DECIMAL, Column, Date, ForeignKey, Integer, String, text
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy import Index
 
 from flask_login import UserMixin  # Importa la clase UserMixin de flask_login
@@ -109,7 +108,10 @@ class ItemProveedores(db.Model):
     This class represents the itemproveedores table in the database.
     It represents the many-to-many relationship between Items and Proveedores tables
     with additional attributes for tipo_proveedor, precio, and fecha.
+
     """
+    __tablename__ = 'itemproveedores'
+
     item_id = Column(Integer, ForeignKey('items.item_id'), primary_key=True, nullable=False)
     id_proveedor = Column(Integer, ForeignKey('proveedores.ID_PROVEEDOR'), primary_key=True, nullable=False)  # Added ForeignKey constraint
     tipo_proveedor = Column(Integer, nullable=False)

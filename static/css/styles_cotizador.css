@@ -7,6 +7,30 @@ body {
     color: #f1f1f1;
 }
 
+/*Estilos para ocultar columnas sin eliminar del dom*/
+
+.oculto {
+    display: none;
+}
+
+/*Estilos para el input de cantidad*/
+.cantidad-input {
+    width: 60px; /* Ajusta el tamaño según sea necesario */
+}
+
+/*Estilos tabla productos*/
+
+.tipo-header strong {
+    display: block;
+    text-align: center;
+    background-color: #00b04fa9; /* Cambia el color de fondo según tus necesidades */
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 1.2em; /* Tamaño de fuente más grande */
+}
+
 /*Estilos notificacion */
 
 .notification-container {

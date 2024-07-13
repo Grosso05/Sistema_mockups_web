@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, render_template, request, redirect, url_fo
 from flask_login import login_required, login_user, current_user
 from models import Categoria, Items, ItemsPorProducto, Lineas, Productos, Users, ItemProveedores
 from utils import roles_required
+import locale
 
     
 routes_blueprint = Blueprint('routes', __name__)
@@ -49,6 +50,9 @@ def generar_catalogouser():
 
 # <------------------------------------------------------------------ SISTEMA COTIZADOR --------------------------------------------------------------------------------->
 
+# Configurar locale
+locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')  # Ajusta según tu configuración regional
+
 @routes_blueprint.route('/generar_cotizacion')
 def generar_cotizacion():
     lineas = Lineas.query.all()
@@ -56,8 +60,7 @@ def generar_cotizacion():
     vendedores = Users.query.all() 
     return render_template('generar_cotizacion.html', lineas=lineas, productos=productos, vendedores=vendedores)
 
-
-#ruta que trae los items sugeridos para cada producto
+# Ruta que trae los items sugeridos para cada producto
 @routes_blueprint.route('/productos_por_linea/<int:linea_id>')
 def productos_por_linea(linea_id):
     productos = Productos.query.filter_by(linea_idFK=linea_id).all()
@@ -66,7 +69,7 @@ def productos_por_linea(linea_id):
         items = Items.query.join(ItemsPorProducto, ItemsPorProducto.item_idFK == Items.item_id)\
                             .filter(ItemsPorProducto.producto_idFK == producto.producto_id)\
                             .all()
-        items_json = [{'id': item.item_id, 'descripcion': item.nombre} for item in items]
+        items_json = [{'id': item.item_id, 'descripcion': item.nombre, 'tipo': item.tipo} for item in items]
         productos_json.append({
             'id': producto.producto_id,
             'nombre': producto.nombre,
@@ -74,18 +77,20 @@ def productos_por_linea(linea_id):
         })
     return jsonify(productos_json)
 
-#ruta para traer 
+# Ruta para traer items por producto
 @routes_blueprint.route('/items_por_producto/<int:producto_id>')
 def items_por_producto(producto_id):
     pagina = request.args.get('pagina', 1, type=int)
     busqueda = request.args.get('busqueda', '', type=str)
     items_por_pagina = 20
 
-    query = Items.query.join(ItemsPorProducto, ItemsPorProducto.item_idFK == Items.item_id)\
-                       .filter(ItemsPorProducto.producto_idFK == producto_id)
+    query = Items.query \
+        .join(ItemsPorProducto, ItemsPorProducto.item_idFK == Items.item_id) \
+        .outerjoin(ItemProveedores, (ItemProveedores.item_id == Items.item_id) & (ItemProveedores.tipo_proveedor == 1)) \
+        .filter(ItemsPorProducto.producto_idFK == producto_id)
     
     if busqueda:
-        query = query.filter(Items.nombre.like(f'%{busqueda}%'))
+        query = query.filter(Items.nombre.ilike(f'%{busqueda}%'))
     
     total_items = query.count()
     total_paginas = (total_items // items_por_pagina) + (1 if total_items % items_por_pagina > 0 else 0)
@@ -96,7 +101,9 @@ def items_por_producto(producto_id):
         'id': item.item_id,
         'descripcion': item.nombre,
         'categoria': item.categoria.CATEGORIA_NOMBRE,
-        'unidad': item.unidad
+        'unidad': item.unidad,
+        'tipo': item.tipo,
+        'precio': locale.format_string("%.2f", next((item_prov.precio for item_prov in item.itemproveedores if item_prov.tipo_proveedor == 1), 0), grouping=True)
     } for item in items]
 
     return jsonify({
@@ -110,9 +117,10 @@ def todos_los_items():
     busqueda = request.args.get('busqueda', '', type=str)
     items_por_pagina = 20
 
-    query = Items.query
+    query = Items.query \
+        .outerjoin(ItemProveedores, (ItemProveedores.item_id == Items.item_id) & (ItemProveedores.tipo_proveedor == 1))
+    
     if busqueda:
-        # Usar `ilike` en lugar de `like` si MySQL soporta búsquedas insensibles a mayúsculas/minúsculas con `ilike`
         query = query.filter(Items.nombre.ilike(f'%{busqueda}%'))
 
     total_items = query.count()
@@ -124,7 +132,9 @@ def todos_los_items():
         'id': item.item_id,
         'descripcion': item.nombre,
         'categoria': item.categoria.CATEGORIA_NOMBRE,
-        'unidad': item.unidad
+        'unidad': item.unidad,
+        'tipo': item.tipo,
+        'precio': locale.format_string("%.2f", next((item_prov.precio for item_prov in item.itemproveedores if item_prov.tipo_proveedor == 1), 0), grouping=True)
     } for item in items]
 
     return jsonify({

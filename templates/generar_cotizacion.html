@@ -252,6 +252,7 @@
                 <option value="80">80%</option>
                 <option value="90">90%</option>
                 <option value="100">100%</option>
+                <option value="103">103%</option>
                 <option value="110">110%</option>
                 <option value="120">120%</option>
                 <option value="130">130%</option>
@@ -595,13 +596,13 @@ function actualizarTotalesExtras(itemNumber, costoDirecto) {
     const imprevistosPorcentaje = 3;
     const utilidadPorcentaje = parseFloat(document.getElementById(`utilidad-select-${itemNumber}`).value);
 
-    const administracion = calcularPorcentaje(costoDirecto, administracionPorcentaje);
-    const imprevistos = calcularPorcentaje(costoDirecto, imprevistosPorcentaje);
-    const utilidad = calcularPorcentaje(costoDirecto, utilidadPorcentaje);
+    const administracion = Math.round(calcularPorcentaje(costoDirecto, administracionPorcentaje));
+    const imprevistos = Math.round(calcularPorcentaje(costoDirecto, imprevistosPorcentaje));
+    const utilidad = Math.round(calcularPorcentaje(costoDirecto, utilidadPorcentaje));
 
     const ofertaAntesDeIva = costoDirecto + administracion + imprevistos + utilidad;
     const ivaPorcentaje = 19;
-    const iva = calcularPorcentaje(ofertaAntesDeIva, ivaPorcentaje);
+    const iva = Math.round(calcularPorcentaje(ofertaAntesDeIva, ivaPorcentaje));
     const valorOfertaImpuestosIncluidos = ofertaAntesDeIva + iva;
 
     document.getElementById(`administracion-${itemNumber}`).textContent = `Administración (35%): ${formatearNumero(administracion)}`;
@@ -621,7 +622,7 @@ function formatearNumero(numero) {
     
     
     
-    function mostrarNotificacion(mensaje, tipo) {
+function mostrarNotificacion(mensaje, tipo) {
         const notificacion = document.createElement('div');
         notificacion.className = `notificacion ${tipo}`;
         notificacion.textContent = mensaje;
@@ -638,9 +639,6 @@ function formatearNumero(numero) {
         fila.remove();
         actualizarTotalProducto(itemNumber); // Actualizar el total del producto después de eliminar el ítem
     }
-    
-    
-    
     
 
     function verTodosItems(itemNumber, pagina, busqueda) {

@@ -1,11 +1,19 @@
-## Generador de Catálogos Personalizados (Versión 5.4.1) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.4.3) desarrollada por: Brayan Grosso
 
-# Fecha de lanzamiento: 17 de julio de 2024, 09:08 am
+# Fecha de lanzamiento: 17 de julio de 2024, 10:00 am
+
+Cambios Recientes
+v5.4.3
+
+En esta versión, corregimos los errores a la hora de eliminar items, para que refresque el resumen de costos.
+
+# Fecha de lanzamiento: 17 de julio de 2024, 09:00 am
 
 Cambios Recientes
 v5.4.1
 
 En esta actualización, agregamos los calculos extra al resumen de costos, sin embargo presenta un error, de no restar el valor del total cuando se elimina un item de materia prima.
+
 # Fecha de lanzamiento: 13 de julio de 2024, 11:08 am
 
 Cambios Recientes

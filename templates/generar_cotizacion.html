@@ -219,7 +219,7 @@
                     <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
                     <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
                     <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
-                    <tbody id="mano-de-obra-${nuevoNumeroProducto}"></tbody>
+                    <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
                     <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
                 </tbody>
             </table>
@@ -466,7 +466,7 @@
         const materiaPrimaContainer = document.getElementById(`materiaprima-${itemNumber}`);
         const consumiblesContainer = document.getElementById(`consumibles-${itemNumber}`);
         const serviciosContainer = document.getElementById(`servicios-${itemNumber}`);
-        const manoDeObraContainer = document.getElementById(`mano-de-obra-${itemNumber}`);
+        const manoDeObraContainer = document.getElementById(`manodeobra-${itemNumber}`);
         const transporteContainer = document.getElementById(`transporte-${itemNumber}`);
     
         const idsSeleccionados = new Set();
@@ -542,7 +542,7 @@
             document.getElementById(`materiaprima-${itemNumber}`),
             document.getElementById(`consumibles-${itemNumber}`),
             document.getElementById(`servicios-${itemNumber}`),
-            document.getElementById(`mano-de-obra-${itemNumber}`),
+            document.getElementById(`manodeobra-${itemNumber}`),
             document.getElementById(`transporte-${itemNumber}`)
         ];
     

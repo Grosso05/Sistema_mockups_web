@@ -216,7 +216,7 @@
                     </tr>
                 </thead>
                 <tbody id="items-seleccionados-${nuevoNumeroProducto}">
-                    <tbody id="materia-prima-${nuevoNumeroProducto}"></tbody>
+                    <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
                     <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
                     <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
                     <tbody id="mano-de-obra-${nuevoNumeroProducto}"></tbody>
@@ -237,33 +237,33 @@
                 </div>
             </div>
         </div>
-<div id="resultado" class="resultado">
-    <h2>Resumen De Costos Producto ${nuevoNumeroProducto}</h2>
-    <p id="costo-directo-${nuevoNumeroProducto}">Costo Directo: 0</p>
-    <p id="administracion-${nuevoNumeroProducto}">Administración (35%): 0</p>
-    <p id="imprevistos-${nuevoNumeroProducto}">Imprevistos (3%): 0</p>
-    <p id="utilidad-${nuevoNumeroProducto}">
-        Utilidad 
-        <select id="utilidad-select-${nuevoNumeroProducto}">
-            <option value="45">45%</option>
-            <option value="53" selected>53%</option>
-            <option value="60">60%</option>
-            <option value="70">70%</option>
-            <option value="80">80%</option>
-            <option value="90">90%</option>
-            <option value="100">100%</option>
-            <option value="110">110%</option>
-            <option value="120">120%</option>
-            <option value="130">130%</option>
-            <option value="140">140%</option>
-            <option value="150">150%</option>
-            <option value="160">160%</option>
-        </select>: 0
-    </p>
-    <p id="oferta-antes-iva-${nuevoNumeroProducto}">Oferta Antes De Iva: 0</p>
-    <p id="iva-${nuevoNumeroProducto}">Iva: 0</p>
-    <p id="valor-oferta-${nuevoNumeroProducto}">Valor Oferta Impuestos Incluidos: 0</p>
-</div>
+    <div id="resultado" class="resultado">
+        <h2>Resumen De Costos Producto ${nuevoNumeroProducto}</h2>
+        <p id="costo-directo-${nuevoNumeroProducto}">Costo Directo: 0</p>
+        <p id="administracion-${nuevoNumeroProducto}">Administración (35%): 0</p>
+        <p id="imprevistos-${nuevoNumeroProducto}">Imprevistos (3%): 0</p>
+        <p id="utilidad-${nuevoNumeroProducto}">
+            Utilidad 
+            <select id="utilidad-select-${nuevoNumeroProducto}">
+                <option value="45">45%</option>
+                <option value="53" selected>53%</option>
+                <option value="60">60%</option>
+                <option value="70">70%</option>
+                <option value="80">80%</option>
+                <option value="90">90%</option>
+                <option value="100">100%</option>
+                <option value="110">110%</option>
+                <option value="120">120%</option>
+                <option value="130">130%</option>
+                <option value="140">140%</option>
+                <option value="150">150%</option>
+                <option value="160">160%</option>
+            </select>: 0
+        </p>
+        <p id="oferta-antes-iva-${nuevoNumeroProducto}">Oferta Antes De Iva: 0</p>
+        <p id="iva-${nuevoNumeroProducto}">Iva: 0</p>
+        <p id="valor-oferta-${nuevoNumeroProducto}">Valor Oferta Impuestos Incluidos: 0</p>
+    </div>
         `;
     
         // Insertar el nuevo producto en la posición correcta
@@ -338,18 +338,18 @@
         descripcionInput.value = '';
         productoSelect.value = '';
     
-    const utilidadSelect = document.getElementById(`utilidad-select-${nuevoNumeroProducto}`);
-    utilidadSelect.addEventListener('change', function() {
-        const porcentajeSeleccionado = parseFloat(utilidadSelect.value);
-        const costoDirecto = parseFloat(document.getElementById(`costo-directo-${nuevoNumeroProducto}`).textContent.replace('Costo Directo: ', '').replace(/\./g, '').replace(',', '.'));
-
-        const utilidadCalculada = calcularPorcentaje(costoDirecto, porcentajeSeleccionado);
-        document.getElementById(`utilidad-${nuevoNumeroProducto}`).textContent = `Utilidad (${porcentajeSeleccionado}%): ${formatearNumero(utilidadCalculada)}`;
-
-        // Actualizar totales adicionales
-        actualizarTotalesExtras(nuevoNumeroProducto, costoDirecto);
-    });
+        const utilidadSelect = document.getElementById(`utilidad-select-${nuevoNumeroProducto}`);
+        utilidadSelect.addEventListener('change', function() {
+            const porcentajeSeleccionado = parseFloat(utilidadSelect.value);
+            const costoDirecto = parseFloat(document.getElementById(`costo-directo-${nuevoNumeroProducto}`).textContent.replace('Costo Directo: ', '').replace(/\./g, '').replace(',', '.'));
     
+            const utilidadCalculada = calcularPorcentaje(costoDirecto, porcentajeSeleccionado);
+            document.getElementById(`utilidad-${nuevoNumeroProducto}`).textContent = `Utilidad (${porcentajeSeleccionado}%): ${formatearNumero(utilidadCalculada)}`;
+    
+            // Actualizar totales adicionales
+            actualizarTotalesExtras(nuevoNumeroProducto, costoDirecto);
+        });
+        
         nuevoProducto.appendChild(utilidadSelect);
     });
     
@@ -463,7 +463,7 @@
 
     function agregarItemsSeleccionados(itemNumber) {
         const itemsSeleccionados = document.querySelectorAll(`#seleccion-items-${itemNumber} input[type="checkbox"]:checked`);        
-        const materiaPrimaContainer = document.getElementById(`materia-prima-${itemNumber}`);
+        const materiaPrimaContainer = document.getElementById(`materiaprima-${itemNumber}`);
         const consumiblesContainer = document.getElementById(`consumibles-${itemNumber}`);
         const serviciosContainer = document.getElementById(`servicios-${itemNumber}`);
         const manoDeObraContainer = document.getElementById(`mano-de-obra-${itemNumber}`);
@@ -539,7 +539,7 @@
     
     function actualizarTotalProducto(itemNumber) {
         const contenedores = [
-            document.getElementById(`materia-prima-${itemNumber}`),
+            document.getElementById(`materiaprima-${itemNumber}`),
             document.getElementById(`consumibles-${itemNumber}`),
             document.getElementById(`servicios-${itemNumber}`),
             document.getElementById(`mano-de-obra-${itemNumber}`),

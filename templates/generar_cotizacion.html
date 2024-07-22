@@ -201,7 +201,7 @@
         nuevoProducto.innerHTML = `
         <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
         <h4>Descripción: ${descripcion}</h4>
-        <div class="items-seleccionados">
+        <div class="itemsseleccionados">
             <h4>Items Seleccionados</h4>
             <table>
                 <thead>
@@ -217,7 +217,7 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="items-seleccionados-${nuevoNumeroProducto}">
+                <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
                     <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
                     <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
                     <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
@@ -404,9 +404,9 @@
 
             }
 
-                    // Función para agregar ítems seleccionados y temporales al producto
-                    function agregarItemAlProducto(item, itemNumber) {
-                        const itemsSeleccionadosContainer = document.getElementById(`items-seleccionados-${itemNumber}`);
+                 // Función para agregar ítems seleccionados y temporales al producto
+            function agregarItemAlProducto(item, itemNumber) {
+                        const itemsSeleccionadosContainer = document.getElementById(`itemsseleccionados-${itemNumber}`);
                         const materiaPrimaContainer = document.getElementById(`materiaprima-${itemNumber}`);
                         const consumiblesContainer = document.getElementById(`consumibles-${itemNumber}`);
                         const serviciosContainer = document.getElementById(`servicios-${itemNumber}`);
@@ -414,7 +414,7 @@
                         const transporteContainer = document.getElementById(`transporte-${itemNumber}`);
                     
                         const idsSeleccionados = new Set();
-                        document.querySelectorAll(`#items-seleccionados-${itemNumber} tr`).forEach(fila => {
+                        document.querySelectorAll(`#itemsseleccionados-${itemNumber} tr`).forEach(fila => {
                             const itemId = fila.querySelector('td:first-child').textContent;
                             idsSeleccionados.add(itemId);
                         });
@@ -584,16 +584,16 @@
     }
     
 
-       function agregarItemsSeleccionados(itemNumber) {
+    function agregarItemsSeleccionados(itemNumber) {
             const itemsSeleccionados = document.querySelectorAll(`#seleccion-items-${itemNumber} input[type="checkbox"]:checked`);        
             const materiaPrimaContainer = document.getElementById(`materiaprima-${itemNumber}`);
             const consumiblesContainer = document.getElementById(`consumibles-${itemNumber}`);
             const serviciosContainer = document.getElementById(`servicios-${itemNumber}`);
             const manoDeObraContainer = document.getElementById(`manodeobra-${itemNumber}`);
             const transporteContainer = document.getElementById(`transporte-${itemNumber}`);
-        
+
             const idsSeleccionados = new Set();
-            document.querySelectorAll(`#items-seleccionados-${itemNumber} tr`).forEach(fila => {
+            document.querySelectorAll(`#itemsseleccionados-${itemNumber} tr`).forEach(fila => {
                 const itemId = fila.querySelector('td:first-child').textContent;
                 idsSeleccionados.add(itemId);
             });
@@ -667,7 +667,7 @@
                 document.getElementById(`servicios-${itemNumber}`),
                 document.getElementById(`manodeobra-${itemNumber}`),
                 document.getElementById(`transporte-${itemNumber}`),
-                document.getElementById(`items-seleccionados-${itemNumber}`) // Agregar el contenedor de ítems temporales
+                document.getElementById(`itemsseleccionados-${itemNumber}`) // Agregar el contenedor de ítems temporales
             ];
         
             let total = 0;

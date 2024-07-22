@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 5.4.3) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.5.0) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 22 de julio de 2024, 9:10 am
+
+Cambios Recientes
+v5.5.0
+
+En esta versión, agregamos la funcionalidad de agregar items de manera temporal a una cotización, sin embargo nos falta corregir un error a la hora de restar su valor del total. adicional falta agregar esos items a la tabla temporal
 
 # Fecha de lanzamiento: 17 de julio de 2024, 10:00 am
 

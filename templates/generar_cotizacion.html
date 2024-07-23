@@ -134,12 +134,13 @@
 
 <script>
 
-    
     // Obtener la fecha actual en formato YYYY-MM-DD
     const today = new Date().toISOString().slice(0, 10);
 
     // Establecer la fecha actual como valor por defecto
     document.getElementById('fecha').value = today;
+
+    // Función para contraer el formulario de los datos de cotizacion
 
     document.getElementById('toggleDatosBtn').addEventListener('click', function() {
         const formularioCotizacion = document.getElementById('formulario-cotizacion');
@@ -198,56 +199,56 @@
         nuevoProducto.className = 'producto';
         nuevoProducto.id = `producto-${nuevoNumeroProducto}`;
     
-// Crear el contenido del nuevo producto
-nuevoProducto.innerHTML = `
-    <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
-    <h4>Descripción: ${descripcion}</h4>
-    <div class="itemsseleccionados">
-        <h4>Items Seleccionados</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Grupo</th>
-                    <th>Descripción</th>
-                    <th>Unidad</th>
-                    <th>Precio</th>
-                    <th>Cantidad</th>
-                    <th>Total</th>
-                    <th class="oculto">Tipo</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
-                <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
-                <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
-                <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
-                <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
-                <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
-            </tbody>
-        </table>
-    </div>
-    <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
-        <div>
-            <h4>Seleccionar Ítems</h4>
-            <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
-            <div id="seleccion-items-${nuevoNumeroProducto}"></div>
-            <div id="paginacion-items-${nuevoNumeroProducto}"></div>
-            <div class="botones-container">
-                <button onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Ítems Seleccionados</button>
-                <button onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Ítems</button>
+        // Crear el contenido del nuevo producto
+        nuevoProducto.innerHTML = `
+            <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
+            <h4>Descripción: ${descripcion}</h4>
+            <div class="itemsseleccionados">
+                <h4>Items Seleccionados</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Grupo</th>
+                            <th>Descripción</th>
+                            <th>Unidad</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                            <th>Total</th>
+                            <th class="oculto">Tipo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
+                        <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
+                        <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
+                        <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
+                        <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
+                        <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
+                    </tbody>
+                </table>
             </div>
-        </div>
-    </div>
+            <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
+                <div>
+                    <h4>Seleccionar Ítems</h4>
+                    <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
+                    <div id="seleccion-items-${nuevoNumeroProducto}"></div>
+                    <div id="paginacion-items-${nuevoNumeroProducto}"></div>
+                    <div class="botones-container">
+                        <button onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Ítems Seleccionados</button>
+                        <button onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Ítems</button>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Formulario para agregar ítems temporales -->
-<div class="form-agregar-item-manual" data-producto-id="${nuevoNumeroProducto}">
-    <h4>Agregar Nuevo Ítem</h4>
-    <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
-    <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
-    <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
-    <button id="btnAgregarItemManual-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem</button>
-</div>
+            <!-- Formulario para agregar ítems temporales -->
+        <div class="form-agregar-item-manual" data-producto-id="${nuevoNumeroProducto}">
+            <h4>Agregar Nuevo Ítem</h4>
+            <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
+            <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
+            <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
+            <button id="btnAgregarItemManual-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem</button>
+        </div>
 
 
 
@@ -377,10 +378,16 @@ nuevoProducto.innerHTML = `
             function agregarItemTemporal(productoId) {
                 const descripcion = document.getElementById(`nuevo-item-descripcion-${productoId}`).value.trim();
                 const precioInput = document.getElementById(`nuevo-item-precio-${productoId}`).value.trim();
-                console.log(`Precio ingresado: ${precioInput}`);
+                
+                // Convertir el precio a formato numérico
                 const precio = parseFloat(precioInput.replace(/\./g, '').replace(/,/g, '.'));
-                console.log(`Precio parseado: ${precio}`);
-                const cantidad = parseInt(document.getElementById(`nuevo-item-cantidad-${productoId}`).value.trim());
+            
+                if (isNaN(precio)) {
+                    alert("El precio ingresado no es válido. Asegúrese de usar el formato correcto.");
+                    return;
+                }
+            
+                const cantidad = parseInt(document.getElementById(`nuevo-item-cantidad-${productoId}`).value.trim(), 10);
             
                 if (!descripcion || isNaN(precio) || isNaN(cantidad) || cantidad <= 0 || !productoId) {
                     alert("Por favor, ingrese una descripción, precio, cantidad y seleccione un producto.");
@@ -406,15 +413,14 @@ nuevoProducto.innerHTML = `
                         const contenedor = document.getElementById(`itemsseleccionados-${productoId}`);
                         const nuevaFila = document.createElement('tr');
                         const total = precio * cantidad;
-                        console.log(`Total calculado: ${total}`);
                         nuevaFila.innerHTML = `
                             <td>${data.item_id}</td>
                             <td>Temporales</td>
                             <td>${descripcion}</td>
                             <td>Unidad</td>
-                            <td>${precio.toFixed(2)}</td>
+                            <td>${formatearNumero(precio)}</td>
                             <td><input type="number" class="cantidad" value="${cantidad}" min="1" onchange="actualizarTotalProducto(${productoId})"></td>
-                            <td class="total">${total.toFixed(2)}</td>
+                            <td class="total">${formatearNumero(total)}</td>
                             <td class="oculto">Temporal</td>
                             <td><button onclick="eliminarItemTemporal(${data.item_id}, ${productoId})">Eliminar</button></td>
                         `;
@@ -707,27 +713,27 @@ nuevoProducto.innerHTML = `
                 document.getElementById(`transporte-${itemNumber}`),
                 document.getElementById(`itemsseleccionados-${itemNumber}`) // Agregar el contenedor de ítems temporales
             ];
-        
+            
             let total = 0;
-        
+            
             contenedores.forEach(container => {
                 if (container) {
                     const filas = container.querySelectorAll('tr');
-        
+            
                     filas.forEach(fila => {
                         const precioElement = fila.querySelector('td:nth-child(5)');
                         const cantidadElement = fila.querySelector('input.cantidad');
-        
+            
                         if (precioElement && cantidadElement) {
                             let precioTexto = precioElement.textContent.trim();
                             let cantidadTexto = cantidadElement.value.trim();
-        
-                            // Reemplazar comas por puntos para convertir correctamente a número
+            
+                            // Convertir el precio a número, eliminando separadores de miles y usando punto como decimal
                             precioTexto = precioTexto.replace(/\./g, '').replace(/,/g, '.');
-        
+                            
                             const precio = parseFloat(precioTexto);
                             const cantidad = parseInt(cantidadTexto, 10);
-        
+            
                             if (!isNaN(precio) && !isNaN(cantidad)) {
                                 const subtotal = precio * cantidad;
                                 fila.querySelector('.total').textContent = formatearNumero(subtotal);
@@ -743,10 +749,14 @@ nuevoProducto.innerHTML = `
                     console.error('Error: Contenedor no encontrado', container);
                 }
             });
-        
+            
+            // Actualizar el costo directo
             document.getElementById(`costo-directo-${itemNumber}`).textContent = `Costo Directo: ${formatearNumero(total)}`;
+            
+            // Llamar a la función para actualizar los totales extras
             actualizarTotalesExtras(itemNumber, total);
         }
+        
         
         
 
@@ -777,13 +787,7 @@ function actualizarTotalesExtras(itemNumber, costoDirecto) {
 
 function formatearNumero(numero) {
     return numero.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    console.log('console.log desde formatearNumero ');
-    console.log(`Precio texto: ${precioTexto}`);
-    console.log(`Cantidad texto: ${cantidadTexto}`);
-    console.log(`Precio parseado: ${precio}`);
-    console.log(`Cantidad parseada: ${cantidad}`);
-    console.log(`Subtotal calculado: ${subtotal}`);
-    console.log(`Total final: ${total}`);
+
 }
 
 

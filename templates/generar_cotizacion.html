@@ -422,7 +422,8 @@
                             <td><input type="number" class="cantidad" value="${cantidad}" min="1" onchange="actualizarTotalProducto(${productoId})"></td>
                             <td class="total">${formatearNumero(total)}</td>
                             <td class="oculto">Temporal</td>
-                            <td><button onclick="eliminarItemTemporal(${data.item_id}, ${productoId})">Eliminar</button></td>
+                        <button onclick="eliminarItemTemporal(this, ${data.item_id}, ${productoId})">Eliminar</button>
+
                         `;
                         contenedor.appendChild(nuevaFila);
             
@@ -811,6 +812,20 @@ function mostrarNotificacion(mensaje, tipo) {
         fila.remove();
         actualizarTotalProducto(itemNumber); // Actualizar el total del producto después de eliminar el ítem
     }
+
+    function eliminarItemTemporal(button, itemId, itemNumber) {
+        // Encuentra la fila del ítem temporal que se va a eliminar
+        const fila = button.closest('tr');
+        if (fila) {
+            // Elimina la fila del contenedor de ítems temporales
+            fila.remove();
+            // Actualiza el total del producto después de eliminar el ítem
+            actualizarTotalProducto(itemNumber);
+        } else {
+            console.error('Error: Fila no encontrada');
+        }
+    }
+    
     
 
     function verTodosItems(itemNumber, pagina, busqueda) {

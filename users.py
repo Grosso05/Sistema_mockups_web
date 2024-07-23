@@ -94,6 +94,7 @@ def login():
             session['userlastname'] = user.user_last_name
             session['usermail'] = user.user_email
             session['userlink']= user.user_link
+            session['user_id'] = user.user_id  # Guardar el ID del usuario en la sesión
 
             if user.user_rol == 1:
                 return redirect(url_for('routes.admin'))  # Redirige al panel de administrador si el rol es 1

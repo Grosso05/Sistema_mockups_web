@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify, render_template, request, redirect, url_for
+from flask import Blueprint, jsonify, render_template, request, redirect, session, url_for
 from flask_login import login_required, login_user, current_user
-from models import Categoria, Items, ItemsPorProducto, Lineas, Productos, Users, ItemProveedores
+from models import Categoria, ItemTemporal, Items, ItemsPorProducto, Lineas, Productos, Users, ItemProveedores,db
 from utils import roles_required
 import locale
 
@@ -141,6 +141,36 @@ def todos_los_items():
         'items': items_json,
         'totalPaginas': total_paginas
     })
+
+@routes_blueprint.route('/agregar_item_temporal', methods=['POST'])
+def agregar_item_temporal():
+    descripcion = request.json.get('descripcion')
+    precio = request.json.get('precio')
+    aprobado = request.json.get('aprobado')
+    producto_id = request.json.get('producto_id')
+
+    # Obtener el ID del usuario logueado de la sesión
+    creado_por = session.get('user_id')
+
+    if not creado_por:
+        return jsonify({'error': 'Usuario no autenticado'}), 401
+
+    nuevo_item = ItemTemporal(
+        descripcion=descripcion,
+        precio=precio,
+        creado_por=creado_por,
+        aprobado=aprobado
+    )
+
+    try:
+        db.session.add(nuevo_item)
+        db.session.commit()
+        return jsonify({'success': True, 'item_id': nuevo_item.id}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(e)
+        return jsonify({'error': 'Error al agregar el ítem temporal'}), 500
+
 
 
 

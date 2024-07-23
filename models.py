@@ -1,6 +1,6 @@
 # models.py
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import DECIMAL, Column, Date, ForeignKey, Integer, String, text
+from sqlalchemy import DECIMAL, TIMESTAMP, Boolean, Column, Date, ForeignKey, Integer, Numeric, String, text
 from sqlalchemy.orm import relationship
 from sqlalchemy import Index
 
@@ -87,6 +87,22 @@ class Items(db.Model):
 
     def __repr__(self):
         return f"<Items {self.nombre}>"
+
+
+class ItemTemporal(db.Model):
+    __tablename__ = 'itemtemporal'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    descripcion = db.Column(db.String(255), nullable=False)  # Actualizado a 'descripcion'
+    precio = db.Column(db.Float, nullable=False)
+    creado_por = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    aprobado = db.Column(db.Boolean, default=False)
+
+    # Definir la relación con Users
+    creado_por_usuario = db.relationship('Users', backref='items_temporales')
+
+    def __repr__(self):
+        return f"<ItemTemporal {self.descripcion}>"
+
   
 class ItemsPorProducto(db.Model):
   """

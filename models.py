@@ -87,6 +87,7 @@ class Items(db.Model):
 
     def __repr__(self):
         return f"<Items {self.nombre}>"
+    
 
 
 class ItemTemporal(db.Model):
@@ -159,17 +160,34 @@ class Lineas(db.Model):
 
   
 class Productos(db.Model):
-  """
-  This class represents the Productos table in the database.
-  """
-  producto_id = Column(Integer, primary_key=True, autoincrement=True)
-  linea_idFK = Column(Integer, ForeignKey('lineas.linea_id'), nullable=False)
-  nombre = Column(String(200), nullable=False)
+    """
+    This class represents the Productos table in the database.
+    """
+    __tablename__ = 'productos'
+    producto_id = Column(Integer, primary_key=True, autoincrement=True)
+    linea_idFK = Column(Integer, ForeignKey('lineas.linea_id'), nullable=False)
+    nombre = Column(String(200), nullable=False)
 
-  linea = relationship("Lineas", backref="productos")
+    linea = relationship("Lineas", backref="productos")
+    porcentajes = relationship("PorcentajesProducto", uselist=False, back_populates="producto")
 
-  def __repr__(self):
-    return f"<Productos {self.nombre}>"
+    def __repr__(self):
+        return f"<Productos {self.nombre}>"
+  
+class PorcentajesProducto(db.Model):
+    """
+    This class represents the PorcentajesProducto table in the database.
+    """
+    __tablename__ = 'porcentajes_productos'
+    id_producto = Column(Integer, ForeignKey('productos.producto_id'), primary_key=True)
+    administracion = Column(Integer, nullable=False)
+    imprevistos = Column(Integer, nullable=False)
+    utilidad = Column(Integer, nullable=False)
+
+    producto = relationship("Productos", back_populates="porcentajes")
+
+    def __repr__(self):
+        return f"<PorcentajesProducto {self.id_producto}>"
   
 class Proveedores(db.Model):
   """

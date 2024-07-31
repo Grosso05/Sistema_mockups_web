@@ -149,6 +149,7 @@
         this.classList.toggle('expandido');
     });
 
+    //funcion para evento de seleccion de linea
 
     document.getElementById('seleccionarLinea').addEventListener('change', function() {
         const lineaId = this.value;
@@ -167,6 +168,8 @@
             });
     });
     
+    //funcion que consulta los porcentajes de cada producto en el backend
+
     function cargarPorcentajesProducto() {
         const productoId = document.getElementById('seleccionarProducto').value;
     
@@ -307,6 +310,25 @@
                 // Limpiar los campos de entrada después de agregar el producto
                 descripcionInput.value = '';
                 productoSelect.value = '';
+
+                        // Insertar el nuevo producto en la posición correcta
+        let insertado = false;
+        productosContainer.querySelectorAll('.producto').forEach(producto => {
+            const numeroProducto = parseInt(producto.id.split('-')[1], 10);
+            if (nuevoNumeroProducto < numeroProducto) {
+                productosContainer.insertBefore(nuevoProducto, producto);
+                insertado = true;
+                return false; // Rompe el bucle forEach
+            }
+        });
+        if (!insertado) {
+            productosContainer.appendChild(nuevoProducto); // Si no se insertó, agregar al final
+        }
+    
+        // Actualizar el número de producto dentro del div itemNumber
+        actualizarNumeroProducto();
+    
+        cargarItemsProducto(productoId, nuevoNumeroProducto, 1, '');
     
                 // Actualizar los totales al agregar un nuevo producto
                 actualizarTotalesExtras(nuevoNumeroProducto, 0); // Inicia con costo directo 0

@@ -79,7 +79,6 @@ def productos_por_linea(linea_id):
 def get_porcentajes(producto_id):
     porcentaje = PorcentajesProducto.query.filter_by(id_producto=producto_id).first()
     if porcentaje:
-        # Asegúrate de que porcentaje no sea None antes de acceder a sus atributos
         return jsonify({
             'administracion': porcentaje.administracion,
             'imprevistos': porcentaje.imprevistos,

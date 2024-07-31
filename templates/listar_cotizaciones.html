@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/userlist.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <title>Usuarios</title>
+
+    <style>
+
+        h1{
+
+            margin-top: 50px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            
+            border-collapse: collapse;
+            width: 90%;
+        }
+        th, td {
+            
+            border: 1px solid #b4aab3;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            
+            background-color: #7BC9E2;
+        }
+        button{
+            
+            background-color:#d3d3d3;
+        }
+    </style>
+
+</head>
+<body>
+
+
+    {% include 'navbar.html' %}
+
+    {% include 'sidebar.html' %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+             {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+
+            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+                <h1>Lista de Cotizaciones</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Negociacion</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Contacto</th>
+            <th>Proyecto</th>
+            <th>Vendedor</th>
+            <th>Forma De Pago</th>
+            <th>Validez</th>
+            <th>Descuento</th>
+            <th>Recibe</th>
+            <th>Numero Contacto</th>
+            <th>direccion</th>
+            <th>Acciones</th>
+        </tr>
+        {% for cotizacion in Cotizaciones %}
+        <tr>
+            <td>{{ cotizaciones.id_cotizacion }}</td>
+            <td>{{ cotizacion.negociacion_cotizacion }}</td>
+            <td>{{ cotizacion.fecha_cotizacion }}</td>
+            <td>{{ cotizacion.cliente_cotizacion }}</td>
+            <td>{{ cotizacion.contacto_cotizacion }}</td>
+            <td>{{ cotizacion.proyecto_cotizacion }}</td>
+            <td>{{ cotizacion.vendedor_cotizacion }}</td>
+            <td>{{ cotizacion.forma_de_pago_cotizacion }}</td>
+            <td>{{ cotizacion.validez_cotizacion }}</td>
+            <td>{{ cotizacion.descuento_cotizacion }}</td>
+            <td>{{ cotizacion.recibe_cotizacion }}</td>
+            <td>{{ cotizacion.numero_contacto_cotizacion }}</td>
+            <td>{{ cotizacion.direccion_cotizacion }}</td>
+
+            <td>
+                <button onclick="editarcotizacion('{{ cotizacion.id_cotizacion }} ')">Editar</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+            </main>
+        </div>
+    </div>
+
+    {% include 'footer.html' %}
+
+    <script>
+        function editarcotizacion(userId) { 
+            window.location.href = '/editar_cotizacion/' + userId;  // Redirige a la ruta de edición del cotizacion con su ID
+        }
+
+        </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

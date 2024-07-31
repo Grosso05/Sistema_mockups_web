@@ -54,22 +54,44 @@ class Categoria(db.Model):
     return f"<Categoria {self.CATEGORIA_NOMBRE}>"
 
 class Cotizacion(db.Model):
-  """
-  This class represents the Cotizacion table in the database.
-  """
-  ID_COTIZACION = Column(Integer, primary_key=True, autoincrement=True)
-  NEGOCIACION = Column(Integer, nullable=False)
-  FECHA_COTIZACION = Column(Date, nullable=False)
-  CLIENTE_COTIZACION = Column(String(150))
-  CONTACTO_COTIZACION = Column(String(100))
-  PROYECTO_COTIZACION = Column(String(150))
-  PORCENTAJE_DESCUENTO = Column(Integer)
-  PERSONA_RECIBE = Column(String(100))
-  NUMERO_CONTACTO = Column(String(50))
-  DIRECCION = Column(String(200))
+    ID_COTIZACION = db.Column(db.Integer, primary_key=True)
+    FECHA_COTIZACION = db.Column(db.Date, nullable=False)
+    CLIENTE_COTIZACION = db.Column(db.String(120), nullable=False)
+    CONTACTO_COTIZACION = db.Column(db.String(120), nullable=False)
+    PROYECTO_COTIZACION = db.Column(db.String(120), nullable=False)
+    VENDEDOR_COTIZACION = db.Column(db.Integer, db.ForeignKey('vendedor.id'), nullable=False)
+    NEGOCIACION = db.Column(db.String(120), nullable=False)
+    FORMA_DE_PAGO_COTIZACION = db.Column(db.String(50), nullable=False)
+    VALIDEZ_COTIZACION = db.Column(db.Integer, nullable=False)
+    DESCUENTO_COTIZACION = db.Column(db.Float, nullable=False)
+    RECIBE_COTIZACION = db.Column(db.String(120), nullable=False)
+    NUMERO_CONTACTO_COTIZACION = db.Column(db.String(20), nullable=False)
+    DIRECCION_COTIZACION = db.Column(db.String(200), nullable=False)
+    productos = db.relationship('ProductoCotizado', backref='cotizacion', lazy=True)
 
-  def __repr__(self):
-    return f"<Cotizacion {self.ID_COTIZACION}>"
+
+class ProductoCotizado(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    descripcion = db.Column(db.Text, nullable=False)
+    linea_id = db.Column(db.Integer, db.ForeignKey('linea.id'), nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
+    alto = db.Column(db.Float, nullable=False)
+    ancho = db.Column(db.Float, nullable=False)
+    fondo = db.Column(db.Float, nullable=False)
+    cotizacion_id = db.Column(db.Integer, db.ForeignKey('cotizacion.ID_COTIZACION'), nullable=False)
+    resumen_costos = db.relationship('ResumenDeCostos', backref='producto', lazy=True)
+
+class ResumenDeCostos(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    costo_directo = db.Column(db.Float, nullable=False)
+    administracion = db.Column(db.Float, nullable=False)
+    imprevistos = db.Column(db.Float, nullable=False)
+    utilidad = db.Column(db.Float, nullable=False)
+    oferta_antes_iva = db.Column(db.Float, nullable=False)
+    iva = db.Column(db.Float, nullable=False)
+    valor_oferta = db.Column(db.Float, nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=False)    
+
 
 # The Customers model already exists, so we don't need to create it again
 

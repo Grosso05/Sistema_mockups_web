@@ -80,7 +80,7 @@ nav {
     height: 60px;
   }
 
-  .collapsed {
+  .collapsed {                  
     width: 80px; /* Ancho contraído de la barra lateral */
   }
 

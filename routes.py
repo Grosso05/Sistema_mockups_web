@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify, render_template, request, redirect, session, url_for
+from flask import Blueprint, flash, jsonify, render_template, request, redirect, session, url_for
 from flask_login import login_required, login_user, current_user
-from models import Categoria, ItemTemporal, Items, ItemsPorProducto, Lineas, Productos, Users, ItemProveedores,db
+from models import Categoria, Cotizacion, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db
 from utils import roles_required
 import locale
 
@@ -12,7 +12,6 @@ routes_blueprint = Blueprint('routes', __name__)
 def index():
     mensaje = request.args.get('mensaje', '')  # Obtener el mensaje de la URL
     return render_template('index.html', mensaje=mensaje)
-
 
 
 #ruta para el dashboard de administrador
@@ -60,7 +59,6 @@ def generar_cotizacion():
     vendedores = Users.query.all() 
     return render_template('generar_cotizacion.html', lineas=lineas, productos=productos, vendedores=vendedores)
 
-# Ruta que trae los items sugeridos para cada producto
 @routes_blueprint.route('/productos_por_linea/<int:linea_id>')
 def productos_por_linea(linea_id):
     productos = Productos.query.filter_by(linea_idFK=linea_id).all()
@@ -76,6 +74,19 @@ def productos_por_linea(linea_id):
             'items': items_json
         })
     return jsonify(productos_json)
+
+@routes_blueprint.route('/porcentajes/<int:producto_id>')
+def get_porcentajes(producto_id):
+    porcentaje = PorcentajesProducto.query.filter_by(id_producto=producto_id).first()
+    if porcentaje:
+        # Asegúrate de que porcentaje no sea None antes de acceder a sus atributos
+        return jsonify({
+            'administracion': porcentaje.administracion,
+            'imprevistos': porcentaje.imprevistos,
+            'utilidad': porcentaje.utilidad
+        })
+    else:
+        return jsonify({'error': 'Producto no encontrado'}), 404
 
 # Ruta para traer items por producto
 @routes_blueprint.route('/items_por_producto/<int:producto_id>')
@@ -170,8 +181,58 @@ def agregar_item_temporal():
         db.session.rollback()
         print(e)
         return jsonify({'error': 'Error al agregar el ítem temporal'}), 500
+    
+#Crud Cotizaciones
 
+#ruta del formulario para crear cotizacion
+@routes_blueprint.route('/crear_cotizacion', methods=['POST'])
+def crear_cotizacion():
+    data = request.json
+    descripcion = data.get('descripcion')
 
+    if not descripcion:
+        return jsonify({'success': False, 'message': 'Descripción es requerida.'}), 400
+
+    nueva_cotizacion = Cotizacion(descripcion=descripcion)
+    db.session.add(nueva_cotizacion)
+    db.session.commit()
+
+    for producto_data in data['productos']:
+        nuevo_producto = ProductoCotizado(
+            ID_COTIZACION=nueva_cotizacion.ID_COTIZACION,
+            descripcion=producto_data['descripcion'],
+            alto=producto_data['alto'],
+            ancho=producto_data['ancho'],
+            fondo=producto_data['fondo']
+        )
+        db.session.add(nuevo_producto)
+        db.session.commit()
+
+        for item_data in producto_data['items']:
+            nuevo_item = Items(
+                producto_id=nuevo_producto.id,
+                grupo=item_data['grupo'],
+                descripcion=item_data['descripcion'],
+                unidad=item_data['unidad'],
+                precio=item_data['precio'],
+                cantidad=item_data['cantidad'],
+                total=item_data['total']
+            )
+            db.session.add(nuevo_item)
+
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': 'Cotización creada exitosamente.'})
+
+#Ruta para listar cotizaciones
+
+@routes_blueprint.route('/routes.listar_cotizaciones', methods=['DELETE','GET', 'POST'])
+
+def listar_cotizaciones():
+    cotizaciones = Cotizacion.query.all()  # Obtener todos los usuarios de la base de datos
+    return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones)  # Renderizar la plantilla HTML con la lista de usuarios
+
+#Ruta para 
 
 
 

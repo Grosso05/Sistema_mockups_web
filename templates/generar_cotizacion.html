@@ -134,6 +134,8 @@
 
 <script>
 
+
+
     // Obtener la fecha actual en formato YYYY-MM-DD
     const today = new Date().toISOString().slice(0, 10);
 
@@ -189,6 +191,11 @@
                             productoElement.dataset.administracion = porcentajes.administracion;
                             productoElement.dataset.imprevistos = porcentajes.imprevistos;
                             productoElement.dataset.utilidad = porcentajes.utilidad;
+    
+                            // Establecer el valor mínimo en el input de utilidad
+                            const inputUtilidad = document.getElementById('utilidadSeleccionada');
+                            inputUtilidad.placeholder = `El porcentaje mínimo es: ${porcentajes.utilidad}`;
+                            inputUtilidad.min = porcentajes.utilidad;
                         }
                     }
                 })
@@ -296,6 +303,7 @@
                         <p id="administracion-${nuevoNumeroProducto}">Administración: 0</p>
                         <p id="imprevistos-${nuevoNumeroProducto}">Imprevistos: 0</p>
                         <p id="utilidad-${nuevoNumeroProducto}">Utilidad: 0</p>
+                        <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}" placeholder="El porcentaje minimo es: ${porcentajes.utilidad}">
                         <p id="oferta-antes-iva-${nuevoNumeroProducto}">Oferta Antes De Iva: 0</p>
                         <p id="iva-${nuevoNumeroProducto}">Iva: 0</p>
                         <p id="valor-oferta-${nuevoNumeroProducto}">Valor Oferta Impuestos Incluidos: 0</p>
@@ -310,28 +318,47 @@
                 // Limpiar los campos de entrada después de agregar el producto
                 descripcionInput.value = '';
                 productoSelect.value = '';
+    
+                // Insertar el nuevo producto en la posición correcta
+                let insertado = false;
+                productosContainer.querySelectorAll('.producto').forEach(producto => {
+                    const numeroProducto = parseInt(producto.id.split('-')[1], 10);
+                    if (nuevoNumeroProducto < numeroProducto) {
+                        productosContainer.insertBefore(nuevoProducto, producto);
+                        insertado = true;
+                        return false; // Rompe el bucle forEach
+                    }
+                });
+                if (!insertado) {
+                    productosContainer.appendChild(nuevoProducto); // Si no se insertó, agregar al final
+                }
+    
+                // Actualizar el número de producto dentro del div itemNumber
+                actualizarNumeroProducto();
 
-                        // Insertar el nuevo producto en la posición correcta
-        let insertado = false;
-        productosContainer.querySelectorAll('.producto').forEach(producto => {
-            const numeroProducto = parseInt(producto.id.split('-')[1], 10);
-            if (nuevoNumeroProducto < numeroProducto) {
-                productosContainer.insertBefore(nuevoProducto, producto);
-                insertado = true;
-                return false; // Rompe el bucle forEach
+                cargarItemsProducto(productoId, nuevoNumeroProducto, 1, '');
+
+                let timeout;
+document.getElementById(`utilidadSeleccionada-${nuevoNumeroProducto}`).addEventListener('input', function() {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+        const nuevoValorUtilidad = parseFloat(this.value);
+        if (!isNaN(nuevoValorUtilidad)) {
+            const productoElement = document.querySelector(`#producto-${nuevoNumeroProducto}`);
+            if (productoElement) {
+                const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
+                if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
+                    actualizarTotalProducto(nuevoNumeroProducto, nuevoValorUtilidad); // Pasar el nuevo valor de utilidad
+                } else {
+                    alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
+                }
             }
-        });
-        if (!insertado) {
-            productosContainer.appendChild(nuevoProducto); // Si no se insertó, agregar al final
         }
-    
-        // Actualizar el número de producto dentro del div itemNumber
-        actualizarNumeroProducto();
-    
-        cargarItemsProducto(productoId, nuevoNumeroProducto, 1, '');
-    
-                // Actualizar los totales al agregar un nuevo producto
-                actualizarTotalesExtras(nuevoNumeroProducto, 0); // Inicia con costo directo 0
+    }, 300); // Ajusta el tiempo de espera según sea necesario
+});
+
+   // Actualizar los totales al agregar un nuevo producto
+   actualizarTotalesExtras(nuevoNumeroProducto, 0); // Inicia con costo directo 0
     
                 // Agregar botones de Confirmar, Editar, Eliminar y Duplicar
                 const botonesContainer = document.createElement('div');
@@ -390,9 +417,12 @@
             });
     });
     
+
     document.addEventListener('DOMContentLoaded', function() {
         actualizarNumeroProducto();
     });
+
+    
 
             // Función para agregar ítems temporales
             function agregarItemTemporal(productoId) {
@@ -729,7 +759,7 @@
     
     
     
-    function actualizarTotalProducto(itemNumber) {
+    function actualizarTotalProducto(itemNumber, nuevoValorUtilidad = null) {
         const contenedores = [
             document.getElementById(`materiaprima-${itemNumber}`),
             document.getElementById(`consumibles-${itemNumber}`),
@@ -753,9 +783,7 @@
                         let precioTexto = precioElement.textContent.trim();
                         let cantidadTexto = cantidadElement.value.trim();
     
-                        // Convertir el precio a número, eliminando separadores de miles y usando punto como decimal
                         precioTexto = precioTexto.replace(/\./g, '').replace(/,/g, '.');
-    
                         const precio = parseFloat(precioTexto);
                         const cantidad = parseInt(cantidadTexto, 10);
     
@@ -775,7 +803,6 @@
             }
         });
     
-        // Actualizar el costo directo
         const costoDirectoElement = document.getElementById(`costo-directo-${itemNumber}`);
         if (costoDirectoElement) {
             costoDirectoElement.textContent = `Costo Directo: ${formatearNumero(total)}`;
@@ -784,7 +811,7 @@
         }
     
         // Llamar a la función para actualizar los totales extras
-        actualizarTotalesExtras(itemNumber, total);
+        actualizarTotalesExtras(itemNumber, total, nuevoValorUtilidad);
     }
         
         
@@ -794,12 +821,12 @@
             return (valor * porcentaje) / 100;
         }
         
-        function actualizarTotalesExtras(itemNumber, costoDirecto) {
+        function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null) {
             const productoElement = document.querySelector(`#producto-${itemNumber}`);
             if (productoElement) {
                 const administracionPorcentaje = parseFloat(productoElement.dataset.administracion);
                 const imprevistosPorcentaje = parseFloat(productoElement.dataset.imprevistos);
-                const utilidadPorcentaje = parseFloat(productoElement.dataset.utilidad);
+                const utilidadPorcentaje = nuevoValorUtilidad !== null ? nuevoValorUtilidad : parseFloat(productoElement.dataset.utilidad);
         
                 const administracion = calcularPorcentaje(costoDirecto, administracionPorcentaje);
                 const imprevistos = calcularPorcentaje(costoDirecto, imprevistosPorcentaje);
@@ -815,6 +842,8 @@
                 document.getElementById(`oferta-antes-iva-${itemNumber}`).textContent = `Oferta Antes De Iva: ${formatearNumero(ofertaAntesIva)}`;
                 document.getElementById(`iva-${itemNumber}`).textContent = `Iva: ${formatearNumero(iva)}`;
                 document.getElementById(`valor-oferta-${itemNumber}`).textContent = `Valor Oferta Impuestos Incluidos: ${formatearNumero(valorOferta)}`;
+            } else {
+                console.error('Error: Elemento del producto no encontrado');
             }
         }
         
@@ -823,6 +852,7 @@
         }
 
 
+        
     
     
     

@@ -435,31 +435,6 @@ document.getElementById(`utilidadSeleccionada-${nuevoNumeroProducto}`).addEventL
                     // Actualizar el contenido específico del producto duplicado
                     nuevoProductoDuplicado.querySelector('h3').textContent = `Producto ${nuevoNumeroProductoDuplicado}: ${productoNombre}`;
                 
-                    // Actualizar IDs de elementos específicos si existen
-                    const actualizarIdSiExiste = (element, selector, nuevoId) => {
-                        const child = element.querySelector(selector);
-                        if (child) {
-                            const partesId = child.id.split('-');
-                            partesId[partesId.length - 1] = nuevoId;
-                            child.id = partesId.join('-');
-                        }
-                    };
-                
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="itemsseleccionados-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="seleccion-items-container-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="buscar-item-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="seleccion-items-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="paginacion-items-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="btnAgregarItemTemporal-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="costo-directo-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="administracion-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="imprevistos-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="utilidad-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="utilidadSeleccionada-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="oferta-antes-iva-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="iva-"]`, nuevoNumeroProductoDuplicado);
-                    actualizarIdSiExiste(nuevoProductoDuplicado, `[id^="valor-oferta-"]`, nuevoNumeroProductoDuplicado);
-                
                     // Agregar el producto duplicado al contenedor de productos
                     productosContainer.appendChild(nuevoProductoDuplicado);
                 
@@ -468,6 +443,33 @@ document.getElementById(`utilidadSeleccionada-${nuevoNumeroProducto}`).addEventL
                 
                     // Actualizar el total del producto duplicado
                     actualizarTotalProducto(nuevoNumeroProductoDuplicado);
+            
+                    // Añadir manejadores de eventos a los nuevos elementos del producto duplicado
+                    document.getElementById(`utilidadSeleccionada-${nuevoNumeroProductoDuplicado}`).addEventListener('input', function() {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => {
+                            const nuevoValorUtilidad = parseFloat(this.value);
+                            if (!isNaN(nuevoValorUtilidad)) {
+                                const productoElement = document.querySelector(`#producto-${nuevoNumeroProductoDuplicado}`);
+                                if (productoElement) {
+                                    const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
+                                    if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
+                                        actualizarTotalProducto(nuevoNumeroProductoDuplicado, nuevoValorUtilidad);
+                                    } else {
+                                        alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
+                                    }
+                                }
+                            }
+                        }, 300);
+                    });
+            
+                    // Añadir manejador de eventos para cambios en las cantidades
+                    nuevoProductoDuplicado.querySelectorAll('.cantidad').forEach(input => {
+                        input.addEventListener('change', function() {
+                            actualizarTotalProducto(nuevoNumeroProductoDuplicado);
+                        });
+                    });
+            
                 });
                 botonesContainer.appendChild(duplicarProductoBtn);
     

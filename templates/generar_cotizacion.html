@@ -761,7 +761,7 @@
                 <td>${itemDescripcion}</td>
                 <td>${itemUnidad}</td>
                 <td>${itemPrecio}</td>
-                <td><input type="number" min="1" value="1" class="cantidad" onchange="actualizarTotalProducto(${itemNumber})"></td>
+                <td><input type="number" min="0" step="0.01" value="1" class="cantidad" onchange="actualizarTotalProducto(${itemNumber})"></td>
                 <td class="total">0</td>
                 <td class="oculto">${itemTipo}</td>
                 <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
@@ -832,7 +832,7 @@
     
                         precioTexto = precioTexto.replace(/\./g, '').replace(/,/g, '.');
                         const precio = parseFloat(precioTexto);
-                        const cantidad = parseInt(cantidadTexto, 10);
+                        const cantidad = parseFloat(cantidadTexto);
     
                         if (!isNaN(precio) && !isNaN(cantidad)) {
                             const subtotal = precio * cantidad;

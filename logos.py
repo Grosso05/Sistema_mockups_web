@@ -9,7 +9,7 @@ from io import BytesIO
 import os
 from random import choice
 import smtplib
-from smtplib import SMTP, SMTP_SSL
+from smtplib import SMTP
 import tempfile
 from reportlab.pdfgen import canvas
 from flask import Blueprint, flash, redirect, request, send_file, url_for,session

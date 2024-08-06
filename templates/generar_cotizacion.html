@@ -41,6 +41,10 @@
                 <label for="fondo">Fondo:</label>
                 <input type="number" id="fondo" name="fondo" min="10" max="1000" />
             </div>
+            <div class="grupo">
+                <label for="cantidadUnidades">Cantidad de Unidades:</label>
+                <input type="number" id="cantidadUnidades" name="cantidadUnidades" min="1" value="1" />
+            </div>
             <div class="grupo botones">
                 <button id="btnCrear">Añadir</button>
             </div>
@@ -296,12 +300,14 @@
                     <div class="resumen-costos">
                         <h4>Resumen de Costos</h4>
                         <p id="costo-directo-${nuevoNumeroProducto}">Costo Directo: 0</p>
+                        <p id="costo-unitario-${nuevoNumeroProducto}">Costo Directo Unitario: 0</p>
+                        
                         <p id="administracion-${nuevoNumeroProducto}">Administración: 0</p>
                         <p id="imprevistos-${nuevoNumeroProducto}">Imprevistos: 0</p>
                         <p id="utilidad-${nuevoNumeroProducto}">Utilidad: 0</p>
-                        <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}" placeholder="El porcentaje minimo es: ${porcentajes.utilidad}">
-                        <p id="oferta-antes-iva-${nuevoNumeroProducto}">Oferta Antes De Iva: 0</p>
-                        <p id="iva-${nuevoNumeroProducto}">Iva: 0</p>
+                        <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}">
+                        <p id="oferta-antes-iva-${nuevoNumeroProducto}">Oferta Antes De IVA: 0</p>
+                        <p id="iva-${nuevoNumeroProducto}">IVA: 0</p>
                         <p id="valor-oferta-${nuevoNumeroProducto}">Valor Oferta Impuestos Incluidos: 0</p>
                     </div>
                     <div class="acciones">
@@ -854,8 +860,11 @@
             console.error('Error: Elemento de costo directo no encontrado');
         }
     
-        // Llamar a la función para actualizar los totales extras
-        actualizarTotalesExtras(itemNumber, total, nuevoValorUtilidad);
+        // Obtener la cantidad de unidades del producto
+        const cantidadUnidades = document.getElementById('cantidadUnidades').value || 1;
+    
+        // Calcular y actualizar los totales extras
+        actualizarTotalesExtras(itemNumber, total, nuevoValorUtilidad, cantidadUnidades);
     }
         
         
@@ -865,7 +874,7 @@
             return (valor * porcentaje) / 100;
         }
         
-        function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null) {
+        function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null,cantidadUnidades) {
             const productoElement = document.querySelector(`#producto-${itemNumber}`);
             if (productoElement) {
                 const administracionPorcentaje = parseFloat(productoElement.dataset.administracion);
@@ -879,7 +888,12 @@
                 const ofertaAntesIva = costoDirecto + administracion + imprevistos + utilidad;
                 const iva = calcularPorcentaje(ofertaAntesIva, 19);
                 const valorOferta = ofertaAntesIva + iva;
-        
+                const costoUnitario = costoDirecto / cantidadUnidades;
+
+                //     <p id="costo-directo-${nuevoNumeroProducto}">Costo Directo: 0</p>
+                 // <p id="administracion-${nuevoNumeroProducto}">Administración: 0</p>
+
+                document.getElementById(`costo-unitario-${itemNumber}`).textContent= `Costo Unitario :  ${formatearNumero(costoUnitario)}`;
                 document.getElementById(`administracion-${itemNumber}`).textContent = `Administración (${administracionPorcentaje}%): ${formatearNumero(administracion)}`;
                 document.getElementById(`imprevistos-${itemNumber}`).textContent = `Imprevistos (${imprevistosPorcentaje}%): ${formatearNumero(imprevistos)}`;
                 document.getElementById(`utilidad-${itemNumber}`).textContent = `Utilidad (${utilidadPorcentaje}%): ${formatearNumero(utilidad)}`;

@@ -379,7 +379,7 @@
     });
     
  // Delegación de eventos para los botones de productos
-document.addEventListener('click', function(event) {
+ document.addEventListener('click', function(event) {
     const target = event.target;
 
     if (target.matches('.confirmar-producto-btn')) {
@@ -409,8 +409,8 @@ document.addEventListener('click', function(event) {
         // Actualizar el ID del producto clonado
         nuevoProductoDuplicado.id = `producto-${nuevoNumeroProductoDuplicado}`;
 
-        // Actualizar los IDs de los elementos internos que dependen del número de producto
-        const actualizarIds = (element, nuevoId) => {
+        // Actualizar los IDs de los elementos internos y los eventos del producto duplicado
+        const actualizarIdsYEventos = (element, nuevoId) => {
             element.querySelectorAll('[id]').forEach(child => {
                 const partesId = child.id.split('-');
                 partesId[partesId.length - 1] = nuevoId;
@@ -429,9 +429,17 @@ document.addEventListener('click', function(event) {
             element.querySelectorAll('[data-producto-id]').forEach(child => {
                 child.setAttribute('data-producto-id', nuevoId);
             });
+
+            // Actualizar los eventos `onclick` de los botones
+            element.querySelectorAll('button').forEach(button => {
+                const originalOnClick = button.getAttribute('onclick');
+                if (originalOnClick) {
+                    button.setAttribute('onclick', originalOnClick.replace(/\d+/, nuevoId));
+                }
+            });
         };
 
-        actualizarIds(nuevoProductoDuplicado, nuevoNumeroProductoDuplicado);
+        actualizarIdsYEventos(nuevoProductoDuplicado, nuevoNumeroProductoDuplicado);
 
         // Actualizar el contenido específico del producto duplicado
         nuevoProductoDuplicado.querySelector('h3').textContent = `Producto ${nuevoNumeroProductoDuplicado}: ${productoOriginal.querySelector('h3').textContent.split(': ')[1]}`;
@@ -463,6 +471,13 @@ document.addEventListener('click', function(event) {
                     }
                 }
             }, 300);
+        });
+
+
+         nuevoProductoDuplicado.querySelectorAll('button').forEach(button => {
+            const originalOnClick = button.getAttribute('onclick');
+            button.setAttribute('onclick', originalOnClick.replace(/\d+/, nuevoNumeroProductoDuplicado));
+            console.log('Updated onclick for button:', button, button.getAttribute('onclick'));
         });
 
         // Añadir manejador de eventos para cambios en las cantidades
@@ -990,6 +1005,10 @@ function mostrarNotificacion(mensaje, tipo) {
     
 
     function verTodosItems(itemNumber, pagina, busqueda) {
+
+        console.log(`verTodosItems called for itemNumber: ${itemNumber}`);
+        console.log(`Container ID: seleccion-items-${itemNumber}`);
+
         fetch(`/todos_los_items?pagina=${pagina}&busqueda=${busqueda}`)
             .then(response => response.json())
             .then(data => {

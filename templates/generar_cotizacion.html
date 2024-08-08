@@ -35,11 +35,11 @@
                 <option value="">Seleccionar</option>
                 </select>
                 <label for="alto">Alto:</label>
-                <input type="number" id="alto" name="alto" min="10" max="1000" />
+                <input type="number" id="alto" name="alto" />
                 <label for="ancho">Ancho:</label>
-                <input type="number" id="ancho" name="ancho" min="10" max="1000" />
+                <input type="number" id="ancho" name="ancho" />
                 <label for="fondo">Fondo:</label>
-                <input type="number" id="fondo" name="fondo" min="10" max="1000" />
+                <input type="number" id="fondo" name="fondo"   />
             </div>
             <div class="grupo">
                 <label for="cantidadUnidades">Cantidad de Unidades:</label>
@@ -144,13 +144,19 @@
     // Establecer la fecha actual como valor por defecto
     document.getElementById('fecha').value = today;
 
-    // Función para contraer el formulario de los datos de cotizacion
 
+    // Funciones para el formulario de cotizacion
+    
     document.getElementById('toggleDatosBtn').addEventListener('click', function() {
         const formularioCotizacion = document.getElementById('formulario-cotizacion');
         formularioCotizacion.style.display = formularioCotizacion.style.display === 'none' ? 'flex' : 'none';
         this.textContent = formularioCotizacion.style.display === 'none' ? '>' : 'v';
         this.classList.toggle('expandido');
+    });
+
+    document.addEventListener('DOMContentLoaded', function(){
+        const formularioCotizacion = document.getElementById('formulario-cotizacion');
+        formularioCotizacion.style.display= 'flex';
     });
 
     //funcion para evento de seleccion de linea
@@ -372,107 +378,143 @@
             });
     });
     
-    // Delegación de eventos para los botones de productos
-    document.addEventListener('click', function(event) {
-        const target = event.target;
-    
-        if (target.matches('.confirmar-producto-btn')) {
-            const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
-            seleccionItemsContainer.style.display = 'none';
-        } else if (target.matches('.editar-producto-btn')) {
-            const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
-            seleccionItemsContainer.style.display = 'block';
-        } else if (target.matches('.eliminar-producto-btn')) {
-            const producto = document.getElementById(`producto-${target.dataset.productoId}`);
-            numerosEliminados.push(parseInt(target.dataset.productoId, 10)); // Añadir el número del producto eliminado al array
-            producto.remove();
-            actualizarNumeroProducto(); // Actualizar el número de producto visible
-            actualizarTotalProducto(target.dataset.productoId); // Actualizar el total del producto
-        } else if (target.matches('.duplicar-producto-btn')) {
-            let nuevoNumeroProductoDuplicado;
-            if (numerosEliminados.length > 0) {
-                nuevoNumeroProductoDuplicado = numerosEliminados.shift();
-            } else {
-                nuevoNumeroProductoDuplicado = ++itemNumber;
-            }
-    
-            // Clonar el producto
-            const productoOriginal = document.getElementById(`producto-${target.dataset.productoId}`);
-            const nuevoProductoDuplicado = productoOriginal.cloneNode(true);
-    
-            // Actualizar el ID del producto clonado
-            nuevoProductoDuplicado.id = `producto-${nuevoNumeroProductoDuplicado}`;
-    
-            // Actualizar los IDs de los elementos internos que dependen del número de producto
-            const actualizarIds = (element, nuevoId) => {
-                element.querySelectorAll('[id]').forEach(child => {
-                    const partesId = child.id.split('-');
-                    partesId[partesId.length - 1] = nuevoId;
-                    child.id = partesId.join('-');
-                });
-                element.querySelectorAll('[for]').forEach(child => {
-                    const partesFor = child.getAttribute('for').split('-');
-                    partesFor[partesFor.length - 1] = nuevoId;
-                    child.setAttribute('for', partesFor.join('-'));
-                });
-                element.querySelectorAll('[name]').forEach(child => {
-                    const partesName = child.name.split('-');
-                    partesName[partesName.length - 1] = nuevoId;
-                    child.name = partesName.join('-');
-                });
-                element.querySelectorAll('[data-producto-id]').forEach(child => {
-                    child.setAttribute('data-producto-id', nuevoId);
-                });
-            };
-    
-            actualizarIds(nuevoProductoDuplicado, nuevoNumeroProductoDuplicado);
-    
-            // Actualizar el contenido específico del producto duplicado
-            nuevoProductoDuplicado.querySelector('h3').textContent = `Producto ${nuevoNumeroProductoDuplicado}: ${productoOriginal.querySelector('h3').textContent.split(': ')[1]}`;
-    
-            // Agregar el producto duplicado al contenedor de productos
-            productosContainer.appendChild(nuevoProductoDuplicado);
-    
-            // Actualizar el número de producto visible
-            actualizarNumeroProducto();
-    
-            // Actualizar el total del producto duplicado
-            actualizarTotalProducto(nuevoNumeroProductoDuplicado);
-    
-            // Añadir manejadores de eventos a los nuevos elementos del producto duplicado
-            let timeout;
-            document.getElementById(`utilidadSeleccionada-${nuevoNumeroProductoDuplicado}`).addEventListener('input', function() {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    const nuevoValorUtilidad = parseFloat(this.value);
-                    if (!isNaN(nuevoValorUtilidad)) {
-                        const productoElement = document.querySelector(`#producto-${nuevoNumeroProductoDuplicado}`);
-                        if (productoElement) {
-                            const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
-                            if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
-                                actualizarTotalProducto(nuevoNumeroProductoDuplicado, nuevoValorUtilidad);
-                            } else {
-                                alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
-                            }
+ // Delegación de eventos para los botones de productos
+document.addEventListener('click', function(event) {
+    const target = event.target;
+
+    if (target.matches('.confirmar-producto-btn')) {
+        const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
+        seleccionItemsContainer.style.display = 'none';
+    } else if (target.matches('.editar-producto-btn')) {
+        const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
+        seleccionItemsContainer.style.display = 'block';
+    } else if (target.matches('.eliminar-producto-btn')) {
+        const producto = document.getElementById(`producto-${target.dataset.productoId}`);
+        numerosEliminados.push(parseInt(target.dataset.productoId, 10)); // Añadir el número del producto eliminado al array
+        producto.remove();
+        actualizarNumeroProducto(); // Actualizar el número de producto visible
+        actualizarTotalProducto(target.dataset.productoId); // Actualizar el total del producto
+    } else if (target.matches('.duplicar-producto-btn')) {
+        let nuevoNumeroProductoDuplicado;
+        if (numerosEliminados.length > 0) {
+            nuevoNumeroProductoDuplicado = numerosEliminados.shift();
+        } else {
+            nuevoNumeroProductoDuplicado = ++itemNumber;
+        }
+
+        // Clonar el producto
+        const productoOriginal = document.getElementById(`producto-${target.dataset.productoId}`);
+        const nuevoProductoDuplicado = productoOriginal.cloneNode(true);
+
+        // Actualizar el ID del producto clonado
+        nuevoProductoDuplicado.id = `producto-${nuevoNumeroProductoDuplicado}`;
+
+        // Actualizar los IDs de los elementos internos que dependen del número de producto
+        const actualizarIds = (element, nuevoId) => {
+            element.querySelectorAll('[id]').forEach(child => {
+                const partesId = child.id.split('-');
+                partesId[partesId.length - 1] = nuevoId;
+                child.id = partesId.join('-');
+            });
+            element.querySelectorAll('[for]').forEach(child => {
+                const partesFor = child.getAttribute('for').split('-');
+                partesFor[partesFor.length - 1] = nuevoId;
+                child.setAttribute('for', partesFor.join('-'));
+            });
+            element.querySelectorAll('[name]').forEach(child => {
+                const partesName = child.name.split('-');
+                partesName[partesName.length - 1] = nuevoId;
+                child.name = partesName.join('-');
+            });
+            element.querySelectorAll('[data-producto-id]').forEach(child => {
+                child.setAttribute('data-producto-id', nuevoId);
+            });
+        };
+
+        actualizarIds(nuevoProductoDuplicado, nuevoNumeroProductoDuplicado);
+
+        // Actualizar el contenido específico del producto duplicado
+        nuevoProductoDuplicado.querySelector('h3').textContent = `Producto ${nuevoNumeroProductoDuplicado}: ${productoOriginal.querySelector('h3').textContent.split(': ')[1]}`;
+
+        // Agregar el producto duplicado al contenedor de productos
+        productosContainer.appendChild(nuevoProductoDuplicado);
+
+        // Actualizar el número de producto visible
+        actualizarNumeroProducto();
+
+        // Actualizar el total del producto duplicado
+        actualizarTotalProducto(nuevoNumeroProductoDuplicado);
+
+        // Añadir manejadores de eventos a los nuevos elementos del producto duplicado
+        let timeout;
+        document.getElementById(`utilidadSeleccionada-${nuevoNumeroProductoDuplicado}`).addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                const nuevoValorUtilidad = parseFloat(this.value);
+                if (!isNaN(nuevoValorUtilidad)) {
+                    const productoElement = document.querySelector(`#producto-${nuevoNumeroProductoDuplicado}`);
+                    if (productoElement) {
+                        const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
+                        if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
+                            actualizarTotalProducto(nuevoNumeroProductoDuplicado, nuevoValorUtilidad);
+                        } else {
+                            alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
                         }
                     }
-                }, 300);
+                }
+            }, 300);
+        });
+
+        // Añadir manejador de eventos para cambios en las cantidades
+        nuevoProductoDuplicado.querySelectorAll('.cantidad').forEach(input => {
+            input.addEventListener('change', function() {
+                actualizarTotalProducto(nuevoNumeroProductoDuplicado);
             });
-    
-            // Añadir manejador de eventos para cambios en las cantidades
-            nuevoProductoDuplicado.querySelectorAll('.cantidad').forEach(input => {
-                input.addEventListener('change', function() {
-                    actualizarTotalProducto(nuevoNumeroProductoDuplicado);
-                });
+        });
+
+        // Modificación para manejar eventos en el producto duplicado
+        nuevoProductoDuplicado.querySelectorAll('.confirmar-producto-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${nuevoNumeroProductoDuplicado}`);
+                seleccionItemsContainer.style.display = 'none';
+            });
+        });
+
+        nuevoProductoDuplicado.querySelectorAll('.editar-producto-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${nuevoNumeroProductoDuplicado}`);
+                seleccionItemsContainer.style.display = 'block';
+            });
+        });
+
+        nuevoProductoDuplicado.querySelectorAll('.eliminar-producto-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const producto = document.getElementById(`producto-${nuevoNumeroProductoDuplicado}`);
+                numerosEliminados.push(parseInt(nuevoNumeroProductoDuplicado, 10)); // Añadir el número del producto eliminado al array
+                producto.remove();
+                actualizarNumeroProducto(); // Actualizar el número de producto visible
+                actualizarTotalProducto(nuevoNumeroProductoDuplicado); // Actualizar el total del producto
+            });
+        });
+
+        // Botón para Agregar Ítems
+        const btnAgregarItemTemporal = nuevoProductoDuplicado.querySelector(`#btnAgregarItemTemporal-${nuevoNumeroProductoDuplicado}`);
+        if (btnAgregarItemTemporal) {
+            btnAgregarItemTemporal.addEventListener('click', function() {
+                agregarItemTemporal(nuevoNumeroProductoDuplicado);
             });
         }
-    });
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        actualizarNumeroProducto();
-    });
 
-    
+        const agregarItemsSeleccionadosBtn = nuevoProductoDuplicado.querySelector(`button[onclick^="agregarItemsSeleccionados"]`);
+        if (agregarItemsSeleccionadosBtn) {
+            agregarItemsSeleccionadosBtn.setAttribute('onclick', `agregarItemsSeleccionados(${nuevoNumeroProductoDuplicado})`);
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    actualizarNumeroProducto();
+});
 
             // Función para agregar ítems temporales
             function agregarItemTemporal(productoId) {
@@ -764,7 +806,7 @@
                 <td>${itemDescripcion}</td>
                 <td>${itemUnidad}</td>
                 <td>${itemPrecio}</td>
-                <td><input type="number" min="0" step="0.01" value="1" class="cantidad" onchange="actualizarTotalProducto(${itemNumber})"></td>
+                <td><input type="number" min="0" step="1" value="1" class="cantidad" onchange="actualizarTotalProducto(${itemNumber})"></td>
                 <td class="total">0</td>
                 <td class="oculto">${itemTipo}</td>
                 <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
     <style>
         
+        
     </style>
 </head>
 <body>
@@ -706,20 +707,17 @@ function agregarItemAlProducto(item, itemNumber) {
     const itemDescripcion = item.descripcion;
     const itemUnidad = "Unidad"; // Puedes ajustar esto según sea necesario
     const itemPrecio = item.precio;
-    
-    // Contar el número de inputs de cantidad
-    const cantidadInputs = document.querySelectorAll(`#cantidadUnidades .cantidad-input`);
-    const cantidadCount = cantidadInputs.length;
-    
-    // Crear las celdas de cantidad y total dinámicamente
-    const cantidadCeldas = Array.from({ length: cantidadCount }, (_, i) => 
-        `<td><input type="number" min="1" value="1" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${itemNumber})"></td>`
+
+    // Crear las celdas de cantidad y total dinámicamente basadas en valoresCantidad
+    const cantidadCeldas = valoresCantidad.map((valor, i) => 
+        `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${itemNumber})"></td>`
     ).join('');
     
-    const totalCeldas = Array.from({ length: cantidadCount }, () => 
+    const totalCeldas = valoresCantidad.map(() => 
         `<td class="total">0</td>`
     ).join('');
     
+    // Combinamos todas las celdas de cantidad y total en una sola fila
     const nuevaFila = document.createElement('tr');
     nuevaFila.innerHTML = `
         <td>${itemId}</td>
@@ -727,8 +725,8 @@ function agregarItemAlProducto(item, itemNumber) {
         <td>${itemDescripcion}</td>
         <td>${itemUnidad}</td>
         <td>${itemPrecio}</td>
-        ${cantidadCeldas}
-        ${totalCeldas}
+        ${cantidadCeldas} <!-- Aquí se generan los td de cantidad -->
+        ${totalCeldas}    <!-- Aquí se generan los td de total -->
         <td class="oculto">${itemGrupo}</td>
         <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
     `;
@@ -758,7 +756,7 @@ function agregarItemAlProducto(item, itemNumber) {
     // Añadir encabezado si aún no existe
     if (container && !container.querySelector('.tipo-header')) {
         const headerRow = document.createElement('tr');
-        headerRow.innerHTML = `<td colspan="${5 + cantidadCount * 2}" class="tipo-header"><strong>${itemGrupo}</strong></td>`;
+        headerRow.innerHTML = `<td colspan="${5 + valoresCantidad.length * 2}" class="tipo-header"><strong>${itemGrupo}</strong></td>`;
         container.appendChild(headerRow);
     }
     
@@ -768,7 +766,6 @@ function agregarItemAlProducto(item, itemNumber) {
     
     mostrarNotificacion('Ítem agregado correctamente.', 'success');
 }
-
 
     
     function actualizarNumeroProducto() {
@@ -876,7 +873,7 @@ function agregarItemAlProducto(item, itemNumber) {
     
 
     function agregarItemsSeleccionados(itemNumber) {
-        const itemsSeleccionados = document.querySelectorAll(`#seleccion-items-${itemNumber} input[type="checkbox"]:checked`);        
+        const itemsSeleccionados = document.querySelectorAll(`#seleccion-items-${itemNumber} input[type="checkbox"]:checked`);
         const materiaPrimaContainer = document.getElementById(`materiaprima-${itemNumber}`);
         const consumiblesContainer = document.getElementById(`consumibles-${itemNumber}`);
         const serviciosContainer = document.getElementById(`servicios-${itemNumber}`);
@@ -902,6 +899,15 @@ function agregarItemAlProducto(item, itemNumber) {
             const itemPrecio = itemCheckbox.closest('tr').querySelector('td:nth-child(5)').textContent;
             const itemTipo = itemCheckbox.closest('tr').querySelector('td:nth-child(6)').textContent;
     
+            // Crear las celdas de cantidad y total dinámicamente basadas en valoresCantidad
+            const cantidadCeldas = valoresCantidad.map((valor, i) => 
+                `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${itemNumber})"></td>`
+            ).join('');
+            
+            const totalCeldas = valoresCantidad.map(() => 
+                `<td class="total">0</td>`
+            ).join('');
+    
             const nuevaFila = document.createElement('tr');
             nuevaFila.innerHTML = `
                 <td>${itemId}</td>
@@ -909,8 +915,8 @@ function agregarItemAlProducto(item, itemNumber) {
                 <td>${itemDescripcion}</td>
                 <td>${itemUnidad}</td>
                 <td>${itemPrecio}</td>
-                <td><input type="number" min="0" step="1" value="1" class="cantidad" onchange="actualizarTotalProducto(${itemNumber})"></td>
-                <td class="total">0</td>
+                ${cantidadCeldas} <!-- Aquí se generan los td de cantidad -->
+                ${totalCeldas}    <!-- Aquí se generan los td de total -->
                 <td class="oculto">${itemTipo}</td>
                 <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
             `;
@@ -940,7 +946,7 @@ function agregarItemAlProducto(item, itemNumber) {
             // Añadir encabezado si aún no existe
             if (container && !container.querySelector('.tipo-header')) {
                 const headerRow = document.createElement('tr');
-                headerRow.innerHTML = `<td colspan="9" class="tipo-header"><strong>${itemTipo}</strong></td>`;
+                headerRow.innerHTML = `<td colspan="${5 + valoresCantidad.length * 2}" class="tipo-header"><strong>${itemTipo}</strong></td>`;
                 container.appendChild(headerRow);
             }
     
@@ -963,32 +969,33 @@ function agregarItemAlProducto(item, itemNumber) {
             document.getElementById(`transporte-${itemNumber}`),
             document.getElementById(`itemsseleccionados-${itemNumber}`)
         ];
-    
+        
         let total = 0;
     
         contenedores.forEach(container => {
             if (container) {
                 const filas = container.querySelectorAll('tr');
-    
                 filas.forEach(fila => {
                     const precioElement = fila.querySelector('td:nth-child(5)');
-                    const cantidadElement = fila.querySelector('input.cantidad');
+                    const cantidadInputs = fila.querySelectorAll('input.cantidad');
     
-                    if (precioElement && cantidadElement) {
+                    if (precioElement && cantidadInputs.length > 0) {
                         let precioTexto = precioElement.textContent.trim();
-                        let cantidadTexto = cantidadElement.value.trim();
-    
                         precioTexto = precioTexto.replace(/\./g, '').replace(/,/g, '.');
                         const precio = parseFloat(precioTexto);
-                        const cantidad = parseFloat(cantidadTexto);
     
-                        if (!isNaN(precio) && !isNaN(cantidad)) {
-                            const subtotal = precio * cantidad;
-                            fila.querySelector('.total').textContent = formatearNumero(subtotal);
-                            total += subtotal;
-                        } else {
-                            console.error('Error: Precio o cantidad no son números válidos');
-                        }
+                        cantidadInputs.forEach((input, index) => {
+                            const cantidadTexto = input.value.trim();
+                            const cantidad = parseFloat(cantidadTexto);
+    
+                            if (!isNaN(precio) && !isNaN(cantidad)) {
+                                const subtotal = precio * cantidad;
+                                fila.querySelectorAll('.total')[index].textContent = formatearNumero(subtotal);
+                                total += subtotal;
+                            } else {
+                                console.error('Error: Precio o cantidad no son números válidos');
+                            }
+                        });
                     } else {
                         console.error('Error: Elemento de precio o cantidad no encontrado');
                     }
@@ -1011,6 +1018,7 @@ function agregarItemAlProducto(item, itemNumber) {
         // Calcular y actualizar los totales extras
         actualizarTotalesExtras(itemNumber, total, nuevoValorUtilidad, cantidadUnidades);
     }
+    
         
         
         function calcularPorcentaje(valor, porcentaje) {

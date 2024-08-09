@@ -331,74 +331,78 @@
     
                 // Crear el contenido del nuevo producto
                 nuevoProducto.innerHTML = `
-                    <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
-                    <h4>Descripción: ${descripcion}</h4>
-                    <div class="itemsseleccionados">
-                        <h4>Items Seleccionados</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Grupo</th>
-                                    <th>Descripción</th>
-                                    <th>Unidad</th>
-                                    <th>Precio</th>
-                                    ${cantidadHeader}
-                                    ${totalHeader}
-                                    <th class="oculto">Tipo</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
-                                <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
-                                <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
-                                <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
-                                <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
-                                <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
-                        <div>
-                            <h4>Seleccionar Ítems</h4>
-                            <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
-                            <div id="seleccion-items-${nuevoNumeroProducto}"></div>
-                            <div id="paginacion-items-${nuevoNumeroProducto}"></div>
-                            <div class="botones-container">
-                                <button onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Ítems Seleccionados</button>
-                                <button onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Ítems</button>
-                            </div>
+                <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
+                <h4>Descripción: ${descripcion}</h4>
+                <div class="itemsseleccionados">
+                    <h4>Items Seleccionados</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Grupo</th>
+                                <th>Descripción</th>
+                                <th>Unidad</th>
+                                <th>Precio</th>
+                                ${cantidadHeader}
+                                ${totalHeader}
+                                <th class="oculto">Tipo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
+                            <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
+                            <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
+                            <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
+                            <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
+                            <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
+                    <div>
+                        <h4>Seleccionar Ítems</h4>
+                        <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
+                        <div id="seleccion-items-${nuevoNumeroProducto}"></div>
+                        <div id="paginacion-items-${nuevoNumeroProducto}"></div>
+                        <div class="botones-container">
+                            <button onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Ítems Seleccionados</button>
+                            <button onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Ítems</button>
                         </div>
                     </div>
-        
-                    <!-- Formulario para agregar ítems temporales -->
-                    <div class="form-agregar-item-manual" data-producto-id="${nuevoNumeroProducto}">
-                        <h4>Agregar Nuevo Ítem</h4>
-                        <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
-                        <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
-                        <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
-                        <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
-                    </div>
-                    <div class="resumen-costos">
-                        <h4>Resumen de Costos</h4>
-                        <p id="costo-directo-${nuevoNumeroProducto}">Costo Directo: 0</p>
-                        <p id="costo-unitario-${nuevoNumeroProducto}">Costo Directo Unitario: 0</p>
-                        
-                        <p id="administracion-${nuevoNumeroProducto}">Administración: 0</p>
-                        <p id="imprevistos-${nuevoNumeroProducto}">Imprevistos: 0</p>
-                        <p id="utilidad-${nuevoNumeroProducto}">Utilidad: 0</p>
-                        <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}">
-                        <p id="oferta-antes-iva-${nuevoNumeroProducto}">Oferta Antes De IVA: 0</p>
-                        <p id="iva-${nuevoNumeroProducto}">IVA: 0</p>
-                        <p id="valor-oferta-${nuevoNumeroProducto}">Valor Oferta Impuestos Incluidos: 0</p>
-                    </div>
-                    <div class="acciones">
-                        <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
-                        <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
-                        <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
-                        <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
-                    </div>
-                `;
+                </div>
+            
+                <!-- Formulario para agregar ítems temporales -->
+                <div class="form-agregar-item-manual" data-producto-id="${nuevoNumeroProducto}">
+                    <h4>Agregar Nuevo Ítem</h4>
+                    <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
+                    <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
+                    <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
+                    <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
+                </div>
+                <div class="resumen-costos">
+                    <h4>Resumen de Costos</h4>
+                    ${valoresCantidad.map((_, index) => `
+                        <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+                            <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
+                            <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
+                            
+                            <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0</p>
+                            <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0</p>
+                            <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0</p>
+                            <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
+                            <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+                            <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
+                            <p id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="acciones">
+                    <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
+                    <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
+                    <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
+                    <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
+                </div>
+            `;
         
                 productosContainer.appendChild(nuevoProducto);
     
@@ -450,7 +454,7 @@
             })
             .catch(error => {
                 console.error('Error al cargar los porcentajes:', error);
-                alert('Ocurrió un error al cargar los porcentajes. Por favor, inténtalo nuevamente más tarde.');
+
             });
     });
     
@@ -1005,18 +1009,14 @@ function agregarItemAlProducto(item, itemNumber) {
             }
         });
     
-        const costoDirectoElement = document.getElementById(`costo-directo-${itemNumber}`);
-        if (costoDirectoElement) {
-            costoDirectoElement.textContent = `Costo Directo: ${formatearNumero(total)}`;
-        } else {
-            console.error('Error: Elemento de costo directo no encontrado');
-        }
-    
         // Obtener la cantidad de unidades del producto
         const cantidadUnidades = document.getElementById('cantidadUnidades').value || 1;
     
-        // Calcular y actualizar los totales extras
-        actualizarTotalesExtras(itemNumber, total, nuevoValorUtilidad, cantidadUnidades);
+        // Actualizar los resúmenes de costos individuales
+        valoresCantidad.forEach((_, index) => {
+            const nuevoValorUtilidad = parseFloat(document.getElementById(`utilidadSeleccionada-${itemNumber}-${index}`).value) || null;
+            actualizarTotalesExtras(itemNumber, total, nuevoValorUtilidad, cantidadUnidades, index);
+        });
     }
     
         
@@ -1025,7 +1025,7 @@ function agregarItemAlProducto(item, itemNumber) {
             return (valor * porcentaje) / 100;
         }
         
-        function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null,cantidadUnidades) {
+        function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null, cantidadUnidades, index) {
             const productoElement = document.querySelector(`#producto-${itemNumber}`);
             if (productoElement) {
                 const administracionPorcentaje = parseFloat(productoElement.dataset.administracion);
@@ -1040,15 +1040,15 @@ function agregarItemAlProducto(item, itemNumber) {
                 const iva = calcularPorcentaje(ofertaAntesIva, 19);
                 const valorOferta = ofertaAntesIva + iva;
                 const costoUnitario = costoDirecto / cantidadUnidades;
-
-
-                document.getElementById(`costo-unitario-${itemNumber}`).textContent= `Costo Unitario :  ${formatearNumero(costoUnitario)}`;
-                document.getElementById(`administracion-${itemNumber}`).textContent = `Administración (${administracionPorcentaje}%): ${formatearNumero(administracion)}`;
-                document.getElementById(`imprevistos-${itemNumber}`).textContent = `Imprevistos (${imprevistosPorcentaje}%): ${formatearNumero(imprevistos)}`;
-                document.getElementById(`utilidad-${itemNumber}`).textContent = `Utilidad (${utilidadPorcentaje}%): ${formatearNumero(utilidad)}`;
-                document.getElementById(`oferta-antes-iva-${itemNumber}`).textContent = `Oferta Antes De Iva: ${formatearNumero(ofertaAntesIva)}`;
-                document.getElementById(`iva-${itemNumber}`).textContent = `Iva: ${formatearNumero(iva)}`;
-                document.getElementById(`valor-oferta-${itemNumber}`).textContent = `Valor Oferta Impuestos Incluidos: ${formatearNumero(valorOferta)}`;
+        
+                document.getElementById(`costo-directo-${itemNumber}-${index}`).textContent = `Costo Directo: ${formatearNumero(costoDirecto)}`;
+                document.getElementById(`costo-unitario-${itemNumber}-${index}`).textContent = `Costo Directo Unitario: ${formatearNumero(costoUnitario)}`;
+                document.getElementById(`administracion-${itemNumber}-${index}`).textContent = `Administración: ${formatearNumero(administracion)}`;
+                document.getElementById(`imprevistos-${itemNumber}-${index}`).textContent = `Imprevistos: ${formatearNumero(imprevistos)}`;
+                document.getElementById(`utilidad-${itemNumber}-${index}`).textContent = `Utilidad: ${formatearNumero(utilidad)}`;
+                document.getElementById(`oferta-antes-iva-${itemNumber}-${index}`).textContent = `Oferta Antes De IVA: ${formatearNumero(ofertaAntesIva)}`;
+                document.getElementById(`iva-${itemNumber}-${index}`).textContent = `IVA: ${formatearNumero(iva)}`;
+                document.getElementById(`valor-oferta-${itemNumber}-${index}`).textContent = `Valor Oferta Impuestos Incluidos: ${formatearNumero(valorOferta)}`;
             } else {
                 console.error('Error: Elemento del producto no encontrado');
             }

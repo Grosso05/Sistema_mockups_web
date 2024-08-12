@@ -63,25 +63,25 @@
         <div class="grupo-columns" id="formulario-cotizacion">
             <div class="grupo-columna">
                 <div class="grupo">
-                    <label for="fecha"> Fecha </label>
-                    <input type="date" id="fecha" name="fecha" value="" required>
+                    <label for="fecha_cotizacion"> Fecha </label>
+                    <input type="date" id="fecha_cotizacion" name="fecha_cotizacion" value="" required>
                 </div>
 
                 <div class="grupo">
-                    <label for="cliente"> Cliente  </label>
-                    <input type="text" id="cliente" name="cliente" required>
+                    <label for="cliente_cotizacion"> Cliente  </label>
+                    <input type="text" id="cliente_cotizacion" name="cliente_cotizacion" required>
                 </div>
                 <div class="grupo">
-                    <label for="contacto"> Contacto  </label>
-                    <input type="text" id="contacto" name="contacto" required>
+                    <label for="contacto_cotizacion"> Contacto  </label>
+                    <input type="text" id="contacto_cotizacion" name="contacto_cotizacion" required>
                 </div>
                 <div class="grupo">
-                    <label for="proyecto"> Proyecto  </label>
-                    <input type="text" id="proyecto" name="proyecto" required>
+                    <label for="proyecto_cotizacion"> Proyecto  </label>
+                    <input type="text" id="proyecto_cotizacion" name="proyecto_cotizacion" required>
                 </div>
                 <div class="grupo">
-                    <label for="vendedor"> Vendedor </label>
-                    <select id="vendedor" name="vendedor" required>
+                    <label for="vendedor_cotizacion"> Vendedor </label>
+                    <select id="vendedor_cotizacion" name="vendedor_cotizacion" required>
                         <option value="">Seleccionar</option>
                         {% for vendedor in vendedores %}
                         <option value="{{ vendedor.user_id }}">{{ vendedor.user_name }} {{ vendedor.user_last_name }}</option>
@@ -95,8 +95,8 @@
             </div>
             <div class="grupo-columna">
                 <div class="grupo">
-                    <label for="formaPago"> Forma de Pago  </label>
-                    <select id="formaPago" name="formaPago" required>
+                    <label for="forma_pago"> Forma de Pago  </label>
+                    <select id="forma_pago" name="forma_pago" required>
                         <option value="">Seleccionar</option>
                         <option value="Contado" selected>Contado</option>
                         <option value="Credito 30 Dias">Crédito 30 Días</option>
@@ -105,31 +105,35 @@
                     </select>
                 </div>
                 <div class="grupo">
-                    <label for="validez"> Validez  </label>
-                    <select id="validez" name="validez" required>
+                    <label for="validez_cotizacion"> Validez  </label>
+                    <select id="validez_cotizacion" name="validez_cotizacion" required>
                         <option value="15">15 días</option>
                         <option value="30" selected>30 días</option>
                         <option value="60">60 días</option>
                     </select>
                 </div>
                 <div class="grupo">
-                    <label for="descuento"> Porcentaje Descuento </label>
-                    <input type="number" id="descuento" name="descuento" min="0" max="100" required>
+                    <label for="descuento_cotizacion"> Porcentaje Descuento </label>
+                    <input type="number" id="descuento_cotizacion" name="descuento_cotizacion" min="0" max="100" required>
                 </div>
                 <div class="grupo">
-                    <label for="personaRecibe"> Persona que Recibe  </label>
-                    <input type="text" id="personaRecibe" name="personaRecibe" required>
+                    <label for="recibe_cotizacion"> Persona que Recibe  </label>
+                    <input type="text" id="recibe_cotizacion" name="recibe_cotizacion" required>
                 </div>
                 <div class="grupo">
-                    <label for="numeroContacto"> Número de Contacto </label>
-                    <input type="tel" id="numeroContacto" name="numeroContacto" required>
+                    <label for="numero_contacto"> Número de Contacto </label>
+                    <input type="tel" id="numero_contacto" name="numero_contacto" required>
                 </div>
                 <div class="grupo">
-                    <label for="direccion"> Dirección  </label>
-                    <textarea id="direccion" name="direccion" rows="3" required></textarea>
+                    <label for="direccion_cotizacion"> Dirección  </label>
+                    <textarea id="direccion_cotizacion" name="direccion_cotizacion" rows="3" required></textarea>
                         </div>
                     </div>
                 </div>
+                
+            </div>
+            <div class="acciones-globales">
+                <button id="guardarCotizacionBtn">Guardar Cotización</button>
             </div>
         </div>
     </section>
@@ -148,7 +152,7 @@
     const today = new Date().toISOString().slice(0, 10);
 
     // Establecer la fecha actual como valor por defecto
-    document.getElementById('fecha').value = today;
+    document.getElementById('fecha_cotizacion').value = today;
 
 
     // Funciones para el formulario de cotizacion
@@ -171,7 +175,7 @@
     document.getElementById('seleccionarLinea').addEventListener('change', function() {
         const lineaId = this.value;
         const productoSelect = document.getElementById('seleccionarProducto');
-        productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Limpiar opciones actuales
+        productoSelect.innerHTML = '<option value="">Seleccionar</option>'; 
     
         fetch(`/productos_por_linea/${lineaId}`)
             .then(response => response.json())
@@ -339,7 +343,7 @@
                 nuevoProducto.innerHTML = `
                 <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
                 <h4>Descripción: ${descripcion}</h4>
-                <h4> Ancho (Cm): ${ancho} Alto (Cm): ${alto} Fondo (Cm): ${fondo}</h4>
+                <h4>  Alto (Cm): ${alto} Ancho (Cm): ${ancho} Fondo (Cm): ${fondo}</h4>
                 <div class="itemsseleccionados">
                     <h4>Items Seleccionados</h4>
                     <table>
@@ -378,17 +382,17 @@
                     </div>
                 </div>
             
-<!-- Botón para mostrar el formulario -->
-<button id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Nuevo Ítem</button>
+        <!-- Botón para mostrar el formulario -->
+        <button id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Nuevo Ítem</button>
 
-<!-- Formulario para agregar ítems temporales -->
-<div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
-    <h4>Agregar Nuevo Ítem</h4>
-    <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
-    <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
-    <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
-    <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
-</div>
+        <!-- Formulario para agregar ítems temporales -->
+        <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
+            <h4>Agregar Nuevo Ítem</h4>
+            <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
+            <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
+            <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
+            <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
+        </div>
 
 <div class="resumen-costos">
     <h4>Resumen de Costos</h4>
@@ -459,7 +463,7 @@
                                 }
                             }
                         }
-                    }, 300); // Ajusta el tiempo de espera según sea necesario
+                    }, 300); 
                 });
     
                 // Actualizar los totales al agregar un nuevo producto
@@ -1211,6 +1215,66 @@ function agregarItemAlProducto(item, itemNumber) {
             });
     }
 
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('guardarCotizacionBtn').addEventListener('click', function() {
+            
+
+            const fechaCotizacion = document.getElementById('fecha_cotizacion').value;
+            const clienteCotizacion = document.getElementById('cliente_cotizacion').value;
+            const contactoCotizacion = document.getElementById('contacto_cotizacion').value;
+            const proyectoCotizacion = document.getElementById('proyecto_cotizacion').value;
+            const vendedorCotizacion = document.getElementById('vendedor_cotizacion').value;
+            const negociacion = document.getElementById('negociacion').value;
+            const formaDePagoCotizacion = document.getElementById('forma_pago').value;
+            const validezCotizacion = document.getElementById('validez_cotizacion').value;
+            const descuentoCotizacion = document.getElementById('descuento_cotizacion').value;
+            const recibeCotizacion = document.getElementById('recibe_cotizacion').value;
+            const numeroContactoCotizacion = document.getElementById('numero_contacto').value;
+            const direccionCotizacion = document.getElementById('direccion_cotizacion').value;
+
+        
+            const productos = [];
+            document.querySelectorAll('.item-row').forEach(row => {
+                const itemId = row.cells[0].textContent;
+                const cantidad = row.cells[1].textContent;
+                const precioUnitario = row.cells[2].textContent;
+                productos.push({ item_id: itemId, cantidad, precio_unitario: precioUnitario });
+            });
+        
+            fetch('/guardar_cotizacion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fecha_cotizacion: fechaCotizacion,
+                    cliente_cotizacion: clienteCotizacion,
+                    contacto_cotizacion: contactoCotizacion,
+                    proyecto_cotizacion: proyectoCotizacion,
+                    vendedor_cotizacion: vendedorCotizacion, 
+                    negociacion: negociacion,
+                    forma_de_pago_cotizacion: formaDePagoCotizacion,
+                    validez_cotizacion: validezCotizacion,
+                    descuento_cotizacion: descuentoCotizacion,
+                    recibe_cotizacion: recibeCotizacion,
+                    numero_contacto_cotizacion: numeroContactoCotizacion,
+                    direccion_cotizacion: direccionCotizacion,
+                    productos: productos
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Cotización guardada exitosamente:', data);
+            })
+            .catch(error => {
+                console.error('Error al guardar la cotización:', error);
+            });
+        });
+    });
+    
+    
     function debounce(func, wait) {
         let timeout;
         return function(...args) {

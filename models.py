@@ -53,59 +53,23 @@ class Categoria(db.Model):
   def __repr__(self):
     return f"<Categoria {self.CATEGORIA_NOMBRE}>"
 
-class Cotizacion(db.Model):
-    ID_COTIZACION = db.Column(db.Integer, primary_key=True)
-    FECHA_COTIZACION = db.Column(db.Date, nullable=False)
-    CLIENTE_COTIZACION = db.Column(db.String(120), nullable=False)
-    CONTACTO_COTIZACION = db.Column(db.String(120), nullable=False)
-    PROYECTO_COTIZACION = db.Column(db.String(120), nullable=False)
-    VENDEDOR_COTIZACION = db.Column(db.Integer, db.ForeignKey('vendedor.id'), nullable=False)
-    NEGOCIACION = db.Column(db.String(120), nullable=False)
-    FORMA_DE_PAGO_COTIZACION = db.Column(db.String(50), nullable=False)
-    VALIDEZ_COTIZACION = db.Column(db.Integer, nullable=False)
-    DESCUENTO_COTIZACION = db.Column(db.Float, nullable=False)
-    RECIBE_COTIZACION = db.Column(db.String(120), nullable=False)
-    NUMERO_CONTACTO_COTIZACION = db.Column(db.String(20), nullable=False)
-    DIRECCION_COTIZACION = db.Column(db.String(200), nullable=False)
-    productos = db.relationship('ProductoCotizado', backref='cotizacion', lazy=True)
 
 
-class ProductoCotizado(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    descripcion = db.Column(db.Text, nullable=False)
-    linea_id = db.Column(db.Integer, db.ForeignKey('linea.id'), nullable=False)
-    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
-    alto = db.Column(db.Float, nullable=False)
-    ancho = db.Column(db.Float, nullable=False)
-    fondo = db.Column(db.Float, nullable=False)
-    cotizacion_id = db.Column(db.Integer, db.ForeignKey('cotizacion.ID_COTIZACION'), nullable=False)
-    resumen_costos = db.relationship('ResumenDeCostos', backref='producto', lazy=True)
-
-class ResumenDeCostos(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    costo_directo = db.Column(db.Float, nullable=False)
-    administracion = db.Column(db.Float, nullable=False)
-    imprevistos = db.Column(db.Float, nullable=False)
-    utilidad = db.Column(db.Float, nullable=False)
-    oferta_antes_iva = db.Column(db.Float, nullable=False)
-    iva = db.Column(db.Float, nullable=False)
-    valor_oferta = db.Column(db.Float, nullable=False)
-    producto_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=False)    
 
 
 # The Customers model already exists, so we don't need to create it again
 
 class Items(db.Model):
-    __tablename__ = 'items'
-    item_id = Column(Integer, primary_key=True, autoincrement=True)
-    nombre = Column(String(255), nullable=False)
-    categoria_id = Column(Integer, ForeignKey('categoria.CATEGORIA_ID'))
-    unidad = Column(String(255))
-    tipo = Column(String(255))
+    __tablename__ = 'items'  # Nombre correcto de la tabla
+    item_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nombre = db.Column(db.String(255), nullable=False)
+    categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.CATEGORIA_ID'))
+    unidad = db.Column(db.String(255))
+    tipo = db.Column(db.String(255))
 
-    categoria = relationship("Categoria", backref="items")
+    categoria = db.relationship("Categoria", backref="items")
 
-    __table_args__ = (Index('idx_nombre', 'nombre'),)
+    __table_args__ = (db.Index('idx_nombre', 'nombre'),)
 
     def __repr__(self):
         return f"<Items {self.nombre}>"
@@ -228,6 +192,60 @@ class Proveedores(db.Model):
 
   def __repr__(self):
     return f"<Proveedores {self.NOMBRE_PROVEEDOR}>"
+  
+class Cotizacion(db.Model):
+    __tablename__ = 'cotizacion'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    fecha_cotizacion = db.Column(db.String(50), nullable=False)  # Ajusta el tipo según tu necesidad
+    cliente_cotizacion = db.Column(db.String(255), nullable=False)
+    contacto_cotizacion = db.Column(db.String(255), nullable=False)
+    proyecto_cotizacion = db.Column(db.String(255), nullable=False)
+    vendedor_cotizacion = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    negociacion = db.Column(db.String(255), nullable=False)
+    forma_de_pago_cotizacion = db.Column(db.String(255), nullable=True)
+    validez_cotizacion = db.Column(db.String(255), nullable=True)
+    descuento_cotizacion = db.Column(db.String(255), nullable=True)
+    recibe_cotizacion = db.Column(db.String(255), nullable=True)
+    numero_contacto_cotizacion = db.Column(db.String(255), nullable=True)
+    direccion_cotizacion = db.Column(db.String(255), nullable=True)
+
+    vendedor = db.relationship('Users', backref='cotizaciones')
+
+
+
+class ProductoCotizado(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    descripcion = db.Column(db.Text, nullable=False)
+    linea_id = db.Column(db.Integer, db.ForeignKey('linea.id'), nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
+    alto = db.Column(db.Float, nullable=False)
+    ancho = db.Column(db.Float, nullable=False)
+    fondo = db.Column(db.Float, nullable=False)
+    cotizacion_id = db.Column(db.Integer, db.ForeignKey('cotizacion.ID_COTIZACION'), nullable=False)
+    resumen_costos = db.relationship('ResumenDeCostos', backref='producto', lazy=True)
+
+class ResumenDeCostos(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    costo_directo = db.Column(db.Float, nullable=False)
+    administracion = db.Column(db.Float, nullable=False)
+    imprevistos = db.Column(db.Float, nullable=False)
+    utilidad = db.Column(db.Float, nullable=False)
+    oferta_antes_iva = db.Column(db.Float, nullable=False)
+    iva = db.Column(db.Float, nullable=False)
+    valor_oferta = db.Column(db.Float, nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=False)    
+
+class ItemCotizado(db.Model):
+    __tablename__ = 'items_cotizados'  # Nombre correcto de la tabla
+    id = db.Column(db.Integer, primary_key=True)
+    producto_cotizado_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('items.item_id'), nullable=False)  # Corrige aquí
+    cantidad = db.Column(db.Integer, nullable=False)
+    precio_unitario = db.Column(db.Float, nullable=False)
+    temporal = db.Column(db.Boolean, default=False, nullable=False)  # Si es un ítem temporal
+
+    producto = db.relationship('ProductoCotizado', backref='items')
+    item = db.relationship('Items', backref='cotizaciones')  # Corrige aquí
 
 
     

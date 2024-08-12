@@ -243,6 +243,20 @@ textarea {
     text-align: right;
 }
 
+/* Oculta el formulario por defecto */
+.form-agregar-item-manual {
+    display: none;
+    margin-top: 10px;
+}
+
+/* Oculta el formulario por defecto */
+.form-agregar-item-manual {
+    display: none;
+    margin-top: 10px;
+}
+
+
+
 .botones button {
     margin-right: 10px;
     padding: 10px 20px;

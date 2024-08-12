@@ -35,17 +35,17 @@
                 <select id="seleccionarProducto" onchange="cargarPorcentajesProducto()">
                 <option value="">Seleccionar</option>
                 </select>
-                <label for="alto">Alto:</label>
+                <label for="alto">Alto (Cm):</label>
                 <input type="number" id="alto" name="alto" />
-                <label for="ancho">Ancho:</label>
+                <label for="ancho">Ancho (Cm):</label>
                 <input type="number" id="ancho" name="ancho" />
-                <label for="fondo">Fondo:</label>
+                <label for="fondo">Fondo (Cm):</label>
                 <input type="number" id="fondo" name="fondo"   />
             </div>
             <div id="cantidad-container">
                 <label for="cantidadUnidades">Cantidad de Unidades:</label>
                 <div id="cantidadUnidades">
-                    <input type="number" class="cantidad-input" name="cantidadUnidades" min="1" value="1" />
+                    <input type="number" class="cantidad-input" name="cantidadUnidades" min="1" value="0" />
                     <button id="btnAgregarCantidad">+</button>
                     <button id="btnEliminarCantidad">-</button>
                 </div>
@@ -66,6 +66,7 @@
                     <label for="fecha"> Fecha </label>
                     <input type="date" id="fecha" name="fecha" value="" required>
                 </div>
+
                 <div class="grupo">
                     <label for="cliente"> Cliente  </label>
                     <input type="text" id="cliente" name="cliente" required>
@@ -159,6 +160,7 @@
         this.classList.toggle('expandido');
     });
 
+
     document.addEventListener('DOMContentLoaded', function(){
         const formularioCotizacion = document.getElementById('formulario-cotizacion');
         formularioCotizacion.style.display= 'flex';
@@ -238,7 +240,7 @@
 
         // Contar los inputs
         const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
-        console.log('Número de inputs de cantidad:', cantidadInputs.length);
+
     });
 
         // Función para obtener los valores de los inputs
@@ -252,7 +254,7 @@
     function actualizarValoresCantidad() {
         const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
         valoresCantidad = Array.from(cantidadInputs).map(input => parseInt(input.value));
-        console.log('Valores actuales:', valoresCantidad);
+
     }
 
     // Listener para actualizar valores cuando cambian los inputs
@@ -262,11 +264,6 @@
         }
     });
 
-    // Ejemplo de otra función que usa los valores guardados
-    function usarValoresGuardados() {
-        console.log('Usando los valores guardados:', valoresCantidad);
-        // Aquí puedes hacer lo que necesites con los valores guardados
-    }
     
     document.getElementById('btnEliminarCantidad').addEventListener('click', function() {
         const cantidadContainer = document.getElementById('cantidadUnidades');
@@ -295,11 +292,20 @@
 
     document.getElementById('btnCrear').addEventListener('click', function() {
         const descripcionInput = document.getElementById('descripcion');
+        const altoInput = document.getElementById('alto');
+        const anchoInput = document.getElementById('ancho');
+        const fondoInput = document.getElementById('fondo');
         const productoSelect = document.getElementById('seleccionarProducto');
         const descripcion = descripcionInput.value.trim();
         const productoId = productoSelect.value;
         const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
-    
+        const alto = altoInput.value.trim();
+        const ancho = anchoInput.value.trim();
+        const fondo= fondoInput.value.trim();
+
+
+
+
         if (descripcion === "" || productoId === "") {
             alert("Por favor, ingrese una descripción y seleccione un producto.");
             return;
@@ -333,6 +339,7 @@
                 nuevoProducto.innerHTML = `
                 <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
                 <h4>Descripción: ${descripcion}</h4>
+                <h4> Ancho (Cm): ${ancho} Alto (Cm): ${alto} Fondo (Cm): ${fondo}</h4>
                 <div class="itemsseleccionados">
                     <h4>Items Seleccionados</h4>
                     <table>
@@ -371,37 +378,43 @@
                     </div>
                 </div>
             
-                <!-- Formulario para agregar ítems temporales -->
-                <div class="form-agregar-item-manual" data-producto-id="${nuevoNumeroProducto}">
-                    <h4>Agregar Nuevo Ítem</h4>
-                    <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
-                    <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
-                    <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
-                    <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
-                </div>
-                <div class="resumen-costos">
-                    <h4>Resumen de Costos</h4>
-                    ${valoresCantidad.map((_, index) => `
-                        <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
-                            <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
-                            <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
-                            
-                            <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0</p>
-                            <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0</p>
-                            <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0</p>
-                            <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
-                            <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
-                            <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
-                            <p id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="acciones">
-                    <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
-                    <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
-                    <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
-                    <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
-                </div>
+<!-- Botón para mostrar el formulario -->
+<button id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Nuevo Ítem</button>
+
+<!-- Formulario para agregar ítems temporales -->
+<div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
+    <h4>Agregar Nuevo Ítem</h4>
+    <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
+    <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
+    <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
+    <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
+</div>
+
+<div class="resumen-costos">
+    <h4>Resumen de Costos</h4>
+    ${valoresCantidad.map((_, index) => `
+        <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+            <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
+            <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
+            
+            <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0</p>
+            <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0</p>
+            <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0</p>
+            <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
+            <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+            <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
+            <p id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+        </div>
+    `).join('')}
+</div>
+
+<div class="acciones">
+    <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
+    <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
+    <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
+    <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
+</div>
+
             `;
         
                 productosContainer.appendChild(nuevoProducto);
@@ -610,6 +623,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     actualizarNumeroProducto();
 });
+
+function toggleFormulario(numeroProducto) {
+    const formulario = document.getElementById(`formAgregarItem-${numeroProducto}`);
+    if (formulario.style.display === 'none' || formulario.style.display === '') {
+        formulario.style.display = 'block';
+    } else {
+        formulario.style.display = 'none';
+    }
+}
+
 
             // Función para agregar ítems temporales
             function agregarItemTemporal(productoId) {
@@ -1096,8 +1119,6 @@ function agregarItemAlProducto(item, itemNumber) {
 
     function verTodosItems(itemNumber, pagina, busqueda) {
 
-        console.log(`verTodosItems called for itemNumber: ${itemNumber}`);
-        console.log(`Container ID: seleccion-items-${itemNumber}`);
 
         fetch(`/todos_los_items?pagina=${pagina}&busqueda=${busqueda}`)
             .then(response => response.json())

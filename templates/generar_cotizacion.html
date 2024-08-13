@@ -22,7 +22,7 @@
             </div>
             <div class="grupo">
                 <label for="seleccionarLinea">Línea:</label>
-                <select id="seleccionarLinea" name="seleccionarLinea">
+                <select id="seleccionarLinea" name="seleccionarLinea", requi>
                     <option value="">Seleccionar</option>
                     {% for linea in lineas %}
                         <option value="{{ linea.linea_id }}">{{ linea.nombre }}</option>
@@ -343,7 +343,7 @@
                 nuevoProducto.innerHTML = `
                 <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
                 <h4>Descripción: ${descripcion}</h4>
-                <h4>  Alto (Cm): ${alto} Ancho (Cm): ${ancho} Fondo (Cm): ${fondo}</h4>
+                <h4>  Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
                 <div class="itemsseleccionados">
                     <h4>Items Seleccionados</h4>
                     <table>
@@ -394,23 +394,23 @@
             <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
         </div>
 
-<div class="resumen-costos">
-    <h4>Resumen de Costos</h4>
-    ${valoresCantidad.map((_, index) => `
-        <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
-            <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
-            <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
-            
-            <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0</p>
-            <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0</p>
-            <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0</p>
-            <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
-            <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
-            <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
-            <p id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
-        </div>
-    `).join('')}
-</div>
+    <div class="resumen-costos">
+        <h4>Resumen de Costos</h4>
+        ${valoresCantidad.map((_, index) => `
+            <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+                <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
+                <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
+                
+                <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0</p>
+                <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0</p>
+                <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0</p>
+                <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
+                <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+                <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
+                <p id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+            </div>
+        `).join('')}
+    </div>
 
 <div class="acciones">
     <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
@@ -426,7 +426,7 @@
                 // Limpiar los campos de entrada después de agregar el producto
                 descripcionInput.value = '';
                 productoSelect.value = '';
-    
+                
                 // Insertar el nuevo producto en la posición correcta
                 let insertado = false;
                 productosContainer.querySelectorAll('.producto').forEach(producto => {
@@ -480,6 +480,7 @@
     const target = event.target;
 
     if (target.matches('.confirmar-producto-btn')) {
+        console.log(`Se clickeo el boton`);
         const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
         seleccionItemsContainer.style.display = 'none';
     } else if (target.matches('.editar-producto-btn')) {
@@ -1217,63 +1218,92 @@ function agregarItemAlProducto(item, itemNumber) {
 
 
 
+
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('guardarCotizacionBtn').addEventListener('click', function() {
-            
-
+            // Capturar datos de la cotización
             const fechaCotizacion = document.getElementById('fecha_cotizacion').value;
             const clienteCotizacion = document.getElementById('cliente_cotizacion').value;
             const contactoCotizacion = document.getElementById('contacto_cotizacion').value;
             const proyectoCotizacion = document.getElementById('proyecto_cotizacion').value;
             const vendedorCotizacion = document.getElementById('vendedor_cotizacion').value;
             const negociacion = document.getElementById('negociacion').value;
-            const formaDePagoCotizacion = document.getElementById('forma_pago').value;
+            const formaPago = document.getElementById('forma_pago').value;
             const validezCotizacion = document.getElementById('validez_cotizacion').value;
             const descuentoCotizacion = document.getElementById('descuento_cotizacion').value;
             const recibeCotizacion = document.getElementById('recibe_cotizacion').value;
-            const numeroContactoCotizacion = document.getElementById('numero_contacto').value;
+            const numeroContacto = document.getElementById('numero_contacto').value;
             const direccionCotizacion = document.getElementById('direccion_cotizacion').value;
+        
+// Capturar productos en la cotización
+const productos = [];
+document.querySelectorAll('.producto').forEach(function(productoDiv) {
+    const productoId = productoDiv.id.split('-')[1];
+    const descripcion = productoDiv.querySelector('h4').innerText;
+    const items = []; // Capturar los ítems asociados a este producto
 
+    productoDiv.querySelectorAll('tbody tr').forEach(function(itemRow) {
+        // Filtrar para evitar procesar filas que no contienen items seleccionados
+        const cantidadInput = itemRow.querySelector('.cantidad-input');
+        const checkboxInput = itemRow.querySelector('input[type="checkbox"]');
         
-            const productos = [];
-            document.querySelectorAll('.item-row').forEach(row => {
-                const itemId = row.cells[0].textContent;
-                const cantidad = row.cells[1].textContent;
-                const precioUnitario = row.cells[2].textContent;
-                productos.push({ item_id: itemId, cantidad, precio_unitario: precioUnitario });
-            });
+        // Verificar si existe el checkbox y está seleccionado
+        if (!cantidadInput || (checkboxInput && !checkboxInput.checked)) {
+            // Omitir esta fila si no tiene un input de cantidad o si el ítem no está seleccionado
+            return;
+        }
         
-            fetch('/guardar_cotizacion', {
+        // Procesar la fila
+        const itemId = itemRow.dataset.itemId;
+        const itemCantidad = cantidadInput.value;
+        
+        // Agregar cada ítem a la lista de ítems
+        items.push({ itemId, itemCantidad });
+    });
+    
+    productos.push({ productoId, descripcion, items });
+});
+            // Construir el objeto de datos para enviar al backend
+            const cotizacionData = {
+                fechaCotizacion,
+                clienteCotizacion,
+                contactoCotizacion,
+                proyectoCotizacion,
+                vendedorCotizacion,
+                negociacion,
+                formaPago,
+                validezCotizacion,
+                descuentoCotizacion,
+                recibeCotizacion,
+                numeroContacto,
+                direccionCotizacion,
+                productos
+            };
+        
+            // Enviar los datos al backend
+            fetch('/guardar-cotizacion', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    fecha_cotizacion: fechaCotizacion,
-                    cliente_cotizacion: clienteCotizacion,
-                    contacto_cotizacion: contactoCotizacion,
-                    proyecto_cotizacion: proyectoCotizacion,
-                    vendedor_cotizacion: vendedorCotizacion, 
-                    negociacion: negociacion,
-                    forma_de_pago_cotizacion: formaDePagoCotizacion,
-                    validez_cotizacion: validezCotizacion,
-                    descuento_cotizacion: descuentoCotizacion,
-                    recibe_cotizacion: recibeCotizacion,
-                    numero_contacto_cotizacion: numeroContactoCotizacion,
-                    direccion_cotizacion: direccionCotizacion,
-                    productos: productos
-                })
+                body: JSON.stringify(cotizacionData),
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Cotización guardada exitosamente:', data);
+                if (data.success) {
+                    alert('Cotización guardada con éxito.');
+                } else {
+                    alert('Error al guardar la cotización.');
+                }
             })
             .catch(error => {
-                console.error('Error al guardar la cotización:', error);
+                console.error('Error:', error);
             });
         });
-    });
+    }); 
     
+    
+
     
     function debounce(func, wait) {
         let timeout;

@@ -1,6 +1,6 @@
 # models.py
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import DECIMAL, TIMESTAMP, Boolean, Column, Date, ForeignKey, Integer, Numeric, String, text
+from sqlalchemy import DECIMAL, TIMESTAMP, Boolean, Column, Date, Float, ForeignKey, Integer, Numeric, String, text
 from sqlalchemy.orm import relationship
 from sqlalchemy import Index
 
@@ -195,7 +195,7 @@ class Proveedores(db.Model):
   
 class Cotizacion(db.Model):
     __tablename__ = 'cotizacion'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_cotizacion = db.Column(db.Integer, primary_key=True, autoincrement=True)
     fecha_cotizacion = db.Column(db.String(50), nullable=False)  # Ajusta el tipo según tu necesidad
     cliente_cotizacion = db.Column(db.String(255), nullable=False)
     contacto_cotizacion = db.Column(db.String(255), nullable=False)
@@ -214,15 +214,16 @@ class Cotizacion(db.Model):
 
 
 class ProductoCotizado(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    descripcion = db.Column(db.Text, nullable=False)
-    linea_id = db.Column(db.Integer, db.ForeignKey('linea.id'), nullable=False)
-    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
-    alto = db.Column(db.Float, nullable=False)
-    ancho = db.Column(db.Float, nullable=False)
-    fondo = db.Column(db.Float, nullable=False)
-    cotizacion_id = db.Column(db.Integer, db.ForeignKey('cotizacion.ID_COTIZACION'), nullable=False)
-    resumen_costos = db.relationship('ResumenDeCostos', backref='producto', lazy=True)
+    __tablename__ = 'producto_cotizado'
+
+    id_producto = db.Column(db.Integer, primary_key=True)
+    descripcion = db.Column(db.String(255))
+    cotizacion_id = db.Column(db.Integer, ForeignKey('cotizacion.id_cotizacion'))
+    producto_id = db.Column(db.Integer, ForeignKey('productos.producto_id'))  # Referencia correcta a la tabla 'productos'
+
+    cotizacion = db.relationship('Cotizacion', backref='productos_cotizados')
+    producto = db.relationship('Productos', backref='productos_cotizados')
+
 
 class ResumenDeCostos(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -238,7 +239,7 @@ class ResumenDeCostos(db.Model):
 class ItemCotizado(db.Model):
     __tablename__ = 'items_cotizados'  # Nombre correcto de la tabla
     id = db.Column(db.Integer, primary_key=True)
-    producto_cotizado_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=False)
+    producto_cotizado_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id_producto'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('items.item_id'), nullable=False)  # Corrige aquí
     cantidad = db.Column(db.Integer, nullable=False)
     precio_unitario = db.Column(db.Float, nullable=False)

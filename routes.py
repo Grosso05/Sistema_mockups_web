@@ -1,4 +1,5 @@
 import datetime
+from sqlite3 import IntegrityError
 from flask import Blueprint, flash, jsonify, render_template, request, redirect, session, url_for
 from flask_login import login_required, login_user, current_user
 from models import Categoria, Cotizacion, ItemCotizado, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db
@@ -235,30 +236,51 @@ def listar_cotizaciones():
 #Ruta para 
 
 
-@routes_blueprint.route('/guardar_cotizacion', methods=['POST'])
+@routes_blueprint.route('/guardar-cotizacion', methods=['POST'])
 def guardar_cotizacion():
-    data = request.get_json()
-    try:
-        nueva_cotizacion = Cotizacion(
-            fecha_cotizacion=data.get('fecha_cotizacion'),
-            cliente_cotizacion=data.get('cliente_cotizacion'),
-            contacto_cotizacion=data.get('contacto_cotizacion'),
-            proyecto_cotizacion=data.get('proyecto_cotizacion'),
-            vendedor_cotizacion=data.get('vendedor_cotizacion'),
-            negociacion=data.get('negociacion'),
-            forma_de_pago_cotizacion=data.get('forma_de_pago_cotizacion'),
-            validez_cotizacion=data.get('validez_cotizacion'),
-            descuento_cotizacion=data.get('descuento_cotizacion'),
-            recibe_cotizacion=data.get('recibe_cotizacion'),
-            numero_contacto_cotizacion=data.get('numero_contacto_cotizacion'),
-            direccion_cotizacion=data.get('direccion_cotizacion')
+    data = request.json
+
+    print(data)  # Debug: Ver los datos que llegan
+
+    # Crear una nueva instancia de Cotizacion y llenarla con los datos
+    nueva_cotizacion = Cotizacion(
+        fecha_cotizacion=data['fechaCotizacion'],
+        cliente_cotizacion=data['clienteCotizacion'],
+        contacto_cotizacion=data['contactoCotizacion'],
+        proyecto_cotizacion=data['proyectoCotizacion'],
+        vendedor_cotizacion=data['vendedorCotizacion'],
+        negociacion=data['negociacion'],
+        forma_de_pago_cotizacion=data['formaPago'],
+        validez_cotizacion=data['validezCotizacion'],
+        descuento_cotizacion=data['descuentoCotizacion'],
+        recibe_cotizacion=data['recibeCotizacion'],
+        numero_contacto_cotizacion=data['numeroContacto'],
+        direccion_cotizacion=data['direccionCotizacion']
+    )
+    db.session.add(nueva_cotizacion)
+    db.session.commit()
+
+    # Ahora iterar sobre los productos y guardarlos
+    for producto in data['productos']:
+        nuevo_producto = ProductoCotizado(
+            descripcion=producto['descripcion'],
+            cotizacion_id=nueva_cotizacion.id_cotizacion  # Asocia el producto a la cotización
         )
-        db.session.add(nueva_cotizacion)
+        db.session.add(nuevo_producto)
         db.session.commit()
-        return jsonify({"message": "Cotización guardada exitosamente"}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+
+        # Guardar los ítems asociados al producto
+        for item in producto['items']:
+            nuevo_item = ItemCotizado(
+                producto_id=nuevo_producto.id_producto,
+                item_id=item['itemId'],
+                cantidad=item['itemCantidad']
+            )
+            db.session.add(nuevo_item)
+    
+    db.session.commit()
+
+    return jsonify({'success': True})
 
 @routes_blueprint.route('/guardar_items', methods=['POST'])
 def guardar_items():
@@ -280,6 +302,32 @@ def guardar_items():
     
     return jsonify({'message': 'Ítems guardados correctamente'})
 
+@routes_blueprint.route('/guardar_producto', methods=['POST'])
+def guardar_producto():
+    data = request.get_json()
+    try:
+        # Obtén el producto y la cotización de la base de datos
+        cotizacion = Cotizacion.query.get(data.get('cotizacion_id'))
+        if not cotizacion:
+            return jsonify({'error': 'Cotización no encontrada'}), 404
+        
+        producto_id = data.get('producto_id')
+        cantidad = data.get('cantidad')
+        precio_unitario = data.get('precio_unitario')
+
+        # Guarda el producto en la cotización
+        item = ItemCotizado(
+            cotizacion_id=cotizacion.id_cotizacion,
+            producto_id=producto_id,
+            cantidad=cantidad,
+            precio_unitario=precio_unitario
+        )
+        db.session.add(item)
+        db.session.commit()
+        return jsonify({'message': 'Producto guardado exitosamente'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
 
 
 

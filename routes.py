@@ -240,16 +240,16 @@ def listar_cotizaciones():
 def guardar_cotizacion():
     data = request.json
 
-    print(data)  # Debug: Ver los datos que llegan
+    # Verificar y ajustar los datos si son None o vacíos
+    negociacion = data.get('negociacion') or ''  # Reemplaza None con una cadena vacía o un valor por defecto
 
-    # Crear una nueva instancia de Cotizacion y llenarla con los datos
     nueva_cotizacion = Cotizacion(
         fecha_cotizacion=data['fechaCotizacion'],
         cliente_cotizacion=data['clienteCotizacion'],
         contacto_cotizacion=data['contactoCotizacion'],
         proyecto_cotizacion=data['proyectoCotizacion'],
         vendedor_cotizacion=data['vendedorCotizacion'],
-        negociacion=data['negociacion'],
+        negociacion=negociacion,
         forma_de_pago_cotizacion=data['formaPago'],
         validez_cotizacion=data['validezCotizacion'],
         descuento_cotizacion=data['descuentoCotizacion'],
@@ -264,7 +264,11 @@ def guardar_cotizacion():
     for producto in data['productos']:
         nuevo_producto = ProductoCotizado(
             descripcion=producto['descripcion'],
-            cotizacion_id=nueva_cotizacion.id_cotizacion  # Asocia el producto a la cotización
+            cotizacion_id=nueva_cotizacion.id_cotizacion,  # Asocia el producto a la cotización
+            linea_id=producto.get('lineaId'),  # Asegúrate de pasar los datos correctos
+            alto=producto.get('alto'),
+            ancho=producto.get('ancho'),
+            fondo=producto.get('fondo')
         )
         db.session.add(nuevo_producto)
         db.session.commit()
@@ -272,7 +276,7 @@ def guardar_cotizacion():
         # Guardar los ítems asociados al producto
         for item in producto['items']:
             nuevo_item = ItemCotizado(
-                producto_id=nuevo_producto.id_producto,
+                producto_id=nuevo_producto.id,
                 item_id=item['itemId'],
                 cantidad=item['itemCantidad']
             )
@@ -281,6 +285,7 @@ def guardar_cotizacion():
     db.session.commit()
 
     return jsonify({'success': True})
+
 
 @routes_blueprint.route('/guardar_items', methods=['POST'])
 def guardar_items():

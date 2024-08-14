@@ -1,11 +1,21 @@
-## Generador de Catálogos Personalizados (Versión 5.7.3) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.7.3.2) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 14 de agosto de 2024, 9:45 am
+
+Cambios Recientes
+v5.7.3.2
+
+En esta pequeña correcion, incluimos en el guardado en bd, ya guarda el id_producto. queda pendiente aun guardar la tabla item_cotizado y el resumen de costos
+
+# Fecha de lanzamiento: 13 de agosto de 2024, 11:40 am
+
 
 # Fecha de lanzamiento: 14 de agosto de 2024, 9:45 am
 
 Cambios Recientes
 v5.7.3
 
-En esta versión, Seguimos trabajando en guardar las cotizaciones, Ya guarda las medidas del producto cotizado, nos falta guardar el id del producto y los items del producto cotizado.
+En esta versión, Seguimos trabajando en guardar las cotizaciones, Ya guarda las medidas del producto cotizado, nos falta guardar el id del producto, los items del producto cotizado y el resumen de costos.
 
 # Fecha de lanzamiento: 13 de agosto de 2024, 11:40 am
 

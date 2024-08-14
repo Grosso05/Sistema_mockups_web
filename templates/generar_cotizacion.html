@@ -6,7 +6,7 @@
     <title>Generar Costos</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
     <style>
-        
+
         
     </style>
 </head>
@@ -22,7 +22,7 @@
             </div>
             <div class="grupo">
                 <label for="seleccionarLinea">Línea:</label>
-                <select id="seleccionarLinea" name="seleccionarLinea", requi>
+                <select id="seleccionarLinea" name="seleccionarLinea">
                     <option value="">Seleccionar</option>
                     {% for linea in lineas %}
                         <option value="{{ linea.linea_id }}">{{ linea.nombre }}</option>
@@ -300,9 +300,11 @@
         const anchoInput = document.querySelector('.ancho-input');
         const fondoInput = document.querySelector('.fondo-input');        
         const productoSelect = document.getElementById('seleccionarProducto');
+
         const descripcion = descripcionInput.value.trim();
         const productoId = productoSelect.value;
         const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
+ 
         const alto = altoInput.value.trim();
         const ancho = anchoInput.value.trim();
         const fondo= fondoInput.value.trim();
@@ -342,6 +344,7 @@
                 // Crear el contenido del nuevo producto
                 nuevoProducto.innerHTML = `
                 <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
+
                 <h4>Descripción: ${descripcion}</h4>
                 <h4>  Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
                 <div class="itemsseleccionados">
@@ -1221,46 +1224,101 @@ function agregarItemAlProducto(item, itemNumber) {
 
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('guardarCotizacionBtn').addEventListener('click', function() {
+            
+            // Capturar datos generales de la cotización
+            const fechaCotizacion = document.getElementById('fecha_cotizacion').value;
+            const clienteCotizacion = document.getElementById('cliente_cotizacion').value;
+            const contactoCotizacion = document.getElementById('contacto_cotizacion').value;
+            const proyectoCotizacion = document.getElementById('proyecto_cotizacion').value;
+            const vendedorCotizacion = document.getElementById('vendedor_cotizacion').value;
+            const negociacion = document.getElementById('negociacion').value;
+            const formaPago = document.getElementById('forma_pago').value;
+            const validezCotizacion = document.getElementById('validez_cotizacion').value;
+            const descuentoCotizacion = document.getElementById('descuento_cotizacion').value;
+            const recibeCotizacion = document.getElementById('recibe_cotizacion').value;
+            const numeroContacto = document.getElementById('numero_contacto').value;
+            const direccionCotizacion = document.getElementById('direccion_cotizacion').value;
+    
+            // Capturar productos en la cotización
             const productos = [];
             document.querySelectorAll('.producto').forEach(function(productoDiv) {
                 const productoId = productoDiv.id.split('-')[1];
-                const descripcion = productoDiv.querySelector('h4').innerText;
-                
-                const altoInput = productoDiv.querySelector('.alto-input');
-                const anchoInput = productoDiv.querySelector('.ancho-input');
-                const fondoInput = productoDiv.querySelector('.fondo-input');
-                
-                console.log('Producto ID:', productoId);
-                console.log('Descripción:', descripcion);
+                const descripcion = productoDiv.querySelector('h4:nth-child(2)').innerText;
     
-                console.log('Alto Input:', altoInput, 'Value:', altoInput ? altoInput.value : 'No input found');
-                console.log('Ancho Input:', anchoInput, 'Value:', anchoInput ? anchoInput.value : 'No input found');
-                console.log('Fondo Input:', fondoInput, 'Value:', fondoInput ? fondoInput.value : 'No input found');
+                // Extraer las dimensiones desde el texto renderizado
+                const medidasText = productoDiv.querySelector('h4:nth-child(3)').innerText;
+                const medidasMatch = medidasText.match(/Alto \(Cm\): (\d+) \|\| Ancho \(Cm\): (\d+) \|\| Fondo \(Cm\): (\d+)/);
     
-                const alto = altoInput ? parseFloat(altoInput.value) || null : null;
-                const ancho = anchoInput ? parseFloat(anchoInput.value) || null : null;
-                const fondo = fondoInput ? parseFloat(fondoInput.value) || null : null;
+                const alto = medidasMatch ? parseFloat(medidasMatch[1]) : null;
+                const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
+                const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
     
-                console.log('Alto:', alto, 'Ancho:', ancho, 'Fondo:', fondo);
+                const items = [];
+                productoDiv.querySelectorAll('tbody tr').forEach(function(itemRow) {
+                    const cantidadInput = itemRow.querySelector('.cantidad-input');
+                    const checkboxInput = itemRow.querySelector('input[type="checkbox"]');
+    
+                    // Verificar si existe el checkbox y está seleccionado
+                    if (!cantidadInput || (checkboxInput && !checkboxInput.checked)) {
+                        return; // Omitir esta fila si no tiene un input de cantidad o si el ítem no está seleccionado
+                    }
+    
+                    const itemId = itemRow.dataset.itemId;
+                    const itemCantidad = cantidadInput.value;
+    
+                    // Agregar cada ítem a la lista de ítems
+                    items.push({ itemId, itemCantidad });
+                });
     
                 productos.push({
-                    productoId: productoId,
-                    descripcion: descripcion,
-                    alto: alto,
-                    ancho: ancho,
-                    fondo: fondo,
-                    items: []
+                    productoId,
+                    descripcion,
+                    alto,
+                    ancho,
+                    fondo,
+                    items
                 });
             });
     
-            console.log('Productos capturados:', productos);
+            // Construir el objeto de datos para enviar al backend
+            const cotizacionData = {
+                fechaCotizacion,
+                clienteCotizacion,
+                contactoCotizacion,
+                proyectoCotizacion,
+                vendedorCotizacion,
+                negociacion,
+                formaPago,
+                validezCotizacion,
+                descuentoCotizacion,
+                recibeCotizacion,
+                numeroContacto,
+                direccionCotizacion,
+                productos
+            };
+    
+            // Enviar los datos al backend
+            fetch('/guardar-cotizacion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(cotizacionData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Cotización guardada exitosamente:', data);
+                if (data.success) {
+                    alert('Cotización guardada con éxito.');
+                } else {
+                    alert('Error al guardar la cotización.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al guardar la cotización:', error);
+            });
         });
     });
-    
-    
-    
-    
-    
     
     
     

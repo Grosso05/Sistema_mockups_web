@@ -265,6 +265,7 @@ def guardar_cotizacion():
         nuevo_producto = ProductoCotizado(
             descripcion=producto['descripcion'],
             cotizacion_id=nueva_cotizacion.id_cotizacion,  # Asocia el producto a la cotización
+            producto_id=producto.get('productoId'),  # Incluye el producto_id aquí
             linea_id=producto.get('lineaId'),  # Asegúrate de pasar los datos correctos
             alto=producto.get('alto'),
             ancho=producto.get('ancho'),
@@ -285,6 +286,7 @@ def guardar_cotizacion():
     db.session.commit()
 
     return jsonify({'success': True})
+
 
 
 @routes_blueprint.route('/guardar_items', methods=['POST'])

@@ -15,8 +15,7 @@ def listar_usuarios():
 
 #ruta del formulario para crear usuarios
 @users_blueprint.route('/crear_usuario', methods=['GET', 'POST'])
-@login_required
-@roles_required(1)
+
 def crear_usuario():
     if request.method == 'POST':
         user_name = request.form['user_name']

@@ -239,10 +239,11 @@ def listar_cotizaciones():
 @routes_blueprint.route('/guardar-cotizacion', methods=['POST'])
 def guardar_cotizacion():
     data = request.json
-
-    # Verificar y ajustar los datos si son None o vacíos
+    
+    print(data);
     negociacion = data.get('negociacion') or ''  # Reemplaza None con una cadena vacía o un valor por defecto
 
+    # Crear la nueva cotización
     nueva_cotizacion = Cotizacion(
         fecha_cotizacion=data['fechaCotizacion'],
         cliente_cotizacion=data['clienteCotizacion'],
@@ -258,34 +259,35 @@ def guardar_cotizacion():
         direccion_cotizacion=data['direccionCotizacion']
     )
     db.session.add(nueva_cotizacion)
-    db.session.commit()
+    db.session.flush()  # Para obtener el ID de la cotización
 
-    # Ahora iterar sobre los productos y guardarlos
-    for producto in data['productos']:
-        nuevo_producto = ProductoCotizado(
-            descripcion=producto['descripcion'],
-            cotizacion_id=nueva_cotizacion.id_cotizacion,  # Asocia el producto a la cotización
-            producto_id=producto.get('productoId'),  # Incluye el producto_id aquí
-            linea_id=producto.get('lineaId'),  # Asegúrate de pasar los datos correctos
-            alto=producto.get('alto'),
-            ancho=producto.get('ancho'),
-            fondo=producto.get('fondo')
+    for producto_data in data['productos']:
+        nuevo_producto_cotizado = ProductoCotizado(
+            descripcion=producto_data['descripcion'],
+            alto=producto_data['alto'],
+            ancho=producto_data['ancho'],
+            fondo=producto_data['fondo'],
+            cotizacion_id=nueva_cotizacion.id_cotizacion,  # Aquí accedes al campo correcto
+            producto_id=producto_data['productoId']
         )
-        db.session.add(nuevo_producto)
-        db.session.commit()
+        db.session.add(nuevo_producto_cotizado)
+        db.session.flush()  # Para obtener el ID del producto cotizado
 
-        # Guardar los ítems asociados al producto
-        for item in producto['items']:
-            nuevo_item = ItemCotizado(
-                producto_id=nuevo_producto.id,
-                item_id=item['itemId'],
-                cantidad=item['itemCantidad']
-            )
-            db.session.add(nuevo_item)
-    
+    for item_data in producto_data['items']:
+        print(f"Procesando item: {item_data['itemId']}, Total: {item_data['itemTotal']}")
+        
+        nuevo_item_cotizado = ItemCotizado(
+            producto_cotizado_id=nuevo_producto_cotizado.id,
+            item_id=item_data['itemId'],
+            cantidad=item_data['itemCantidad'],
+            total_item=item_data['itemTotal']
+        )
+        db.session.add(nuevo_item_cotizado)
+
     db.session.commit()
-
+    
     return jsonify({'success': True})
+
 
 
 

@@ -1252,50 +1252,61 @@ function agregarItemAlProducto(item, itemNumber) {
                 const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
                 const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
     
+                // Capturar los ítems seleccionados para cada producto
                 const items = [];
                 productoDiv.querySelectorAll('tbody tr').forEach(function(itemRow) {
-                    const cantidadInput = itemRow.querySelector('.cantidad-input');
-                    const checkboxInput = itemRow.querySelector('input[type="checkbox"]');
-    
-                    // Verificar si existe el checkbox y está seleccionado
-                    if (!cantidadInput || (checkboxInput && !checkboxInput.checked)) {
-                        return; // Omitir esta fila si no tiene un input de cantidad o si el ítem no está seleccionado
+                    // Verificar si existe el input de cantidad
+                    const cantidadInput = itemRow.querySelector('input[type="number"]');
+                    
+                    if (cantidadInput) {  // Solo si el input existe, continuamos
+                        const itemId = itemRow.querySelector('td:nth-child(1)').innerText.trim();
+                        const itemCantidad = cantidadInput.value;
+                               // Captura el texto del total y reemplaza la coma decimal por un punto
+                        const itemTotalText = itemRow.querySelector('td.total').innerText.trim();
+                        const itemTotal = parseFloat(itemTotalText.replace('.', '').replace(',', '.'));
+                                
+                        
+
+                        items.push({
+                            itemId: parseInt(itemId),
+                            itemCantidad: parseInt(itemCantidad),
+                            itemTotal: itemTotal
+                        });
                     }
-    
-                    const itemId = itemRow.dataset.itemId;
-                    const itemCantidad = cantidadInput.value;
-    
-                    // Agregar cada ítem a la lista de ítems
-                    items.push({ itemId, itemCantidad });
                 });
+                
     
                 productos.push({
-                    productoId,
-                    descripcion,
-                    alto,
-                    ancho,
-                    fondo,
-                    items
+                    productoId: parseInt(productoId),
+                    descripcion: descripcion.trim(),
+                    alto: alto,
+                    ancho: ancho,
+                    fondo: fondo,
+                    items: items
                 });
             });
     
             // Construir el objeto de datos para enviar al backend
             const cotizacionData = {
-                fechaCotizacion,
-                clienteCotizacion,
-                contactoCotizacion,
-                proyectoCotizacion,
-                vendedorCotizacion,
-                negociacion,
-                formaPago,
-                validezCotizacion,
-                descuentoCotizacion,
-                recibeCotizacion,
-                numeroContacto,
-                direccionCotizacion,
-                productos
+                fechaCotizacion: fechaCotizacion,
+                clienteCotizacion: clienteCotizacion,
+                contactoCotizacion: contactoCotizacion,
+                proyectoCotizacion: proyectoCotizacion,
+                vendedorCotizacion: vendedorCotizacion,
+                negociacion: negociacion,
+                formaPago: formaPago,
+                validezCotizacion: validezCotizacion,
+                descuentoCotizacion: parseFloat(descuentoCotizacion),
+                recibeCotizacion: recibeCotizacion,
+                numeroContacto: numeroContacto,
+                direccionCotizacion: direccionCotizacion,
+                productos: productos
             };
     
+
+
+            console.log('Datos a enviar:', cotizacionData);
+
             // Enviar los datos al backend
             fetch('/guardar-cotizacion', {
                 method: 'POST',
@@ -1318,6 +1329,7 @@ function agregarItemAlProducto(item, itemNumber) {
             });
         });
     });
+    
     
     
     

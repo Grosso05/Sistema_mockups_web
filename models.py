@@ -215,18 +215,22 @@ class Cotizacion(db.Model):
 
 class ProductoCotizado(db.Model):
     __tablename__ = 'producto_cotizado'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    descripcion = Column(String, nullable=False)
-    linea_id = Column(Integer, ForeignKey('lineas.linea_id'), nullable=False)
-    producto_id = Column(Integer, ForeignKey('productos.producto_id'), nullable=False)
-    alto = Column(Float)
-    ancho = Column(Float)
-    fondo = Column(Float)
-    cotizacion_id = Column(Integer, ForeignKey('cotizacion.id_cotizacion'), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    descripcion = db.Column(db.String(255), nullable=False)  # Especifica la longitud
+    linea_id = db.Column(db.Integer, db.ForeignKey('lineas.linea_id'), nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey('productos.producto_id'), nullable=False)
+    alto = db.Column(db.Float)
+    ancho = db.Column(db.Float)
+    fondo = db.Column(db.Float)
+    cotizacion_id = db.Column(db.Integer, db.ForeignKey('cotizacion.id_cotizacion'), nullable=False)
 
-    linea = relationship("Lineas", backref="productos_cotizados")
-    producto = relationship("Productos", backref="productos_cotizados")
-    cotizacion = relationship("Cotizacion", backref="productos_cotizados")
+    linea = db.relationship("Lineas", backref="productos_cotizados")
+    producto = db.relationship("Productos", backref="productos_cotizados")
+    cotizacion = db.relationship("Cotizacion", backref="productos_cotizados")
+
+    def __repr__(self):
+        return f"<ProductoCotizado {self.descripcion}>"
+
 
 
 
@@ -249,6 +253,7 @@ class ItemCotizado(db.Model):
     cantidad = db.Column(db.Integer, nullable=False)
     precio_unitario = db.Column(db.Float, nullable=False)
     temporal = db.Column(db.Boolean, default=False, nullable=False)  # Si es un ítem temporal
+    total_item = db.Column(db.Float, nullable=False)
 
     producto = db.relationship('ProductoCotizado', backref='items')
     item = db.relationship('Items', backref='cotizaciones')  # Corrige aquí
@@ -257,7 +262,7 @@ class ItemCotizado(db.Model):
     
 
 def configure_db(app):
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://AdminDb:M52eqEhiH3@127.0.0.1/software_innova'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1/software_innova'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
@@ -266,7 +271,10 @@ def test_db_connection(app):
         with db.engine.connect() as connection:
             try:
                 print("----------------------------------")
-                print("Conexión a la base de datos exitosa.")
+                print("PDF ERRROR")
+                print("There has been an issue with the initialization of the libraries. ")
+                print(" Please review the logs and check the configurations to resolve any potential problems.")
+                print("Ensure that all dependencies are correctly installed and up-to-date.")
                 print("----------------------------------")
             except Exception as e:
                 print("----------------------------------")

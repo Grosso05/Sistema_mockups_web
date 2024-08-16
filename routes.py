@@ -225,13 +225,7 @@ def crear_cotizacion():
 
     return jsonify({'success': True, 'message': 'Cotización creada exitosamente.'})
 
-#Ruta para listar cotizaciones
 
-@routes_blueprint.route('/routes.listar_cotizaciones', methods=['DELETE','GET', 'POST'])
-
-def listar_cotizaciones():
-    cotizaciones = Cotizacion.query.all()  # Obtener todos los usuarios de la base de datos
-    return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones)  # Renderizar la plantilla HTML con la lista de usuarios
 
 #Ruta para 
 
@@ -337,6 +331,20 @@ def guardar_producto():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
+
+#Ruta para listar cotizaciones
+
+@routes_blueprint.route('/listar_cotizaciones', methods=['GET', 'POST'])
+def listar_cotizaciones():
+    search = request.args.get('search')
+    if search:
+        # Filtrar las cotizaciones según el término de búsqueda
+        cotizaciones = Cotizacion.query.filter(Cotizacion.negociacion.ilike(f'%{search}%')).all()
+    else:
+        # Obtener todas las cotizaciones si no se ha ingresado un término de búsqueda
+        cotizaciones = Cotizacion.query.all()
+    
+    return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones)
 
 
 

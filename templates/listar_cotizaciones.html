@@ -6,9 +6,42 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/userlist.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <title>Usuarios</title>
+    <title>Cotizaciones</title>
 
     <style>
+        /* Centrar el formulario a la derecha */
+        .cotizaciones-search-container {
+            display: flex;
+            justify-content: flex-end; /* Alinea a la derecha */
+            margin-bottom: 20px; /* Espacio debajo de la barra de búsqueda */
+        }
+        
+        /* Estilos para la barra de búsqueda */
+        .cotizaciones-search-input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px; /* Espacio entre el input y el botón */
+            width: 250px; /* Ancho de la barra de búsqueda */
+        }
+        
+        /* Estilos para el botón */
+        .cotizaciones-search-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* Cambia el color del botón al pasar el mouse */
+        .cotizaciones-search-button:hover {
+            background-color: #b4aab3;
+        }
+        
 
         h1{
 
@@ -58,45 +91,38 @@
 
             <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
                 <h1>Lista de Cotizaciones</h1>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Negociacion</th>
-            <th>Fecha</th>
-            <th>Cliente</th>
-            <th>Contacto</th>
-            <th>Proyecto</th>
-            <th>Vendedor</th>
-            <th>Forma De Pago</th>
-            <th>Validez</th>
-            <th>Descuento</th>
-            <th>Recibe</th>
-            <th>Numero Contacto</th>
-            <th>direccion</th>
-            <th>Acciones</th>
-        </tr>
-        {% for cotizacion in Cotizaciones %}
-        <tr>
-            <td>{{ cotizaciones.id_cotizacion }}</td>
-            <td>{{ cotizacion.negociacion_cotizacion }}</td>
-            <td>{{ cotizacion.fecha_cotizacion }}</td>
-            <td>{{ cotizacion.cliente_cotizacion }}</td>
-            <td>{{ cotizacion.contacto_cotizacion }}</td>
-            <td>{{ cotizacion.proyecto_cotizacion }}</td>
-            <td>{{ cotizacion.vendedor_cotizacion }}</td>
-            <td>{{ cotizacion.forma_de_pago_cotizacion }}</td>
-            <td>{{ cotizacion.validez_cotizacion }}</td>
-            <td>{{ cotizacion.descuento_cotizacion }}</td>
-            <td>{{ cotizacion.recibe_cotizacion }}</td>
-            <td>{{ cotizacion.numero_contacto_cotizacion }}</td>
-            <td>{{ cotizacion.direccion_cotizacion }}</td>
-
-            <td>
-                <button onclick="editarcotizacion('{{ cotizacion.id_cotizacion }} ')">Editar</button>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+                <div class="cotizaciones-search-container">
+                    <form method="GET" action="{{ url_for('routes.listar_cotizaciones') }}">
+                        <input type="text" name="search" placeholder="Buscar por Negociación" value="{{ request.args.get('search', '') }}" class="cotizaciones-search-input">
+                        <button type="submit" class="cotizaciones-search-button">Buscar</button>
+                    </form>
+                </div>
+                
+                
+                {% if cotizaciones %}
+                <table>
+                    <tr>
+                        <th>Negociacion</th>
+                        <th>Cliente</th>
+                        <th>Proyecto</th>
+                        <th>Acciones</th>
+                    </tr>
+                    {% for cotizacion in cotizaciones %}
+                    <tr>
+                        <td>{{ cotizacion.negociacion }}</td>
+                        <td>{{ cotizacion.cliente_cotizacion }}</td>
+                        <td>{{ cotizacion.proyecto_cotizacion }}</td>
+                        <td>
+                            <button>Editar</button>
+                            <button>Generar Reportes</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p>No se encontraron cotizaciones para la búsqueda "{{ request.args.get('search') }}"</p>
+            {% endif %}
+                
             </main>
         </div>
     </div>
@@ -104,9 +130,30 @@
     {% include 'footer.html' %}
 
     <script>
-        function editarcotizacion(userId) { 
-            window.location.href = '/editar_cotizacion/' + userId;  // Redirige a la ruta de edición del cotizacion con su ID
+        function editarUsuario(userId) {
+            window.location.href = '/editar_usuario/' + userId;  // Redirige a la ruta de edición del usuario con su ID
         }
+
+        function eliminarUsuario(userId) {
+    if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+        // Enviar una solicitud al servidor para eliminar al usuario
+        fetch('/delete_user/' + userId, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                // Recargar la página después de eliminar al usuario
+                location.reload();
+            } else {
+                // Manejar el caso en el que la eliminación del usuario falle
+                console.error('Error al eliminar el usuario');
+            }
+        })
+        .catch(error => {
+            console.error('Error al eliminar el usuario:', error);
+        });
+    }
+}
 
         </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>

@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 5.7.3.2) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.7.4) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 15 de agosto de 2024, 4:17 pm
+
+Cambios Recientes
+v5.7.4
+
+En esta version ya guardamos la tabla de item_cotizado, nos falta revisar algunos campos, el resumen de costos si falta completo 
 
 # Fecha de lanzamiento: 14 de agosto de 2024, 9:45 am
 

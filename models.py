@@ -271,10 +271,7 @@ def test_db_connection(app):
         with db.engine.connect() as connection:
             try:
                 print("----------------------------------")
-                print("PDF ERRROR")
-                print("There has been an issue with the initialization of the libraries. ")
-                print(" Please review the logs and check the configurations to resolve any potential problems.")
-                print("Ensure that all dependencies are correctly installed and up-to-date.")
+                print("Conexion a Db Exitosa")
                 print("----------------------------------")
             except Exception as e:
                 print("----------------------------------")

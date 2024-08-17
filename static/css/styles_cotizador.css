@@ -3,36 +3,34 @@ body {
     font-family: 'Roboto', Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #121212; /* Fondo oscuro */
-    color: #f1f1f1;
+    background-color: #f0f0f0; /* Fondo claro */
+    color: #333333;
 }
 
-/*Estilos para ocultar columnas sin eliminar del dom*/
-
+/* Estilos para ocultar columnas sin eliminar del DOM */
 .oculto {
     display: none;
 }
 
-/*Estilos para el input de cantidad*/
+/* Estilos para el input de cantidad */
 .cantidad-input {
     width: 60px; /* Ajusta el tamaño según sea necesario */
 }
 
-/*Estilos tabla productos*/
-
+/* Estilos para la tabla de productos */
 .tipo-header strong {
     display: block;
     text-align: center;
-    background-color: #00b04fa9; /* Cambia el color de fondo según tus necesidades */
+    background-color: #e0e0e0; /* Fondo claro */
     padding: 10px;
     border-radius: 5px;
     margin-top: 10px;
     margin-bottom: 10px;
     font-size: 1.2em; /* Tamaño de fuente más grande */
+    color: #333333;
 }
 
-/*Estilos notificacion */
-
+/* Estilos para notificación */
 .notification-container {
     position: fixed;
     top: 20px;
@@ -61,12 +59,14 @@ body {
     opacity: 1;
 }
 
+/* Estilos para tablas */
 table tr td[colspan="5"] {
-    background-color: #f2f2f2;
+    background-color: #e0e0e0;
     font-weight: bold;
     text-align: center;
 }
 
+/* Animaciones */
 @keyframes fadeout {
     to {
         opacity: 0;
@@ -75,108 +75,97 @@ table tr td[colspan="5"] {
 }
 
 nav {
-    background-color: #7BC9E2;
+    background-color: #f7f7f7;
     overflow: hidden;
     height: 60px;
-  }
+}
 
-  .collapsed {                  
+.collapsed {
     width: 80px; /* Ancho contraído de la barra lateral */
-  }
+}
 
-  .container {
+.container {
     position: relative;
-    padding-top: 60px; /* Ajusta el padding para evitar que el contenido se superponga con el navbar */
+    padding-top: 60px;
     min-height: 100vh;
     display: grid;
-    grid-template-columns: auto 1fr; /* El sidebar ocupa el ancho automático y el contenido ocupa el resto del espacio */
-    grid-gap: 20px; /* Espacio entre el sidebar y el contenido */
-  }
+    grid-template-columns: auto 1fr;
+    grid-gap: 20px;
+}
 
-  .navbar {
-    background-color: #7BC9E2;
-    width: 130%;
+.navbar {
+    background-color: #f7f7f7;
+    width: 100%;
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    z-index: 1; /* Asegura que el navbar esté por encima del contenido */
-  }
+    z-index: 1;
+}
 
-  .footer {
+.footer {
     position: fixed;
     bottom: 0;
     width: 100%;
-    background-color: #777777;
+    background-color: #dddddd;
     padding: 20px;
-    color: white;
+    color: #333;
     z-index: 1;
     text-align: center;
-  }
-
-  .logo {
-    vertical-align:middle;
-    border-style: none;
-    max-width: 160px;
-    margin-left:10px;
 }
 
-  .sidebar {
+.logo {
+    vertical-align: middle;
+    border-style: none;
+    max-width: 160px;
+    margin-left: 10px;
+}
+
+.sidebar {
     position: fixed;
-    top: 0px; /* Altura del navbar */
+    top: 0;
     bottom: 0;
     left: 0;
     width: 250px;
     z-index: 1;
-    background-color: #777777;
+    background-color: #f0f0f0;
     padding-top: 20px;
     overflow-y: auto;
     padding: 20px;
-  }
+}
 
-  .sidebar .list-unstyled li a {
+.sidebar .list-unstyled li a {
     padding: 20px 1px;
     display: block;
-    color: #c8c9ce;
+    color: #333333;
     text-decoration: none;
     font-size: 17px;
 }
 
-.sidebar .list-unstyled li a i {
-    margin-right: 10px;
-    color: #fff;
-}
-
-.sidebar .list-unstyled li a i {
-    margin-right: 10px;
-    color: #fff; /* Color blanco para los iconos */
-}
-
 .sidebar-divider {
-    border-top: 1px solid #fff; /* Línea blanca entre categorías */
+    border-top: 1px solid #ccc;
 }
 
 .sidebar-header {
     padding: 10px 15px;
-    background-color: #777777;
-    border-bottom: 1px solid #ccc; /* Add a border to the bottom of the sidebar header */
-    padding: 10px 0; /* Add padding to the sidebar header */
-    text-align:justify ;
+    background-color: #e0e0e0;
+    border-bottom: 1px solid #ccc;
+    text-align: justify;
 }
 
 header {
-    background-color: #1e1e1e;
+    background-color: #f0f0f0;
     text-align: center;
     padding: 20px 0;
-    color: #e0e0e0;
+    color: #333;
 }
 
 h1 {
-    color: #00b050;
+    color: #4caf50;
     margin: 0;
     padding: 10px 0;
 }
 
-/* Estilos para la sección principal */
+/* Sección principal */
 .flex {
     display: flex;
     flex-wrap: wrap;
@@ -188,24 +177,24 @@ h1 {
 .seccion-derecha {
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilos para la sección izquierda */
+/* Sección izquierda */
 .seccion-izquierda {
     width: 100%;
     max-width: 300px;
-    background-color: #2b2b2b;
+    background-color: #f7f7f7;
     margin-bottom: 20px;
 }
 
-/* Estilos para la sección derecha */
+/* Sección derecha */
 .seccion-derecha {
     flex: 1;
-    background-color: #2b2b2b;
+    background-color: #f7f7f7;
 }
 
-/* Estilos para los grupos de inputs */
+/* Grupos de inputs */
 .grupo {
     margin-bottom: 15px;
 }
@@ -214,7 +203,7 @@ label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
-    color: #ffffff;
+    color: #333333;
 }
 
 input,
@@ -222,14 +211,15 @@ select,
 textarea {
     width: 100%;
     padding: 10px;
-    border: 1px solid #444;
+    border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
-    background-color: #cecece;
-    color: #000000;
+    background-color: #ffffff;
+    color: #333333;
 }
 
 .grupo-columns {
+    margin-top: 2%;
     display: contents;
     gap: 20px;
 }
@@ -238,44 +228,22 @@ textarea {
     flex: 1;
 }
 
-/* Estilos para los botones */
+/* Botones */
 .botones {
     text-align: right;
 }
 
-/* Oculta el formulario por defecto */
 .form-agregar-item-manual {
     display: none;
     margin-top: 10px;
 }
 
-/* Oculta el formulario por defecto */
-.form-agregar-item-manual {
-    display: none;
-    margin-top: 10px;
-}
-
-
-.confirmar-producto-btn button {
-
-    margin-right: 10px;
-    padding: 10px 20px;
-    background-color: #00b050;
-    color: #121212;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-
-
-}
-
-
+.confirmar-producto-btn button,
 .botones button {
     margin-right: 10px;
     padding: 10px 20px;
-    background-color: #00b050;
-    color: #121212;
+    background-color: #4caf50;
+    color: #fff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -283,23 +251,23 @@ textarea {
 }
 
 .botones button:hover {
-    background-color: #acecbf;
+    background-color: #66bb6a;
 }
 
 /* Estilos para el resultado de la cotización */
 .resultado {
-    background-color: #2b2b2b;
+    background-color: #f7f7f7;
     padding: 20px;
     margin-top: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .header-cotizacion {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #333;
+    background-color: #e0e0e0;
     padding: 10px;
     border-radius: 8px;
 }
@@ -309,7 +277,7 @@ textarea {
     margin-right: 10%;
     padding: 20px;
     margin-left: 20%;
-    background: linear-gradient(to bottom, #ffffff, #f2f2f2);
+    background: linear-gradient(to bottom, #ffffff, #f7f7f7);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
 }
@@ -320,30 +288,30 @@ textarea {
     font-size: 24px;
     cursor: pointer;
     transition: transform 0.3s;
-    color: #bb86fc;
+    color: #4caf50;
 }
 
 .flecha-btn.expandido {
     transform: rotate(90deg);
 }
 
-/* Estilos para los productos */
+/* Productos */
 .productos-cotizacion {
     width: 100%;
     margin-top: 20px;
     padding: 20px;
-    background-color: #333;
+    background-color: #f0f0f0;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
 }
 
 .producto:nth-child(even) {
-    background-color: #18231c;
+    background-color: #e7e7e7;
 }
 
 .producto:nth-child(odd) {
-    background-color: #424242;
+    background-color: #ffffff;
 }
 
 .producto {
@@ -352,6 +320,7 @@ textarea {
     border-radius: 8px;
 }
 
+/* Tablas */
 table {
     border-collapse: collapse;
     width: 100%;
@@ -359,14 +328,14 @@ table {
 }
 
 th, td {
-    border: 1px solid #00b050;
+    border: 1px solid #ccc;
     text-align: left;
     padding: 10px;
-    color: #e0e0e0;
+    color: #333333;
 }
 
 th {
-    background-color: #00b050;
+    background-color: #4caf50;
     color: #ffffff;
 }
 
@@ -375,8 +344,8 @@ th {
     align-items: center;
     margin-bottom: 20px;
     padding: 10px;
-    border: 1px solid #444;
-    background-color: #333;
+    border: 1px solid #ccc;
+    background-color: #f7f7f7;
 }
 
 .item-number {
@@ -385,70 +354,361 @@ th {
     font-weight: bold;
     font-size: 18px;
     padding: 8px;
-    background-color: #00b050;
-    color: #121212;
+    background-color: #4caf50;
+    color: #ffffff;
     margin-right: 10px;
-    border-right: 1px solid #444;
+    border-right: 1px solid #ccc;
 }
 
 .descripcion-input {
     width: calc(100% - 68px);
     padding: 8px;
     box-sizing: border-box;
-    border: 1px solid #444;
+    border: 1px solid #ccc;
     border-radius: 4px;
 }
 
-/* Estilos para las tablas de selección de ítems */
+/* Selección de ítems */
 .seleccion-items-table {
     border-collapse: collapse;
     width: 100%;
     margin-top: 10px;
+    background-color: #ffffff;
 }
 
-.seleccion-items-table th, .seleccion-items-table td {
-    border: 1px solid #444;
-    padding: 10px;
+.seleccion-items-table th,
+.seleccion-items-table td {
+    border: 1px solid #ccc;
     text-align: left;
+    padding: 10px;
+    color: #333333;
 }
 
 .seleccion-items-table th {
-    background-color: #bb86fc;
-    color: #121212;
+    background-color: #4caf50;
+    color: #ffffff;
 }
 
-.seleccion-items-table td input[type="checkbox"] {
-    margin: 0;
+.seleccion-items-table tbody tr:hover {
+    background-color: #f1f1f1;
 }
 
-/* Ajustes de media queries */
-@media (min-width: 768px) {
-    .tabla-items {
-        min-width: 45%;
+/* Paginación */
+.paginacion-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.paginacion-btn {
+    padding: 10px 20px;
+    margin: 0 5px;
+    background-color: #4caf50;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.paginacion-btn:hover {
+    background-color: #66bb6a;
+}
+
+/* Resumen de costos */
+.resumen-costos {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.resumen-costos h4 {
+    margin-bottom: 10px;
+    color: #4caf50;
+}
+
+.resumen-costos-individual {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #f7f7f7;
+    border-radius: 8px;
+}
+
+.resumen-costos-individual p {
+    margin: 5px 0;
+}
+
+/* Formulario de agregar ítem manual */
+.form-agregar-item-manual {
+    background-color: #f0f0f0;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-agregar-item-manual h4 {
+    color: #4caf50;
+}
+
+.form-agregar-item-manual input {
+    width: calc(100% - 20px);
+    margin-bottom: 10px;
+}
+
+.form-agregar-item-manual button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-agregar-item-manual button:hover {
+    background-color: #66bb6a;
+}
+
+/* Acciones */
+.acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.confirmar-producto-btn,
+.editar-producto-btn,
+.eliminar-producto-btn,
+.duplicar-producto-btn {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.confirmar-producto-btn:hover,
+.editar-producto-btn:hover,
+.eliminar-producto-btn:hover,
+.duplicar-producto-btn:hover {
+    background-color: #66bb6a;
+}
+
+.confirmar-producto-btn:focus,
+.editar-producto-btn:focus,
+.eliminar-producto-btn:focus,
+.duplicar-producto-btn:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 128, 0, 0.7);
+}
+
+/* Estilos avanzados para la tabla de productos */
+.tipo-header strong {
+    display: block;
+    text-align: center;
+    background: linear-gradient(135deg, #00b04f, #007b33);
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+    font-size: 1.5em;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilos avanzados para las notificaciones */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification {
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    color: #fff;
+    opacity: 0.9;
+    transition: opacity 0.5s, transform 0.3s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.notification.success {
+    background-color: #4caf50;
+}
+
+.notification.warning {
+    background-color: #ff9800;
+}
+
+.notification.error {
+    background-color: #f44336;
+}
+
+.notification:hover {
+    opacity: 1;
+    transform: translateY(-5px);
+}
+
+@keyframes fadeout {
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
     }
 }
 
-        /* Estilos CSS para los botones */
-        .botones-container {
-            margin-top: 20px;
-        }
-        .botones-container button {
-            margin: 5px;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-        }
-        .botones-container button:hover {
-            background-color: #45a049;
-        }
-        .botones-container .eliminar {
-            background-color: #f44336;
-        }
-        .botones-container .eliminar:hover {
-            background-color: #da190b;
-        }
+/* Estilos para el nav */
+nav {
+    background-color: #7bc9e2;
+    overflow: hidden;
+    height: 60px;
+    border-bottom: 2px solid #00b04f;
+}
 
+/* Estilos avanzados para la tabla de productos cotizados */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+}
+
+th {
+    background: linear-gradient(135deg, #00b04f, #007b33);
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+td {
+    background-color: #1e1e1e;
+    color: #f1f1f1;
+}
+
+table tr:hover {
+    background-color: #2b2b2b;
+}
+
+/* Estilos para los botones */
+button {
+    padding: 10px 20px;
+    margin: 10px 5px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #00b04f, #007b33);
+    transition: background 0.3s ease, transform 0.2s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+button:hover {
+    background: linear-gradient(135deg, #007b33, #00b04f);
+    transform: translateY(-3px);
+}
+
+/* Estilos avanzados para el resumen de costos */
+.resumen-costos {
+    background-color: #2b2b2b;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.resumen-costos h4 {
+    margin-bottom: 15px;
+    color: #00b04f;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.resumen-costos-individual {
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #333, #444);
+    padding: 10px;
+    border-radius: 8px;
+    color: #fff;
+}
+
+/* Estilos avanzados para las acciones */
+.acciones {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.acciones button {
+    flex: 1;
+    margin: 0 5px;
+}
+
+.acciones button.confirmar-producto-btn {
+    background: linear-gradient(135deg, #00b04f, #007b33);
+}
+
+.acciones button.editar-producto-btn {
+    background: linear-gradient(135deg, #ffa726, #ff9800);
+}
+
+.acciones button.eliminar-producto-btn {
+    background: linear-gradient(135deg, #f44336, #e53935);
+}
+
+.acciones button.duplicar-producto-btn {
+    background: linear-gradient(135deg, #26c6da, #00acc1);
+}
+
+/* Estilos avanzados para la sección de selección de ítems */
+.itemsseleccionados {
+    margin-top: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #333, #444);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.itemsseleccionados h4 {
+    color: #00b04f;
+    margin-bottom: 15px;
+}
+
+.itemsseleccionados table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.itemsseleccionados th, .itemsseleccionados td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+}
+
+.itemsseleccionados th {
+    background: linear-gradient(135deg, #00b04f, #007b33);
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.itemsseleccionados td {
+    background-color: #1e1e1e;
+    color: #f1f1f1;
+}
+
+.itemsseleccionados table tr:hover {
+    background-color: #2b2b2b;
+}
 

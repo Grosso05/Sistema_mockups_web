@@ -6,7 +6,6 @@
     <title>Generar Costos</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
     <style>
-
         
     </style>
 </head>
@@ -148,6 +147,7 @@
 
 <script>
 
+
     // Obtener la fecha actual en formato YYYY-MM-DD
     const today = new Date().toISOString().slice(0, 10);
 
@@ -227,9 +227,16 @@
 
     let valoresCantidad = [];
 
+    // Función para actualizar los valores de los inputs
+    function actualizarValoresCantidad() {
+        const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
+        valoresCantidad = Array.from(cantidadInputs).map(input => parseInt(input.value, 10) || 1); // Default to 1 if NaN
+    }
+    
+    // Añadir eventos para actualizar los valores
     document.getElementById('btnAgregarCantidad').addEventListener('click', function() {
         const cantidadContainer = document.getElementById('cantidadUnidades');
-        
+    
         // Crear nuevo input
         const newInput = document.createElement('input');
         newInput.type = 'number';
@@ -238,35 +245,29 @@
         newInput.min = '1';
         newInput.value = '1';
         cantidadContainer.appendChild(newInput);
-
-        // Actualizar el arreglo con los valores de los inputs
+    
+        // Actualizar los valores
         actualizarValoresCantidad();
-
-        // Contar los inputs
-        const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
-
     });
-
-        // Función para obtener los valores de los inputs
-    function obtenerValoresInputs() {
+    
+    document.getElementById('btnEliminarCantidad').addEventListener('click', function() {
+        const cantidadContainer = document.getElementById('cantidadUnidades');
         const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
-        return Array.from(cantidadInputs).map(input => parseInt(input.value));
-    }
-
-
-    // Función para actualizar el arreglo de valores
-    function actualizarValoresCantidad() {
-        const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
-        valoresCantidad = Array.from(cantidadInputs).map(input => parseInt(input.value));
-
-    }
-
-    // Listener para actualizar valores cuando cambian los inputs
+    
+        // Eliminar el último input si hay más de uno
+        if (cantidadInputs.length > 1) {
+            cantidadContainer.removeChild(cantidadInputs[cantidadInputs.length - 1]);
+            actualizarValoresCantidad();
+        }
+    });
+    
+    // Actualizar valores al cambiar inputs
     document.addEventListener('input', function(event) {
         if (event.target.classList.contains('cantidad-input')) {
             actualizarValoresCantidad();
         }
     });
+    
 
     
     document.getElementById('btnEliminarCantidad').addEventListener('click', function() {
@@ -398,9 +399,9 @@
         </div>
 
     <div class="resumen-costos">
-        <h4>Resumen de Costos</h4>
-        ${valoresCantidad.map((_, index) => `
+        ${valoresCantidad.map((cantidad, index) => `
             <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+                <h4>Resumen de Costos (${cantidad} unidades)</h4>
                 <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
                 <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
                 
@@ -423,8 +424,12 @@
 </div>
 
             `;
+
+
         
                 productosContainer.appendChild(nuevoProducto);
+
+                
     
                 // Limpiar los campos de entrada después de agregar el producto
                 descripcionInput.value = '';
@@ -632,6 +637,9 @@ document.addEventListener('DOMContentLoaded', function() {
     actualizarNumeroProducto();
 });
 
+
+
+
 function toggleFormulario(numeroProducto) {
     const formulario = document.getElementById(`formAgregarItem-${numeroProducto}`);
     if (formulario.style.display === 'none' || formulario.style.display === '') {
@@ -801,6 +809,8 @@ function agregarItemAlProducto(item, itemNumber) {
     
     mostrarNotificacion('Ítem agregado correctamente.', 'success');
 }
+
+
 
     
     function actualizarNumeroProducto() {
@@ -1010,9 +1020,25 @@ function agregarItemAlProducto(item, itemNumber) {
         contenedores.forEach(container => {
             if (container) {
                 const filas = container.querySelectorAll('tr');
-                filas.forEach(fila => {
+                filas.forEach((fila, filaIndex) => {
                     const precioElement = fila.querySelector('td:nth-child(5)');
                     const cantidadInputs = fila.querySelectorAll('input.cantidad');
+                    
+                    if (precioElement) {
+                        console.log('Precio encontrado:', precioElement.textContent);
+                    } else {
+                        console.error(`Error: No se encontró el precio en la fila ${filaIndex + 1}`);
+                    }
+    
+                    if (cantidadInputs.length > 0) {
+                        cantidadInputs.forEach((input, inputIndex) => {
+                            const cantidadTexto = input.value.trim();
+                            const cantidad = parseFloat(cantidadTexto);
+                            console.log(`Cantidad encontrada en input ${inputIndex + 1}:`, cantidad);
+                        });
+                    } else {
+                        console.error(`Error: No se encontraron inputs de cantidad en la fila ${filaIndex + 1}`);
+                    }
     
                     if (precioElement && cantidadInputs.length > 0) {
                         let precioTexto = precioElement.textContent.trim();
@@ -1025,14 +1051,17 @@ function agregarItemAlProducto(item, itemNumber) {
     
                             if (!isNaN(precio) && !isNaN(cantidad)) {
                                 const subtotal = precio * cantidad;
-                                fila.querySelectorAll('.total')[index].textContent = formatearNumero(subtotal);
+                                const totalElement = fila.querySelectorAll('.total')[index];
+                                if (totalElement) {
+                                    totalElement.textContent = formatearNumero(subtotal);
+                                } else {
+                                    console.error(`Error: No se encontró el elemento para mostrar el subtotal en la fila ${filaIndex + 1}, input ${index + 1}`);
+                                }
                                 total += subtotal;
                             } else {
                                 console.error('Error: Precio o cantidad no son números válidos');
                             }
                         });
-                    } else {
-                        console.error('Error: Elemento de precio o cantidad no encontrado');
                     }
                 });
             } else {
@@ -1040,15 +1069,21 @@ function agregarItemAlProducto(item, itemNumber) {
             }
         });
     
-        // Obtener la cantidad de unidades del producto
-        const cantidadUnidades = document.getElementById('cantidadUnidades').value || 1;
+        const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
+        console.log('Cantidad de inputs encontrados:', cantidadInputs.length);
     
-        // Actualizar los resúmenes de costos individuales
-        valoresCantidad.forEach((_, index) => {
+        cantidadInputs.forEach((input, index) => {
+            const cantidadUnidades = parseFloat(input.value) || 1;
             const nuevoValorUtilidad = parseFloat(document.getElementById(`utilidadSeleccionada-${itemNumber}-${index}`).value) || null;
-            actualizarTotalesExtras(itemNumber, total, nuevoValorUtilidad, cantidadUnidades, index);
+            const tituloResumen = `Resumen de costos (${cantidadUnidades})`;
+            actualizarTotalesExtras(itemNumber, total, nuevoValorUtilidad, cantidadUnidades, index, tituloResumen);
         });
     }
+    
+    
+    
+    
+    
     
         
         
@@ -1056,7 +1091,7 @@ function agregarItemAlProducto(item, itemNumber) {
             return (valor * porcentaje) / 100;
         }
         
-        function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null, cantidadUnidades, index) {
+        function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null, cantidadUnidades, index, tituloResumen) {
             const productoElement = document.querySelector(`#producto-${itemNumber}`);
             if (productoElement) {
                 const administracionPorcentaje = parseFloat(productoElement.dataset.administracion);
@@ -1072,6 +1107,14 @@ function agregarItemAlProducto(item, itemNumber) {
                 const valorOferta = ofertaAntesIva + iva;
                 const costoUnitario = costoDirecto / cantidadUnidades;
         
+                // Actualiza el título del resumen de costos
+                const resumenTitulo = document.getElementById(`titulo-resumen-${itemNumber}-${index}`);
+                if (resumenTitulo) {
+                    resumenTitulo.textContent = `Resumen de costos (${cantidadUnidades})`;
+                } else {
+                    console.error(`Error: No se encontró el elemento para el título del resumen de costos en el índice ${index}`);
+                }
+        
                 document.getElementById(`costo-directo-${itemNumber}-${index}`).textContent = `Costo Directo: ${formatearNumero(costoDirecto)}`;
                 document.getElementById(`costo-unitario-${itemNumber}-${index}`).textContent = `Costo Directo Unitario: ${formatearNumero(costoUnitario)}`;
                 document.getElementById(`administracion-${itemNumber}-${index}`).textContent = `Administración: ${formatearNumero(administracion)}`;
@@ -1084,6 +1127,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 console.error('Error: Elemento del producto no encontrado');
             }
         }
+        
         
         function formatearNumero(numero) {
             return numero.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1329,9 +1373,7 @@ function agregarItemAlProducto(item, itemNumber) {
         });
     });
     
-    
-    
-    
+
     
 
     

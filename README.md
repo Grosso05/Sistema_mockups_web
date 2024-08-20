@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 5.7.6) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.7.7) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 20 de agosto de 2024, 9:12 am
+
+Cambios Recientes
+v5.7.7
+
+En esta version agregamos la funcionalidad de guardar el resumen de costos en bd, realizaremos pruebas para verificar que todo se guarde correctamente 
+
 
 # Fecha de lanzamiento: 17 de agosto de 2024, 9:05 am
 

@@ -114,7 +114,7 @@
                         <td>{{ cotizacion.proyecto_cotizacion }}</td>
                         <td>
                             <button>Editar</button>
-                            <button>Generar Reportes</button>
+                            <button onclick="window.location.href='/generar-reporte/{{ cotizacion.id_cotizacion }}'">Generar Reportes</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -130,30 +130,6 @@
     {% include 'footer.html' %}
 
     <script>
-        function editarUsuario(userId) {
-            window.location.href = '/editar_usuario/' + userId;  // Redirige a la ruta de edición del usuario con su ID
-        }
-
-        function eliminarUsuario(userId) {
-    if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-        // Enviar una solicitud al servidor para eliminar al usuario
-        fetch('/delete_user/' + userId, {
-            method: 'DELETE'
-        })
-        .then(response => {
-            if (response.ok) {
-                // Recargar la página después de eliminar al usuario
-                location.reload();
-            } else {
-                // Manejar el caso en el que la eliminación del usuario falle
-                console.error('Error al eliminar el usuario');
-            }
-        })
-        .catch(error => {
-            console.error('Error al eliminar el usuario:', error);
-        });
-    }
-}
 
         </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>

@@ -256,7 +256,7 @@ class ItemCotizado(db.Model):
     total_item = db.Column(db.Float, nullable=False)
 
     producto = db.relationship('ProductoCotizado', backref='items')
-    item = db.relationship('Items', backref='cotizaciones')  # Corrige aquí
+    item = db.relationship('Items', backref='cotizaciones')  
 
 
     

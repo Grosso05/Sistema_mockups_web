@@ -1,10 +1,19 @@
 import datetime
 from sqlite3 import IntegrityError
-from flask import Blueprint, flash, jsonify, render_template, request, redirect, session, url_for
+from flask import Blueprint, flash, jsonify, render_template, request, redirect, session, url_for,send_file
 from flask_login import login_required, login_user, current_user
 from models import Categoria, Cotizacion, ItemCotizado, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db
 from utils import roles_required
 import locale
+
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from io import BytesIO
+
+
 
     
 routes_blueprint = Blueprint('routes', __name__)
@@ -362,3 +371,131 @@ def listar_cotizaciones():
 
 
 
+#Ruta para generar la cotizacion:
+
+# Definir las dimensiones de las imágenes
+encabezado_width = 1400  # Reducido para ajustarse mejor al documento
+encabezado_height = 150
+footer_width = 1400
+footer_height = 100
+
+@routes_blueprint.route('/generar-reporte/<int:cotizacion_id>', methods=['GET'])
+def generar_reporte(cotizacion_id):
+    # Buscar la cotización por ID
+    cotizacion = Cotizacion.query.get(cotizacion_id)
+
+    if not cotizacion:
+        return "Cotización no encontrada", 404
+
+    # Crear un buffer para almacenar el PDF
+    buffer = BytesIO()
+
+    # Crear el documento PDF
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    width, height = letter  # Obtener el ancho y alto de la página
+
+    # Crear el contenido del documento
+    elements = []
+
+    # Estilos
+    styles = getSampleStyleSheet()
+    normal_style = styles['Normal']
+    heading_style = styles['Heading1']
+    heading2_style = styles['Heading2']
+
+    # Añadir título con estilo
+    title = Paragraph(f"Cotización - Negociación: {cotizacion.negociacion}", heading_style)
+    elements.append(title)
+    elements.append(Spacer(1, 12))
+
+    # Datos de la cotización
+    data = [
+        ["Fecha", cotizacion.fecha_cotizacion],
+        ["Cliente", cotizacion.cliente_cotizacion],
+        ["Proyecto", cotizacion.proyecto_cotizacion],
+        ["Contacto", cotizacion.contacto_cotizacion],
+        ["Número de Negociación", cotizacion.negociacion]
+    ]
+
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
+        ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 12))
+
+    # Detalle de Productos
+    for producto_cotizado in cotizacion.productos_cotizados:
+        producto = Productos.query.get(producto_cotizado.producto_id)
+        resumen_costos = ResumenDeCostos.query.filter_by(producto_id=producto_cotizado.id).first()
+
+        # Información del Producto
+        data = [
+            ["Producto", producto.nombre],
+            ["Medidas (Alto x Ancho x Fondo)", f"{producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}"],
+            ["Descripción", Paragraph(producto_cotizado.descripcion, normal_style)]
+        ]
+
+        table = Table(data, colWidths=[2.5*inch, 4.5*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
+            ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+            ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 12))
+
+        # Información General de los Items
+        item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
+        items_description = ", ".join(item_names) if item_names else "No se especifican items."
+
+        # Cuadro de Materiales
+        materials_data = [
+            ["Materiales", items_description]
+        ]
+
+        materials_table = Table(materials_data, colWidths=[6*inch])
+        materials_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
+            ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+            ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+        ]))
+        elements.append(materials_table)
+        elements.append(Spacer(1, 12))
+
+        # Valor Total del Producto
+        if resumen_costos:
+            data = [
+                ["Valor Total del Producto", resumen_costos.valor_oferta]
+            ]
+            table = Table(data, colWidths=[2.5*inch, 4.5*inch])
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
+                ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+                ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+            ]))
+            elements.append(table)
+            elements.append(Spacer(1, 12))
+
+    # Añadir imagen de encabezado y pie de página
+    def add_header_footer(canvas, doc):
+        canvas.saveState()
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 0, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 0, 0, width=footer_width, height=footer_height, mask='auto')
+        canvas.restoreState()
+
+    doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
+
+    # Enviar el PDF como respuesta
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=f"Cotizacion_{cotizacion.negociacion}.pdf", mimetype='application/pdf')

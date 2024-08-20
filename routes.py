@@ -371,13 +371,14 @@ def listar_cotizaciones():
 
 
 
-#Ruta para generar la cotizacion:
-
 # Definir las dimensiones de las imágenes
-encabezado_width = 1400  # Reducido para ajustarse mejor al documento
-encabezado_height = 150
-footer_width = 1400
-footer_height = 100
+encabezado_width = 500  # Ancho reducido
+encabezado_height = 65  # Altura reducida
+footer_width = 500      # Ancho reducido
+footer_height = 60      # Altura reducida
+footer_margin = 20      # Margen inferior
+
+
 
 @routes_blueprint.route('/generar-reporte/<int:cotizacion_id>', methods=['GET'])
 def generar_reporte(cotizacion_id):
@@ -401,7 +402,6 @@ def generar_reporte(cotizacion_id):
     styles = getSampleStyleSheet()
     normal_style = styles['Normal']
     heading_style = styles['Heading1']
-    heading2_style = styles['Heading2']
 
     # Añadir título con estilo
     title = Paragraph(f"Cotización - Negociación: {cotizacion.negociacion}", heading_style)
@@ -417,11 +417,11 @@ def generar_reporte(cotizacion_id):
         ["Número de Negociación", cotizacion.negociacion]
     ]
 
-    table = Table(data)
+    table = Table(data, colWidths=[1.5*inch, 4*inch])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
         ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('BOX', (0, 0), (-1, -1), 1, '#000000'),
         ('GRID', (0, 0), (-1, -1), 1, '#000000'),
     ]))
@@ -440,7 +440,7 @@ def generar_reporte(cotizacion_id):
             ["Descripción", Paragraph(producto_cotizado.descripcion, normal_style)]
         ]
 
-        table = Table(data, colWidths=[2.5*inch, 4.5*inch])
+        table = Table(data, colWidths=[1.5*inch, 4*inch])
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
             ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
@@ -453,14 +453,17 @@ def generar_reporte(cotizacion_id):
 
         # Información General de los Items
         item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
-        items_description = ", ".join(item_names) if item_names else "No se especifican items."
-
+        items_description = "<br/>".join(item_names) if item_names else "No se especifican items."
+        
+        # Crear un párrafo para los ítems
+        items_paragraph = Paragraph(items_description, normal_style)
+        
         # Cuadro de Materiales
         materials_data = [
-            ["Materiales", items_description]
+            ["Materiales", items_paragraph]
         ]
 
-        materials_table = Table(materials_data, colWidths=[6*inch])
+        materials_table = Table(materials_data, colWidths=[1.5*inch, 4*inch])
         materials_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
             ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
@@ -476,7 +479,7 @@ def generar_reporte(cotizacion_id):
             data = [
                 ["Valor Total del Producto", resumen_costos.valor_oferta]
             ]
-            table = Table(data, colWidths=[2.5*inch, 4.5*inch])
+            table = Table(data, colWidths=[1.5*inch, 4*inch])
             table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
                 ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
@@ -490,8 +493,10 @@ def generar_reporte(cotizacion_id):
     # Añadir imagen de encabezado y pie de página
     def add_header_footer(canvas, doc):
         canvas.saveState()
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 0, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
-        canvas.drawImage("static/images/footer_cotizacion.png", 0, 0, width=footer_width, height=footer_height, mask='auto')
+        # Ajustar la imagen del encabezado
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 60, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
+        # Ajustar la imagen del pie de página
+        canvas.drawImage("static/images/footer_cotizacion.png", 60, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()
 
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)

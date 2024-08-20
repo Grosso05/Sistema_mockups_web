@@ -233,8 +233,8 @@ def crear_cotizacion():
 @routes_blueprint.route('/guardar-cotizacion', methods=['POST'])
 def guardar_cotizacion():
     data = request.json
+    print(data)  # Para depuración
     
-    print(data);
     negociacion = data.get('negociacion') or ''  # Reemplaza None con una cadena vacía o un valor por defecto
 
     # Crear la nueva cotización
@@ -247,7 +247,7 @@ def guardar_cotizacion():
         negociacion=negociacion,
         forma_de_pago_cotizacion=data['formaPago'],
         validez_cotizacion=data['validezCotizacion'],
-        descuento_cotizacion=data['descuentoCotizacion'],
+        descuento_cotizacion=data['descuentoCotizacion'] or 0,  # Asegurarse de que no sea None
         recibe_cotizacion=data['recibeCotizacion'],
         numero_contacto_cotizacion=data['numeroContacto'],
         direccion_cotizacion=data['direccionCotizacion']
@@ -261,26 +261,40 @@ def guardar_cotizacion():
             alto=producto_data['alto'],
             ancho=producto_data['ancho'],
             fondo=producto_data['fondo'],
-            cotizacion_id=nueva_cotizacion.id_cotizacion,  # Aquí accedes al campo correcto
+            cotizacion_id=nueva_cotizacion.id_cotizacion,
             producto_id=producto_data['productoId']
         )
         db.session.add(nuevo_producto_cotizado)
         db.session.flush()  # Para obtener el ID del producto cotizado
 
-    for item_data in producto_data['items']:
-        print(f"Procesando item: {item_data['itemId']}, Total: {item_data['itemTotal']}")
-        
-        nuevo_item_cotizado = ItemCotizado(
-            producto_cotizado_id=nuevo_producto_cotizado.id,
-            item_id=item_data['itemId'],
-            cantidad=item_data['itemCantidad'],
-            total_item=item_data['itemTotal']
-        )
-        db.session.add(nuevo_item_cotizado)
+        # Guardar los resúmenes de costos
+        for resumen in producto_data.get('resúmenesCostos', []):
+            resumen_de_costos = ResumenDeCostos(
+                costo_directo=resumen['costoDirecto'],
+                administracion=resumen['administracion'],
+                imprevistos=resumen['imprevistos'],
+                utilidad=resumen['utilidad'],
+                oferta_antes_iva=resumen['ofertaAntesIva'],
+                iva=resumen['iva'],
+                valor_oferta=resumen['valorOferta'],
+                producto_id=nuevo_producto_cotizado.id
+            )
+            db.session.add(resumen_de_costos)
+
+        for item_data in producto_data['items']:
+            nuevo_item_cotizado = ItemCotizado(
+                producto_cotizado_id=nuevo_producto_cotizado.id,
+                item_id=item_data['itemId'],
+                cantidad=item_data['itemCantidad'],
+                total_item=item_data['itemTotal']
+            )
+            db.session.add(nuevo_item_cotizado)
 
     db.session.commit()
-    
+
     return jsonify({'success': True})
+
+
 
 
 

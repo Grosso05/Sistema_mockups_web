@@ -259,10 +259,11 @@ def guardar_cotizacion():
         negociacion=negociacion,
         forma_de_pago_cotizacion=data['formaPago'],
         validez_cotizacion=data['validezCotizacion'],
-        descuento_cotizacion=data['descuentoCotizacion'] or 0,  # Asegurarse de que no sea None
+        descuento_cotizacion=data.get('descuentoCotizacion', 0),  # Asegurarse de que no sea None
         recibe_cotizacion=data['recibeCotizacion'],
         numero_contacto_cotizacion=data['numeroContacto'],
-        direccion_cotizacion=data['direccionCotizacion']
+        direccion_cotizacion=data['direccionCotizacion'],
+        iva_seleccionado=data['ivaSeleccionado']  # Guardar el valor del IVA
     )
     db.session.add(nueva_cotizacion)
     db.session.flush()  # Para obtener el ID de la cotización
@@ -373,15 +374,16 @@ def listar_cotizaciones():
     return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones)
 
 
+
 # Definir las dimensiones de las imágenes
-encabezado_width = 500  # Ancho reducido
-encabezado_height = 65  # Altura reducida
-footer_width = 500      # Ancho reducido
-footer_height = 60      # Altura reducida
-footer_margin = 20      # Margen inferior
+encabezado_width = 600
+encabezado_height = 40
+footer_width = 600
+footer_height = 50
+footer_margin = 10
 
 import locale
-locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')  # Establecer configuración regional para Colombia
+locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
 
 @routes_blueprint.route('/generar-reporte/<int:cotizacion_id>', methods=['GET'])
 def generar_reporte(cotizacion_id):
@@ -455,12 +457,16 @@ def generar_reporte(cotizacion_id):
 
     # Detalle de Productos
     item_counter = 1
+    subtotal = 0
     for producto_cotizado in cotizacion.productos_cotizados:
         producto = Productos.query.get(producto_cotizado.producto_id)
         resumen_costos = ResumenDeCostos.query.filter_by(producto_id=producto_cotizado.id).first()
 
         # Obtener el valor de oferta_antes_iva
         valor_total = resumen_costos.oferta_antes_iva if resumen_costos else 0
+
+        # Sumar al subtotal
+        subtotal += valor_total
 
         # Formatear el valor total
         valor_total_formateado = locale.format_string("$ %d", valor_total, grouping=True)
@@ -499,13 +505,45 @@ def generar_reporte(cotizacion_id):
 
         item_counter += 1
 
+    # Calcular IVA y Total
+    iva = 0
+    total = subtotal
+
+    if cotizacion.iva_seleccionado.lower() == "si":
+        iva = subtotal * 0.19
+        total = subtotal + iva
+
+    # Formatear IVA y Total
+    iva_formateado = locale.format_string("$ %d", iva, grouping=True)
+    total_formateado = locale.format_string("$ %d", total, grouping=True)
+
+    # Añadir resumen al final
+    summary_data = [
+        ["Subtotal", locale.format_string("$ %d", subtotal, grouping=True)],
+        ["IVA (19%)", iva_formateado],
+        ["Total", total_formateado]
+    ]
+
+    summary_table = Table(summary_data, colWidths=[4*inch, 2*inch])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
+        ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+        ('ALIGN', (0, 0), (-1, 0), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+    ]))
+    elements.append(Spacer(1, 12))
+    elements.append(summary_table)
+
     # Añadir imagen de encabezado y pie de página
     def add_header_footer(canvas, doc):
         canvas.saveState()
         # Ajustar la imagen del encabezado
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 60, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 90, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
         # Ajustar la imagen del pie de página
-        canvas.drawImage("static/images/footer_cotizacion.png", 60, footer_margin, width=footer_width, height=footer_height, mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 90, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()
 
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
@@ -642,9 +680,9 @@ def generar_op(cotizacion_id):
     def add_header_footer(canvas, doc):
         canvas.saveState()
         # Ajustar la imagen del encabezado
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 60, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 90, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
         # Ajustar la imagen del pie de página
-        canvas.drawImage("static/images/footer_cotizacion.png", 60, footer_margin, width=footer_width, height=footer_height, mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 90, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()
 
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)

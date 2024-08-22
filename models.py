@@ -196,7 +196,7 @@ class Proveedores(db.Model):
 class Cotizacion(db.Model):
     __tablename__ = 'cotizacion'
     id_cotizacion = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    fecha_cotizacion = db.Column(db.String(50), nullable=False)  # Ajusta el tipo según tu necesidad
+    fecha_cotizacion = db.Column(db.String(50), nullable=False)
     cliente_cotizacion = db.Column(db.String(255), nullable=False)
     contacto_cotizacion = db.Column(db.String(255), nullable=False)
     proyecto_cotizacion = db.Column(db.String(255), nullable=False)
@@ -208,6 +208,7 @@ class Cotizacion(db.Model):
     recibe_cotizacion = db.Column(db.String(255), nullable=True)
     numero_contacto_cotizacion = db.Column(db.String(255), nullable=True)
     direccion_cotizacion = db.Column(db.String(255), nullable=True)
+    iva_seleccionado = db.Column(db.String(10), nullable=False)  # Nuevo campo para IVA
 
     vendedor = db.relationship('Users', backref='cotizaciones')
 

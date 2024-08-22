@@ -6,6 +6,29 @@
     <title>Generar Costos</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
     <style>
+        .iva-selector {
+            margin: 10px 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        .iva-selector label {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        
+        .iva-selector select {
+            font-size: 16px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        
+        .iva-selector select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
         
     </style>
 </head>
@@ -127,13 +150,25 @@
                     <label for="direccion_cotizacion"> Dirección  </label>
                     <textarea id="direccion_cotizacion" name="direccion_cotizacion" rows="3" required></textarea>
                         </div>
+                        <div class="iva-selector">
+                            <label for="iva-select">IVA:</label>
+                            <select id="iva-select" name="iva">
+                                <option value="si">Sí</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+
                     </div>
+                    
                 </div>
+
+
                 
             </div>
             <div class="acciones-globales">
                 <button id="guardarCotizacionBtn">Guardar Cotización</button>
             </div>
+
         </div>
     </section>
     <div id="productos-cotizacion" class="productos-cotizacion">
@@ -1289,6 +1324,7 @@ function agregarItemAlProducto(item, itemNumber) {
             const recibeCotizacion = document.getElementById('recibe_cotizacion').value;
             const numeroContacto = document.getElementById('numero_contacto').value;
             const direccionCotizacion = document.getElementById('direccion_cotizacion').value;
+            const ivaSeleccionado = document.getElementById('iva-select').value; // Captura el valor del select
     
             // Capturar productos en la cotización
             const productos = [];
@@ -1321,43 +1357,41 @@ function agregarItemAlProducto(item, itemNumber) {
                 });
     
                 // Capturar los resúmenes de costos de cada producto
-            // Capturar los resúmenes de costos de cada producto
-            const resúmenesCostos = [];
-
-            productoDiv.querySelectorAll('.resumen-costos-individual').forEach(function(resumenDiv, index) {
-                const costoDirectoElement = resumenDiv.querySelector(`#costo-directo-${productoId}-${index}`);
-                const administracionElement = resumenDiv.querySelector(`#administracion-${productoId}-${index}`);
-                const imprevistosElement = resumenDiv.querySelector(`#imprevistos-${productoId}-${index}`);
-                const utilidadElement = resumenDiv.querySelector(`#utilidad-${productoId}-${index}`);
-                const ofertaAntesIvaElement = resumenDiv.querySelector(`#oferta-antes-iva-${productoId}-${index}`);
-                const ivaElement = resumenDiv.querySelector(`#iva-${productoId}-${index}`);
-                const valorOfertaElement = resumenDiv.querySelector(`#valor-oferta-${productoId}-${index}`);
-
-                if (costoDirectoElement && administracionElement && imprevistosElement && utilidadElement && 
-                    ofertaAntesIvaElement && ivaElement && valorOfertaElement) {
-
-                    const costoDirecto = parseFloat(costoDirectoElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                    const administracion = parseFloat(administracionElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                    const imprevistos = parseFloat(imprevistosElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                    const utilidad = parseFloat(utilidadElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                    const ofertaAntesIva = parseFloat(ofertaAntesIvaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                    const iva = parseFloat(ivaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                    const valorOferta = parseFloat(valorOfertaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-
-                    resúmenesCostos.push({
-                        costoDirecto: costoDirecto,
-                        administracion: administracion,
-                        imprevistos: imprevistos,
-                        utilidad: utilidad,
-                        ofertaAntesIva: ofertaAntesIva,
-                        iva: iva,
-                        valorOferta: valorOferta
-                    });
-                } else {
-                    console.error(`Algunos elementos de resumen no se encontraron para el producto ${productoId} y resumen ${index}.`);
-                }
-            });
-                
+                const resúmenesCostos = [];
+                productoDiv.querySelectorAll('.resumen-costos-individual').forEach(function(resumenDiv, index) {
+                    const costoDirectoElement = resumenDiv.querySelector(`#costo-directo-${productoId}-${index}`);
+                    const administracionElement = resumenDiv.querySelector(`#administracion-${productoId}-${index}`);
+                    const imprevistosElement = resumenDiv.querySelector(`#imprevistos-${productoId}-${index}`);
+                    const utilidadElement = resumenDiv.querySelector(`#utilidad-${productoId}-${index}`);
+                    const ofertaAntesIvaElement = resumenDiv.querySelector(`#oferta-antes-iva-${productoId}-${index}`);
+                    const ivaElement = resumenDiv.querySelector(`#iva-${productoId}-${index}`);
+                    const valorOfertaElement = resumenDiv.querySelector(`#valor-oferta-${productoId}-${index}`);
+    
+                    if (costoDirectoElement && administracionElement && imprevistosElement && utilidadElement && 
+                        ofertaAntesIvaElement && ivaElement && valorOfertaElement) {
+    
+                        const costoDirecto = parseFloat(costoDirectoElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const administracion = parseFloat(administracionElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const imprevistos = parseFloat(imprevistosElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const utilidad = parseFloat(utilidadElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const ofertaAntesIva = parseFloat(ofertaAntesIvaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const iva = parseFloat(ivaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const valorOferta = parseFloat(valorOfertaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+    
+                        resúmenesCostos.push({
+                            costoDirecto: costoDirecto,
+                            administracion: administracion,
+                            imprevistos: imprevistos,
+                            utilidad: utilidad,
+                            ofertaAntesIva: ofertaAntesIva,
+                            iva: iva,
+                            valorOferta: valorOferta
+                        });
+                    } else {
+                        console.error(`Algunos elementos de resumen no se encontraron para el producto ${productoId} y resumen ${index}.`);
+                    }
+                });
+    
                 // Luego, puedes usar el array resúmenesCostos para lo que necesites
                 console.log('Resúmenes de costos para el producto:', resúmenesCostos);
     
@@ -1386,6 +1420,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 recibeCotizacion: recibeCotizacion,
                 numeroContacto: numeroContacto,
                 direccionCotizacion: direccionCotizacion,
+                ivaSeleccionado: ivaSeleccionado, // Agrega el valor del select
                 productos: productos
             };
     

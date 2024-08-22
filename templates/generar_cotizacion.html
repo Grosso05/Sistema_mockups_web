@@ -399,9 +399,9 @@
         </div>
 
 <div class="resumen-costos">
-    <h4>Resumen de Costos</h4>
-    ${valoresCantidad.map((_, index) => `
+    ${valoresCantidad.map((valor, index) => `
         <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+            <h4>Resumen de Costos (${valor})</h4>
             <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
             <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
             <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0</p>
@@ -414,6 +414,7 @@
         </div>
     `).join('')}
 </div>
+
 
 <div class="acciones">
     <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
@@ -1015,17 +1016,15 @@ function agregarItemAlProducto(item, itemNumber) {
             document.getElementById(`itemsseleccionados-${itemNumber}`)
         ];
     
-        let total = 0;
+        // Mantenemos el total por cada cantidad
+        const subtotalPorCantidad = Array(valoresCantidad.length).fill(0);
     
         contenedores.forEach(container => {
             if (container) {
                 const filas = container.querySelectorAll('tr');
-                filas.forEach((fila, filaIndex) => {
+                filas.forEach((fila) => {
                     const precioElement = fila.querySelector('td:nth-child(5)');
                     const cantidadInputs = fila.querySelectorAll('input.cantidad');
-    
-
-
     
                     if (precioElement && cantidadInputs.length > 0) {
                         let precioTexto = precioElement.textContent.trim();
@@ -1041,29 +1040,21 @@ function agregarItemAlProducto(item, itemNumber) {
                                 const totalElement = fila.querySelectorAll('.total')[index];
                                 if (totalElement) {
                                     totalElement.textContent = formatearNumero(subtotal);
-                                } else {
-                                    console.error(`Error: No se encontró el elemento para mostrar el subtotal en la fila ${filaIndex + 1}, input ${index + 1}`);
                                 }
-                                total += subtotal;
-                            } else {
-                                console.error('Error: Precio o cantidad no son números válidos');
+                                subtotalPorCantidad[index] += subtotal;  // Sumar subtotal a la cantidad correspondiente
                             }
                         });
                     }
                 });
-            } else {
-                console.error('Error: Contenedor no encontrado', container);
             }
         });
     
         // Obtener la cantidad de unidades del producto
         const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
-        console.log('Cantidad de inputs encontrados:', cantidadInputs.length);
-    
         cantidadInputs.forEach((input, index) => {
             const cantidadUnidades = parseFloat(input.value) || 1;
             const nuevoValorUtilidad = parseFloat(document.getElementById(`utilidadSeleccionada-${itemNumber}-${index}`).value) || null;
-            actualizarTotalesExtras(itemNumber, total, nuevoValorUtilidad, cantidadUnidades, index);
+            actualizarTotalesExtras(itemNumber, subtotalPorCantidad[index], nuevoValorUtilidad, cantidadUnidades, index);
         });
     }
     
@@ -1108,7 +1099,7 @@ function agregarItemAlProducto(item, itemNumber) {
             return (valor * porcentaje) / 100;
         }
         
-        function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null, cantidadUnidades, index, tituloResumen) {
+        function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null, cantidadUnidades, index) {
             const productoElement = document.querySelector(`#producto-${itemNumber}`);
             if (productoElement) {
                 const administracionPorcentaje = parseFloat(productoElement.dataset.administracion);

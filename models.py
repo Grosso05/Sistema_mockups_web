@@ -216,13 +216,14 @@ class Cotizacion(db.Model):
 class ProductoCotizado(db.Model):
     __tablename__ = 'producto_cotizado'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    descripcion = db.Column(db.String(255), nullable=False)  # Especifica la longitud
+    descripcion = db.Column(db.String(255), nullable=False)
     linea_id = db.Column(db.Integer, db.ForeignKey('lineas.linea_id'), nullable=False)
     producto_id = db.Column(db.Integer, db.ForeignKey('productos.producto_id'), nullable=False)
     alto = db.Column(db.Float)
     ancho = db.Column(db.Float)
     fondo = db.Column(db.Float)
     cotizacion_id = db.Column(db.Integer, db.ForeignKey('cotizacion.id_cotizacion'), nullable=False)
+    cantidades = db.Column(db.String(255), nullable=False)  # Nuevo campo para almacenar cantidades
 
     linea = db.relationship("Lineas", backref="productos_cotizados")
     producto = db.relationship("Productos", backref="productos_cotizados")

@@ -268,43 +268,55 @@ def guardar_cotizacion():
     db.session.flush()  # Para obtener el ID de la cotización
 
     for producto_data in data['productos']:
-        nuevo_producto_cotizado = ProductoCotizado(
-            descripcion=producto_data['descripcion'],
-            alto=producto_data['alto'],
-            ancho=producto_data['ancho'],
-            fondo=producto_data['fondo'],
+        producto_id = producto_data['productoId']
+        descripcion = producto_data['descripcion']
+        alto = producto_data['alto']
+        ancho = producto_data['ancho']
+        fondo = producto_data['fondo']
+        cantidades = producto_data['cantidadesSeleccionadas']
+
+        producto_cotizado = ProductoCotizado(
             cotizacion_id=nueva_cotizacion.id_cotizacion,
-            producto_id=producto_data['productoId']
+            producto_id=producto_id,
+            descripcion=descripcion,
+            alto=alto,
+            ancho=ancho,
+            fondo=fondo,
+            cantidades=','.join(map(str, cantidades))  # Almacenar cantidades como una cadena
         )
-        db.session.add(nuevo_producto_cotizado)
-        db.session.flush()  # Para obtener el ID del producto cotizado
+        db.session.add(producto_cotizado)
+        db.session.flush()
 
-        # Guardar los resúmenes de costos
-        for resumen in producto_data.get('resúmenesCostos', []):
-            resumen_de_costos = ResumenDeCostos(
-                costo_directo=resumen['costoDirecto'],
-                administracion=resumen['administracion'],
-                imprevistos=resumen['imprevistos'],
-                utilidad=resumen['utilidad'],
-                oferta_antes_iva=resumen['ofertaAntesIva'],
-                iva=resumen['iva'],
-                valor_oferta=resumen['valorOferta'],
-                producto_id=nuevo_producto_cotizado.id
-            )
-            db.session.add(resumen_de_costos)
-
+        # Guardar items
         for item_data in producto_data['items']:
-            nuevo_item_cotizado = ItemCotizado(
-                producto_cotizado_id=nuevo_producto_cotizado.id,
+            item = ItemCotizado(
+                producto_cotizado_id=producto_cotizado.id,
                 item_id=item_data['itemId'],
                 cantidad=item_data['itemCantidad'],
+                temporal=False,  # Asumiendo que temporal es False por defecto
                 total_item=item_data['itemTotal']
             )
-            db.session.add(nuevo_item_cotizado)
+            db.session.add(item)
+
+        # Guardar resúmenes de costos
+        for resumen_data in producto_data['resúmenesCostos']:
+            resumen = ResumenDeCostos(
+                producto_id=producto_cotizado.id,
+                costo_directo=resumen_data['costoDirecto'],
+                administracion=resumen_data['administracion'],
+                imprevistos=resumen_data['imprevistos'],
+                utilidad=resumen_data['utilidad'],
+                oferta_antes_iva=resumen_data['ofertaAntesIva'],
+                iva=resumen_data['iva'],
+                valor_oferta=resumen_data['valorOferta']
+            )
+            db.session.add(resumen)
 
     db.session.commit()
 
-    return jsonify({'success': True})
+    return jsonify({'success': True, 'message': 'Cotización guardada con éxito'})
+
+
 
 
 
@@ -372,13 +384,14 @@ def listar_cotizaciones():
     
     return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones)
 
+#Ruta Para generar pdf cotización
 
 # Definir las dimensiones de las imágenes
-encabezado_width = 500  # Ancho reducido
-encabezado_height = 65  # Altura reducida
-footer_width = 500      # Ancho reducido
-footer_height = 60      # Altura reducida
-footer_margin = 20      # Margen inferior
+encabezado_width = 700  # Ancho reducido
+encabezado_height = 50  # Altura reducida
+footer_width = 700      # Ancho reducido
+footer_height = 50      # Altura reducida
+footer_margin = 15      # Margen inferior
 
 @routes_blueprint.route('/generar-reporte/<int:cotizacion_id>', methods=['GET'])
 def generar_reporte(cotizacion_id):
@@ -410,9 +423,8 @@ def generar_reporte(cotizacion_id):
 
     # Datos de la cotización en una tabla horizontal
     data = [
-        ["Fecha", cotizacion.fecha_cotizacion, "Cliente", Paragraph (cotizacion.cliente_cotizacion)],
-        ["Proyecto", Paragraph (cotizacion.proyecto_cotizacion), "Contacto", Paragraph (cotizacion.contacto_cotizacion)]
-
+        ["Fecha", cotizacion.fecha_cotizacion, "Cliente", Paragraph(cotizacion.cliente_cotizacion)],
+        ["Proyecto", Paragraph(cotizacion.proyecto_cotizacion), "Contacto", Paragraph(cotizacion.contacto_cotizacion)]
     ]
 
     table = Table(data, colWidths=[1.5*inch, 2.5*inch, 1*inch, 2.5*inch])
@@ -453,9 +465,13 @@ def generar_reporte(cotizacion_id):
 
     # Detalle de Productos
     item_counter = 1
+    # Dentro del bucle for donde creas la fila del producto:
     for producto_cotizado in cotizacion.productos_cotizados:
         producto = Productos.query.get(producto_cotizado.producto_id)
         resumen_costos = ResumenDeCostos.query.filter_by(producto_id=producto_cotizado.id).first()
+
+        # Obtener el valor total formateado
+        valor_total_formateado = f"${resumen_costos.oferta_antes_iva:,.0f}" if resumen_costos and resumen_costos.oferta_antes_iva else "N/A"
 
         # Información del Producto
         item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
@@ -473,7 +489,7 @@ def generar_reporte(cotizacion_id):
             items_paragraph,  # Materiales
             "",  # Cantidad (vacío por ahora)
             "",  # Valor Unidad (vacío por ahora)
-            ""  # Valor Total (vacío por ahora)
+            valor_total_formateado  # Valor Total formateado
         ]
 
         product_table = Table([data], colWidths=[0.3*inch, 1*inch, 1.5*inch, 1*inch, 2*inch, 2.3*inch, 0.7*inch, 0.9*inch, 0.9*inch])
@@ -495,9 +511,9 @@ def generar_reporte(cotizacion_id):
     def add_header_footer(canvas, doc):
         canvas.saveState()
         # Ajustar la imagen del encabezado
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 60, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 50, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
         # Ajustar la imagen del pie de página
-        canvas.drawImage("static/images/footer_cotizacion.png", 60, footer_margin, width=footer_width, height=footer_height, mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 50, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()
 
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)

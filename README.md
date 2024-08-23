@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 5.7.9.5) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.8.0) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 23 de agosto de 2024, 8:40 am
+
+Cambios Recientes
+v5.8.0
+
+En esta nueva versión, el pdf ya usa el id correcto de los productos, la op queda completa y nos falta unicamente cantidad de producto.
 
 # Fecha de lanzamiento: 22 de agosto de 2024, 5:05 pm
 

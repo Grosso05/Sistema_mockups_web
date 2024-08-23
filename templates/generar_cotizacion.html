@@ -336,18 +336,15 @@
         const anchoInput = document.querySelector('.ancho-input');
         const fondoInput = document.querySelector('.fondo-input');        
         const productoSelect = document.getElementById('seleccionarProducto');
-
+    
         const descripcion = descripcionInput.value.trim();
-        const productoId = productoSelect.value;
+        const productoId = productoSelect.value;  // ID del producto seleccionado desde el select
         const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
- 
+    
         const alto = altoInput.value.trim();
         const ancho = anchoInput.value.trim();
         const fondo= fondoInput.value.trim();
-
-
-
-
+    
         if (descripcion === "" || productoId === "") {
             alert("Por favor, ingrese una descripción y seleccione un producto.");
             return;
@@ -379,89 +376,88 @@
     
                 // Crear el contenido del nuevo producto
                 nuevoProducto.innerHTML = `
-                <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
-
-                <h4>Descripción: ${descripcion}</h4>
-                <h4>  Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
-                <div class="itemsseleccionados">
-                    <h4>Items Seleccionados</h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Grupo</th>
-                                <th>Descripción</th>
-                                <th>Unidad</th>
-                                <th>Precio</th>
-                                ${cantidadHeader}
-                                ${totalHeader}
-                                <th class="oculto">Tipo</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
-                            <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
-                            <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
-                            <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
-                            <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
-                            <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
-                    <div>
-                        <h4>Seleccionar Ítems</h4>
-                        <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
-                        <div id="seleccion-items-${nuevoNumeroProducto}"></div>
-                        <div id="paginacion-items-${nuevoNumeroProducto}"></div>
-                        <div class="botones-container">
-                            <button onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Ítems Seleccionados</button>
-                            <button onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Ítems</button>
+                    <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
+                    <h4>Descripción: ${descripcion}</h4>
+                    <h4>Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
+    
+                    <!-- Añadimos el productoId con un nombre diferente -->
+                    <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
+    
+                    <div class="itemsseleccionados">
+                        <h4>Items Seleccionados</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Grupo</th>
+                                    <th>Descripción</th>
+                                    <th>Unidad</th>
+                                    <th>Precio</th>
+                                    ${cantidadHeader}
+                                    ${totalHeader}
+                                    <th class="oculto">Tipo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
+                                <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
+                                <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
+                                <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
+                                <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
+                                <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
+                        <div>
+                            <h4>Seleccionar Ítems</h4>
+                            <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
+                            <div id="seleccion-items-${nuevoNumeroProducto}"></div>
+                            <div id="paginacion-items-${nuevoNumeroProducto}"></div>
+                            <div class="botones-container">
+                                <button onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Ítems Seleccionados</button>
+                                <button onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Ítems</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            
-        <!-- Botón para mostrar el formulario -->
-        <button id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Nuevo Ítem</button>
-
-        <!-- Formulario para agregar ítems temporales -->
-        <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
-            <h4>Agregar Nuevo Ítem</h4>
-            <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
-            <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
-            <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
-            <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
-        </div>
-
-<div class="resumen-costos">
-    ${valoresCantidad.map((valor, index) => `
-        <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
-            <h4>Resumen de Costos (${valor})</h4>
-            <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
-            <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
-            <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0</p>
-            <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0</p>
-            <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0</p>
-            <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
-            <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
-            <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
-            <p id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
-        </div>
-    `).join('')}
-</div>
-
-
-<div class="acciones">
-    <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
-    <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
-    <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
-    <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
-</div>
-
-            `;
-
-
-        
+    
+                    <!-- Botón para mostrar el formulario -->
+                    <button id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Nuevo Ítem</button>
+    
+                    <!-- Formulario para agregar ítems temporales -->
+                    <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
+                        <h4>Agregar Nuevo Ítem</h4>
+                        <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
+                        <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
+                        <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
+                        <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
+                    </div>
+    
+                    <div class="resumen-costos">
+                        ${valoresCantidad.map((valor, index) => `
+                            <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+                                <h4>Resumen de Costos (${valor})</h4>
+                                <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
+                                <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
+                                <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0</p>
+                                <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0</p>
+                                <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0</p>
+                                <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
+                                <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+                                <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
+                                <p id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+                            </div>
+                        `).join('')}
+                    </div>
+    
+                    <div class="acciones">
+                        <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
+                        <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
+                        <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
+                        <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
+                    </div>
+                `;
+    
                 productosContainer.appendChild(nuevoProducto);
 
                 
@@ -1330,6 +1326,7 @@ function agregarItemAlProducto(item, itemNumber) {
             const productos = [];
             document.querySelectorAll('.producto').forEach(function(productoDiv) {
                 const productoId = productoDiv.id.split('-')[1];
+                const productoSeleccionadoId = productoDiv.querySelector('input[name="producto_seleccionado_id"]').value;
                 const descripcion = productoDiv.querySelector('h4:nth-child(2)').innerText;
     
                 const medidasText = productoDiv.querySelector('h4:nth-child(3)').innerText;
@@ -1397,6 +1394,7 @@ function agregarItemAlProducto(item, itemNumber) {
     
                 productos.push({
                     productoId: parseInt(productoId),
+                    productoSeleccionadoId: parseInt(productoSeleccionadoId), // Incluye el nuevo ID
                     descripcion: descripcion.trim(),
                     alto: alto,
                     ancho: ancho,

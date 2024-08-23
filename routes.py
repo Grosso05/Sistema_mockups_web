@@ -275,7 +275,8 @@ def guardar_cotizacion():
             ancho=producto_data['ancho'],
             fondo=producto_data['fondo'],
             cotizacion_id=nueva_cotizacion.id_cotizacion,
-            producto_id=producto_data['productoId']
+            producto_id=producto_data['productoId'],
+            producto_seleccionado_id=producto_data.get('productoSeleccionadoId')  # Guardar el nuevo campo
         )
         db.session.add(nuevo_producto_cotizado)
         db.session.flush()  # Para obtener el ID del producto cotizado
@@ -306,6 +307,7 @@ def guardar_cotizacion():
     db.session.commit()
 
     return jsonify({'success': True})
+
 
 
 
@@ -408,6 +410,16 @@ def generar_reporte(cotizacion_id):
     normal_style = styles['Normal']
     heading_style = styles['Heading1']
 
+    # Define a style for the product name to allow line breaks
+    product_style = ParagraphStyle(
+        'ProductStyle',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=7,
+        alignment=1,
+        wordWrap='CJK'
+    )
+
     # Añadir título con estilo
     title = Paragraph(f"Cotización - Negociación: {cotizacion.negociacion}", heading_style)
     elements.append(title)
@@ -415,8 +427,8 @@ def generar_reporte(cotizacion_id):
 
     # Datos de la cotización en una tabla horizontal
     data = [
-        ["Fecha", cotizacion.fecha_cotizacion, "Cliente", Paragraph(cotizacion.cliente_cotizacion)],
-        ["Proyecto", Paragraph(cotizacion.proyecto_cotizacion), "Contacto", Paragraph(cotizacion.contacto_cotizacion)]
+        ["Fecha", cotizacion.fecha_cotizacion, "Cliente", Paragraph(cotizacion.cliente_cotizacion, normal_style)],
+        ["Proyecto", Paragraph(cotizacion.proyecto_cotizacion, normal_style), "Contacto", Paragraph(cotizacion.contacto_cotizacion, normal_style)]
     ]
 
     table = Table(data, colWidths=[1.5*inch, 2.5*inch, 1*inch, 2.5*inch])
@@ -450,16 +462,11 @@ def generar_reporte(cotizacion_id):
     elements.append(header_table)
     elements.append(Spacer(1, 6))
 
-    # Estilo para los datos de la tabla de productos
-    product_style = getSampleStyleSheet()['Normal']
-    product_style.fontName = 'Helvetica'
-    product_style.fontSize = 7
-
     # Detalle de Productos
     item_counter = 1
     subtotal = 0
     for producto_cotizado in cotizacion.productos_cotizados:
-        producto = Productos.query.get(producto_cotizado.producto_id)
+        producto = Productos.query.get(producto_cotizado.producto_seleccionado_id)
         resumen_costos = ResumenDeCostos.query.filter_by(producto_id=producto_cotizado.id).first()
 
         # Obtener el valor de oferta_antes_iva
@@ -476,12 +483,15 @@ def generar_reporte(cotizacion_id):
         items_description = "<br/>".join(item_names) if item_names else "No se especifican items."
         items_paragraph = Paragraph(items_description, product_style)
         producto_descripcion = Paragraph(producto_cotizado.descripcion, product_style)
+        
+        # Ajusta el ancho de la columna del producto para permitir saltos de línea
+        product_name_paragraph = Paragraph(producto.nombre, product_style)
 
         # Crear la fila del producto
         data = [
             str(item_counter),  # ITEM
             "",  # Imagen (vacío por ahora)
-            producto.nombre,  # Producto
+            product_name_paragraph,  # Producto con salto de línea
             f"{producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}",  # Medidas
             producto_descripcion,  # Descripción
             items_paragraph,  # Materiales

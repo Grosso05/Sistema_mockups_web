@@ -219,7 +219,8 @@ class ProductoCotizado(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     descripcion = db.Column(db.String(255), nullable=False)
     linea_id = db.Column(db.Integer, db.ForeignKey('lineas.linea_id'), nullable=False)
-    producto_id = db.Column(db.Integer, db.ForeignKey('productos.producto_id'), nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey('productos.producto_id'), nullable=True)  # Mantener este campo
+    producto_seleccionado_id = db.Column(db.Integer, db.ForeignKey('productos.producto_id'), nullable=True)  # Nuevo campo
     alto = db.Column(db.Float)
     ancho = db.Column(db.Float)
     fondo = db.Column(db.Float)
@@ -227,11 +228,13 @@ class ProductoCotizado(db.Model):
     cantidades = db.Column(db.String(255), nullable=False)  # Nuevo campo para almacenar cantidades
 
     linea = db.relationship("Lineas", backref="productos_cotizados")
-    producto = db.relationship("Productos", backref="productos_cotizados")
+    producto = db.relationship("Productos", foreign_keys=[producto_seleccionado_id], backref="productos_cotizados")
     cotizacion = db.relationship("Cotizacion", backref="productos_cotizados")
 
     def __repr__(self):
         return f"<ProductoCotizado {self.descripcion}>"
+
+
 
 
 

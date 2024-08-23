@@ -366,6 +366,11 @@
         // Generar las cabeceras dinámicas usando el arreglo valoresCantidad
         const { cantidadHeader, totalHeader } = generarCabeceras();
     
+        // Crear el h4 que muestra las cantidades seleccionadas
+        const cantidadesSeleccionadasHTML = valoresCantidad.map((valor, index) => 
+            `<h4>Cantidad seleccionada (${index + 1}): ${valor} unidades</h4>`
+        ).join('');
+
         // Cargar porcentajes desde el backend y almacenarlos en los atributos de data del elemento
         fetch(`/porcentajes/${productoId}`)
             .then(response => response.json())
@@ -383,6 +388,7 @@
                     <!-- Añadimos el productoId con un nombre diferente -->
                     <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
     
+                    ${cantidadesSeleccionadasHTML}
                     <div class="itemsseleccionados">
                         <h4>Items Seleccionados</h4>
                         <table>
@@ -817,7 +823,7 @@ function agregarItemAlProducto(item, itemNumber) {
         case 'Servicios':
             container = serviciosContainer;
             break;
-        case 'Mano de obra e instalacion':
+        case 'Mano de Obra e Instalacion':
             container = manoDeObraContainer;
             break;
         case 'Transportes':
@@ -1009,7 +1015,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 case 'Servicios':
                     container = serviciosContainer;
                     break;
-                case 'Mano de obra e instalacion':
+                case 'Mano de Obra e Instalacion':
                     container = manoDeObraContainer;
                     break;
                 case 'Transportes':
@@ -1335,6 +1341,16 @@ function agregarItemAlProducto(item, itemNumber) {
                 const alto = medidasMatch ? parseFloat(medidasMatch[1]) : null;
                 const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
                 const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
+
+                // Capturar las cantidades seleccionadas para el producto
+                const cantidadesSeleccionadas = [];
+                productoDiv.querySelectorAll('h4').forEach(function(cantidadH4) {
+                    const cantidadText = cantidadH4.innerText;
+                    const cantidadMatch = cantidadText.match(/Cantidad seleccionada \(\d+\): (\d+) unidades/);
+                    if (cantidadMatch) {
+                        cantidadesSeleccionadas.push(parseInt(cantidadMatch[1]));
+                    }
+                });
     
                 const items = [];
                 productoDiv.querySelectorAll('tbody tr').forEach(function(itemRow) {
@@ -1399,6 +1415,7 @@ function agregarItemAlProducto(item, itemNumber) {
                     alto: alto,
                     ancho: ancho,
                     fondo: fondo,
+                    cantidadesSeleccionadas: cantidadesSeleccionadas,  // Incluye las cantidades seleccionadas                    
                     items: items,
                     resúmenesCostos: resúmenesCostos
                 });

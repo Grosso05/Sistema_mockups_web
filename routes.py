@@ -269,11 +269,15 @@ def guardar_cotizacion():
     db.session.flush()  # Para obtener el ID de la cotización
 
     for producto_data in data['productos']:
+        # Convertir la lista de cantidades a una cadena separada por comas
+        cantidades_str = ','.join(map(str, producto_data['cantidadesSeleccionadas']))
+        
         nuevo_producto_cotizado = ProductoCotizado(
             descripcion=producto_data['descripcion'],
             alto=producto_data['alto'],
             ancho=producto_data['ancho'],
             fondo=producto_data['fondo'],
+            cantidades=cantidades_str,  # Usar la cadena de cantidades
             cotizacion_id=nueva_cotizacion.id_cotizacion,
             producto_id=producto_data['productoId'],
             producto_seleccionado_id=producto_data.get('productoSeleccionadoId')  # Guardar el nuevo campo
@@ -378,27 +382,27 @@ def listar_cotizaciones():
 
 
 # Definir las dimensiones de las imágenes
-encabezado_width = 600
-encabezado_height = 40
-footer_width = 600
-footer_height = 50
-footer_margin = 10
+encabezado_width = 768
+encabezado_height = 30
+footer_width = 750
+footer_height = 30
+footer_margin = 3
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
 
 @routes_blueprint.route('/generar-reporte/<int:cotizacion_id>', methods=['GET'])
 def generar_reporte(cotizacion_id):
+    # Configuración regional para el formato de moneda
+    locale.setlocale(locale.LC_ALL, '')
+
     # Buscar la cotización por ID
     cotizacion = Cotizacion.query.get(cotizacion_id)
-
     if not cotizacion:
         return "Cotización no encontrada", 404
 
     # Crear un buffer para almacenar el PDF
     buffer = BytesIO()
-
-    # Crear el documento PDF
     doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
     width, height = landscape(letter)  # Obtener el ancho y alto de la página
 
@@ -410,7 +414,7 @@ def generar_reporte(cotizacion_id):
     normal_style = styles['Normal']
     heading_style = styles['Heading1']
 
-    # Define a style for the product name to allow line breaks
+    # Estilo para permitir saltos de línea en el nombre del producto
     product_style = ParagraphStyle(
         'ProductStyle',
         parent=styles['Normal'],
@@ -465,25 +469,42 @@ def generar_reporte(cotizacion_id):
     # Detalle de Productos
     item_counter = 1
     subtotal = 0
+    multiple_quantities = False  # Indicador de múltiples cantidades
+
     for producto_cotizado in cotizacion.productos_cotizados:
         producto = Productos.query.get(producto_cotizado.producto_seleccionado_id)
-        resumen_costos = ResumenDeCostos.query.filter_by(producto_id=producto_cotizado.id).first()
 
-        # Obtener el valor de oferta_antes_iva
-        valor_total = resumen_costos.oferta_antes_iva if resumen_costos else 0
+        # Manejo de cantidades y valores totales
+        cantidades = producto_cotizado.cantidades.split(',')
+        resúmenes_costos = ResumenDeCostos.query.filter_by(producto_id=producto_cotizado.id).all()
 
-        # Sumar al subtotal
-        subtotal += valor_total
+        if len(cantidades) > 1:
+            multiple_quantities = True
 
-        # Formatear el valor total
-        valor_total_formateado = locale.format_string("$ %d", valor_total, grouping=True)
+        cantidades_paragraph = Paragraph("<br/>".join(cantidades), normal_style)
+        valores_totales = []
+        valores_unitarios = []
+
+        for i, cantidad in enumerate(cantidades):
+            if i < len(resúmenes_costos):
+                valor_total = resúmenes_costos[i].oferta_antes_iva
+                subtotal += valor_total
+                valor_unitario = valor_total / float(cantidad) if float(cantidad) > 0 else 0
+                valores_totales.append(locale.format_string("$ %d", valor_total, grouping=True))
+                valores_unitarios.append(locale.format_string("$ %.2f", valor_unitario, grouping=True))
+            else:
+                valores_totales.append("$ 0")
+                valores_unitarios.append("$ 0.00")
+
+        valores_totales_paragraph = Paragraph("<br/>".join(valores_totales), normal_style)
+        valores_unitarios_paragraph = Paragraph("<br/>".join(valores_unitarios), normal_style)
 
         # Información del Producto
         item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
         items_description = "<br/>".join(item_names) if item_names else "No se especifican items."
         items_paragraph = Paragraph(items_description, product_style)
         producto_descripcion = Paragraph(producto_cotizado.descripcion, product_style)
-        
+
         # Ajusta el ancho de la columna del producto para permitir saltos de línea
         product_name_paragraph = Paragraph(producto.nombre, product_style)
 
@@ -495,14 +516,14 @@ def generar_reporte(cotizacion_id):
             f"{producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}",  # Medidas
             producto_descripcion,  # Descripción
             items_paragraph,  # Materiales
-            "",  # Cantidad (vacío por ahora)
-            "",  # Valor Unidad (vacío por ahora)
-            valor_total_formateado  # Valor Total
+            cantidades_paragraph,  # Cantidades
+            valores_unitarios_paragraph,  # Valor Unidad
+            valores_totales_paragraph  # Valor Total
         ]
 
         product_table = Table([data], colWidths=[0.3*inch, 1*inch, 1.5*inch, 1*inch, 2*inch, 2.3*inch, 0.7*inch, 0.9*inch, 0.9*inch])
         product_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), '#e0e0e0'),
+            ('BACKGROUND', (0, 0), (-1, 0), '#FFFFFF'),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 6),
@@ -515,50 +536,54 @@ def generar_reporte(cotizacion_id):
 
         item_counter += 1
 
-    # Calcular IVA y Total
-    iva = 0
-    total = subtotal
+    if multiple_quantities:
+        # Añadir un mensaje que indica que los valores no incluyen IVA
+        elements.append(Paragraph("Estos valores no incluyen IVA", normal_style))
+    else:
+        # Calcular IVA y Total
+        iva = 0
+        total = subtotal
 
-    if cotizacion.iva_seleccionado.lower() == "si":
-        iva = subtotal * 0.19
-        total = subtotal + iva
+        if cotizacion.iva_seleccionado.lower() == "si":
+            iva = subtotal * 0.19
+            total = subtotal + iva
 
-    # Formatear IVA y Total
-    iva_formateado = locale.format_string("$ %d", iva, grouping=True)
-    total_formateado = locale.format_string("$ %d", total, grouping=True)
+        # Formatear IVA y Total
+        iva_formateado = locale.format_string("$ %d", iva, grouping=True)
+        total_formateado = locale.format_string("$ %d", total, grouping=True)
 
-    # Añadir resumen al final
-    summary_data = [
-        ["Subtotal", locale.format_string("$ %d", subtotal, grouping=True)],
-        ["IVA (19%)", iva_formateado],
-        ["Total", total_formateado]
-    ]
+        # Añadir resumen al final
+        summary_data = [
+            ["Subtotal", locale.format_string("$ %d", subtotal, grouping=True)],
+            ["IVA (19%)", iva_formateado],
+            ["Total", total_formateado]
+        ]
 
-    summary_table = Table(summary_data, colWidths=[4*inch, 2*inch])
-    summary_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
-        ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
-        ('ALIGN', (0, 0), (-1, 0), 'RIGHT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 8),
-        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
-    ]))
-    elements.append(Spacer(1, 12))
-    elements.append(summary_table)
+        summary_table = Table(summary_data, colWidths=[4*inch, 2*inch])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
+            ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+            ('ALIGN', (0, 0), (-1, 0), 'RIGHT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+            ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+        ]))
+        elements.append(summary_table)
+        elements.append(Spacer(1, 12))
 
-    # Añadir imagen de encabezado y pie de página
+    # Construir PDF
+        # Añadir imagen de encabezado y pie de página
     def add_header_footer(canvas, doc):
         canvas.saveState()
         # Ajustar la imagen del encabezado
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 90, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 10, height - encabezado_height - 10, width=encabezado_width, height=encabezado_height, mask='auto')
         # Ajustar la imagen del pie de página
-        canvas.drawImage("static/images/footer_cotizacion.png", 90, footer_margin, width=footer_width, height=footer_height, mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 20, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()
 
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
-
-    # Enviar el PDF como respuesta
+    # Devolver el PDF como respuesta
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"Cotizacion_{cotizacion.negociacion}.pdf", mimetype='application/pdf')
 

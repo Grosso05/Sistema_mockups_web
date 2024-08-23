@@ -1,12 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 5.7.9.4) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.7.9.5) desarrollada por: Brayan Grosso
 
-# Fecha de lanzamiento: 22 de agosto de 2024, 11:30 am
+# Fecha de lanzamiento: 22 de agosto de 2024, 5:05 pm
 
 Cambios Recientes
-v5.7.9.4
+v5.7.9.5
 
-En esta pequeña correcion revisamos el resumen de costos, y realizamos mas ajustes, quedando pendiente el envio de cantidades al back y del id correcto del producto, 
-
+En esta version, agregamos la suma de los valores en los productos de cotizacion, agregamos opcion de elegir cuando facturar con o sin iva y todo en su reporte.
 
 # Fecha de lanzamiento: 22 de agosto de 2024, 11:30 am
 

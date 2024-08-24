@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 5.8.1) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.8.2) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 24 de agosto de 2024, 8:40 am
+
+Cambios Recientes
+v5.8.2
+
+En esta correccion, cambiamos unos colores solicitados, y trabajamos en la opcion de seleccionar producto directamente sin linea. queda un pequeño bug que al elegir linea y producto, la linea se pierde visualmente
 
 # Fecha de lanzamiento: 23 de agosto de 2024, 3:05 pm
 

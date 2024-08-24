@@ -89,6 +89,23 @@ def productos_por_linea(linea_id):
         })
     return jsonify(productos_json)
 
+@routes_blueprint.route('/todos_los_productos')
+def todos_los_productos():
+    productos = Productos.query.all()
+    productos_json = []
+    for producto in productos:
+        items = Items.query.join(ItemsPorProducto, ItemsPorProducto.item_idFK == Items.item_id)\
+                            .filter(ItemsPorProducto.producto_idFK == producto.producto_id)\
+                            .all()
+        items_json = [{'id': item.item_id, 'descripcion': item.nombre, 'tipo': item.tipo} for item in items]
+        productos_json.append({
+            'id': producto.producto_id,
+            'nombre': producto.nombre,
+            'linea_id': producto.linea_idFK,  # Asegúrate de devolver también la línea asociada al producto
+            'items': items_json
+        })
+    return jsonify(productos_json)
+
 @routes_blueprint.route('/porcentajes/<int:producto_id>')
 def get_porcentajes(producto_id):
     porcentaje = PorcentajesProducto.query.filter_by(id_producto=producto_id).first()
@@ -532,7 +549,7 @@ def generar_reporte(cotizacion_id):
             ('GRID', (0, 0), (-1, -1), 1, '#000000'),
         ]))
         elements.append(product_table)
-        elements.append(Spacer(1, 6))
+        elements.append(Spacer(1, -11))
 
         item_counter += 1
 
@@ -548,29 +565,48 @@ def generar_reporte(cotizacion_id):
             iva = subtotal * 0.19
             total = subtotal + iva
 
-        # Formatear IVA y Total
-        iva_formateado = locale.format_string("$ %d", iva, grouping=True)
-        total_formateado = locale.format_string("$ %d", total, grouping=True)
+            # Formatear IVA y Total
+            iva_formateado = locale.format_string("$ %d", iva, grouping=True)
+            total_formateado = locale.format_string("$ %d", total, grouping=True)
 
-        # Añadir resumen al final
-        summary_data = [
-            ["Subtotal", locale.format_string("$ %d", subtotal, grouping=True)],
-            ["IVA (19%)", iva_formateado],
-            ["Total", total_formateado]
-        ]
+            # Añadir resumen al final
+            summary_data = [
+                ["Subtotal", locale.format_string("$ %d", subtotal, grouping=True)],
+                ["IVA (19%)", iva_formateado],
+                ["Total", total_formateado]
+            ]
 
-        summary_table = Table(summary_data, colWidths=[4*inch, 2*inch])
-        summary_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
-            ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
-            ('ALIGN', (0, 0), (-1, 0), 'RIGHT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 8),
-            ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-            ('GRID', (0, 0), (-1, -1), 1, '#000000'),
-        ]))
+            summary_table = Table(summary_data, colWidths=[2*inch, 2*inch])
+            summary_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
+                ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+                ('ALIGN', (10, 0), (-1, 0), 'RIGHT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 8),
+                ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+                ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+            ]))
+        else:
+            # Mostrar solo el subtotal y el mensaje de IVA no incluido
+            summary_data = [
+                ["Subtotal", locale.format_string("$ %d", subtotal, grouping=True)]
+            ]
+
+            summary_table = Table(summary_data, colWidths=[2*inch, 2*inch])
+            summary_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
+                ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+                ('ALIGN', (0, 0), (-1, 0), 'RIGHT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 8),
+                ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+                ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+            ]))
+            elements.append(Paragraph("Estos valores no incluyen IVA", normal_style))
+
+        # Añadir la tabla de resumen al final
         elements.append(summary_table)
-        elements.append(Spacer(1, 12))
+        elements.append(Spacer(1, 10))
 
     # Construir PDF
         # Añadir imagen de encabezado y pie de página
@@ -585,7 +621,8 @@ def generar_reporte(cotizacion_id):
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
     # Devolver el PDF como respuesta
     buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name=f"Cotizacion_{cotizacion.negociacion}.pdf", mimetype='application/pdf')
+
+    return send_file(buffer, as_attachment=True, download_name=f'Cotizacion_{cotizacion.negociacion}.pdf', mimetype='application/pdf')
 
 # Ruta para generar OP
 @routes_blueprint.route('/generar-op/<int:cotizacion_id>', methods=['GET'])

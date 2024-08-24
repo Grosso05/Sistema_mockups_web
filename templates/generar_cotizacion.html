@@ -48,15 +48,16 @@
                     <option value="">Seleccionar</option>
                     {% for linea in lineas %}
                         <option value="{{ linea.linea_id }}">{{ linea.nombre }}</option>
-
                     {% endfor %}
                 </select>
             </div>
             <div class="grupo">
                 <label for="seleccionarProducto">Producto:</label>
-                <select id="seleccionarProducto" onchange="cargarPorcentajesProducto()">
-                <option value="">Seleccionar</option>
+                <select id="seleccionarProducto" name="seleccionarProducto" onchange="cargarPorcentajesProducto()">
+                    <option value="">Seleccionar</option>
+                    <!-- Los productos se cargarán aquí dinámicamente -->
                 </select>
+
                 <label for="alto-1">Alto (Cm):</label>
                 <input type="number" class="alto-input" name="alto" />
                 <label for="ancho-1">Ancho (Cm):</label>
@@ -172,8 +173,9 @@
         </div>
     </section>
     <div id="productos-cotizacion" class="productos-cotizacion">
-        <h2>Productos de la Cotización</h2>
+        <h2 style="text-align: center;">Productos de la Cotización</h2>
         <div id="notification-container" class="notification-container"></div>
+    
 
         <div id="productos-container"></div>
     </div>
@@ -207,22 +209,77 @@
 
     //funcion para evento de seleccion de linea
 
-    document.getElementById('seleccionarLinea').addEventListener('change', function() {
-        const lineaId = this.value;
-        const productoSelect = document.getElementById('seleccionarProducto');
-        productoSelect.innerHTML = '<option value="">Seleccionar</option>'; 
-    
-        fetch(`/productos_por_linea/${lineaId}`)
+document.addEventListener('DOMContentLoaded', function() {
+    const lineaSelect = document.getElementById('seleccionarLinea');
+    const productoSelect = document.getElementById('seleccionarProducto');
+
+    // Función para cargar todos los productos
+    function cargarTodosLosProductos() {
+        fetch('/todos_los_productos') // Asegúrate de que esta ruta devuelva todos los productos en formato JSON
             .then(response => response.json())
             .then(productos => {
+                productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Reiniciar opciones
                 productos.forEach(producto => {
                     const option = document.createElement('option');
                     option.value = producto.id;
                     option.textContent = producto.nombre;
+                    option.dataset.lineaId = producto.linea_id; // Guardamos el ID de la línea en un data attribute
                     productoSelect.appendChild(option);
                 });
+            })
+            .catch(error => {
+                console.error('Error al cargar todos los productos:', error);
             });
+    }
+
+    // Función para cargar productos filtrados por línea
+    function cargarProductosPorLinea(lineaId) {
+        if (lineaId) {
+            fetch(`/productos_por_linea/${lineaId}`)
+                .then(response => response.json())
+                .then(productos => {
+                    productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Reiniciar opciones
+                    productos.forEach(producto => {
+                        const option = document.createElement('option');
+                        option.value = producto.id;
+                        option.textContent = producto.nombre;
+                        option.dataset.lineaId = producto.linea_id; // Guardamos el ID de la línea en un data attribute
+                        productoSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error(`Error al cargar productos para la línea ${lineaId}:`, error);
+                });
+        } else {
+            // Si no se selecciona ninguna línea, cargar todos los productos
+            cargarTodosLosProductos();
+        }
+    }
+
+    // Cargar todos los productos al cargar la página
+    cargarTodosLosProductos();
+
+    // Evento para cuando se cambia la selección de línea
+    lineaSelect.addEventListener('change', function() {
+        const lineaId = this.value;
+        cargarProductosPorLinea(lineaId);
     });
+
+    // Evento para cuando se cambia la selección de producto
+    productoSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const lineaId = selectedOption.dataset.lineaId;
+
+        if (lineaId) {
+            // Actualizar la selección de línea sin disparar el evento 'change' nuevamente
+            if (lineaSelect.value !== lineaId) {
+                lineaSelect.value = lineaId;
+                // Opcional: Si deseas filtrar los productos al actualizar la línea automáticamente
+                // cargarProductosPorLinea(lineaId);
+            }
+        }
+    });
+});
     
     //funcion que consulta los porcentajes de cada producto en el backend
 
@@ -248,15 +305,13 @@
     
                             // Establecer el valor mínimo en el input de utilidad
                             const inputUtilidad = document.getElementById('utilidadSeleccionada');
+                            
                             inputUtilidad.placeholder = `El porcentaje mínimo es: ${porcentajes.utilidad}`;
                             inputUtilidad.min = porcentajes.utilidad;
                         }
                     }
                 })
-                .catch(error => {
-                    console.error('Error al cargar los porcentajes:', error);
-                    alert('Ocurrió un error al cargar los porcentajes. Por favor, inténtalo nuevamente más tarde.');
-                });
+
         }
     }
 
@@ -381,7 +436,7 @@
     
                 // Crear el contenido del nuevo producto
                 nuevoProducto.innerHTML = `
-                    <h3>Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
+                   <h3 style="color: #00b04f;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
                     <h4>Descripción: ${descripcion}</h4>
                     <h4>Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
     
@@ -451,7 +506,7 @@
                                 <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
                                 <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
                                 <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
-                                <p id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+                                <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
                             </div>
                         `).join('')}
                     </div>
@@ -514,10 +569,7 @@
                 // Actualizar los totales al agregar un nuevo producto
                 actualizarTotalesExtras(nuevoNumeroProducto, 0); // Inicia con costo directo 0
             })
-            .catch(error => {
-                console.error('Error al cargar los porcentajes:', error);
 
-            });
     });
     
  // Delegación de eventos para los botones de productos
@@ -1156,9 +1208,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 const resumenTitulo = document.getElementById(`titulo-resumen-${itemNumber}-${index}`);
                 if (resumenTitulo) {
                     resumenTitulo.textContent = `Resumen de costos (${cantidadUnidades})`;
-                } else {
-                    console.error(`Error: No se encontró el elemento para el título del resumen de costos en el índice ${index}`);
-                }
+                } 
         
                 document.getElementById(`costo-directo-${itemNumber}-${index}`).textContent = `Costo Directo: ${formatearNumero(costoDirecto)}`;
                 document.getElementById(`costo-unitario-${itemNumber}-${index}`).textContent = `Costo Directo Unitario: ${formatearNumero(costoUnitario)}`;

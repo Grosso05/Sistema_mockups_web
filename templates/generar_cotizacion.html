@@ -477,6 +477,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div>
                             <h4>Seleccionar Ítems</h4>
                             <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
+                            <div id="cargando-${itemNumber}" class="cargando" style="display: none;">
+                                Cargando...
+                            </div>
                             <div id="seleccion-items-${nuevoNumeroProducto}"></div>
                             <div id="paginacion-items-${nuevoNumeroProducto}"></div>
                             <div class="botones-container">

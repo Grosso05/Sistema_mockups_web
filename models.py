@@ -62,7 +62,7 @@ class Categoria(db.Model):
 class Items(db.Model):
     __tablename__ = 'items'  # Nombre correcto de la tabla
     item_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nombre = db.Column(db.String(255), nullable=False)
+    nombre = db.Column(db.String(255), nullable=False, index= True)
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.CATEGORIA_ID'))
     unidad = db.Column(db.String(255))
     tipo = db.Column(db.String(255))

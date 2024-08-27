@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 5.8.2.2) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.8.3) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 27 de agosto de 2024, 9:34 am
+
+Cambios Recientes
+v5.8.3
+
+En esta nueva version, incluimos la logica de descuento, cambia cuando no tiene descuento, cuando no tiene iva muesta texto, y la cotizacion queda aparentemente sin errores
 
 # Fecha de lanzamiento: 24 de agosto de 2024, 9:10 am
 

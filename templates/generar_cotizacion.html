@@ -6,6 +6,19 @@
     <title>Generar Costos</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
     <style>
+
+                /* CSS para ocultar la tabla durante la carga */
+        .loading-active table {
+            display: none;
+}
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+            color: #888;
+        }
+        
         .iva-selector {
             margin: 10px 0;
             font-family: Arial, sans-serif;
@@ -477,9 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div>
                             <h4>Seleccionar Ítems</h4>
                             <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
-                            <div id="cargando-${itemNumber}" class="cargando" style="display: none;">
-                                Cargando...
-                            </div>
+
                             <div id="seleccion-items-${nuevoNumeroProducto}"></div>
                             <div id="paginacion-items-${nuevoNumeroProducto}"></div>
                             <div class="botones-container">
@@ -1320,97 +1331,115 @@ function agregarItemAlProducto(item, itemNumber) {
     
     
 
+    let isLoading = false;
+
     function verTodosItems(itemNumber, pagina, busqueda) {
-
-
+        if (isLoading) return; // Evitar que se realicen búsquedas adicionales mientras se está cargando
+        
+        isLoading = true;
+        
+        const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
+        const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
+        const buscador = document.getElementById(`buscar-item-${itemNumber}`);
+        
+        // Mostrar animación de carga
+        seleccionItemsContainer.innerHTML = '<div class="loading">Cargando...</div>';
+        seleccionItemsContainer.classList.add('loading-active'); // Añadir clase de carga
+        
         fetch(`/todos_los_items?pagina=${pagina}&busqueda=${busqueda}`)
             .then(response => response.json())
             .then(data => {
                 const items = data.items;
                 const totalPaginas = data.totalPaginas;
-                const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
-                const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
-    
-                seleccionItemsContainer.innerHTML = '';
-    
-                const table = document.createElement('table');
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Seleccionar</th>
-                            <th>Grupo</th>
-                            <th>Descripción</th>
-                            <th>Unidad</th>
-                            <th>Precio</th>
-                            <th class="oculto">Tipo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${items.map(item => `
-                            <tr>
-                                <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
-                                <td>${item.categoria}</td>
-                                <td>${item.descripcion}</td>
-                                <td>${item.unidad}</td>
-                                <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
-                                <td class="oculto">${item.tipo}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                seleccionItemsContainer.appendChild(table);
-    
-                paginacionContainer.innerHTML = '';
-                const maxPagesToShow = 5;
-                const half = Math.floor(maxPagesToShow / 2);
-                let startPage = Math.max(1, pagina - half);
-                let endPage = Math.min(totalPaginas, pagina + half);
-    
-                if (pagina - half < 1) {
-                    endPage = Math.min(totalPaginas, endPage + (half - pagina + 1));
-                }
-                if (pagina + half > totalPaginas) {
-                    startPage = Math.max(1, startPage - (pagina + half - totalPaginas));
-                }
-    
-                if (pagina > 1) {
-                    const firstButton = document.createElement('button');
-                    firstButton.textContent = '<<';
-                    firstButton.addEventListener('click', () => verTodosItems(itemNumber, 1, busqueda));
-                    paginacionContainer.appendChild(firstButton);
-    
-                    const prevButton = document.createElement('button');
-                    prevButton.textContent = '<';
-                    prevButton.addEventListener('click', () => verTodosItems(itemNumber, pagina - 1, busqueda));
-                    paginacionContainer.appendChild(prevButton);
-                }
-    
-                for (let i = startPage; i <= endPage; i++) {
-                    const button = document.createElement('button');
-                    button.textContent = i;
-                    button.disabled = i === pagina;
-                    button.addEventListener('click', () => verTodosItems(itemNumber, i, busqueda));
-                    paginacionContainer.appendChild(button);
-                }
-    
-                if (pagina < totalPaginas) {
+        
+                // Usar setTimeout para retraso artificial
+                setTimeout(() => {
+                    // Limpiar animación de carga
+                    seleccionItemsContainer.innerHTML = '';
+                    seleccionItemsContainer.classList.remove('loading-active'); // Quitar clase de carga
                     
-                    const nextButton = document.createElement('button');
-                    nextButton.textContent = '>';
-                    nextButton.addEventListener('click', () => verTodosItems(itemNumber, pagina + 1, busqueda));
-                    paginacionContainer.appendChild(nextButton);
-    
-                    const lastButton = document.createElement('button');
-                    lastButton.textContent = '>>';
-                    lastButton.addEventListener('click', () => verTodosItems(itemNumber, totalPaginas, busqueda));
-                    paginacionContainer.appendChild(lastButton);
-                }
-    
-                const buscador = document.getElementById(`buscar-item-${itemNumber}`);
-                buscador.addEventListener('input', debounce(() => {
-                    const busqueda = buscador.value;
-                    verTodosItems(itemNumber, 1, busqueda);
-                }, 300));
+                    // Mostrar resultados
+                    const table = document.createElement('table');
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>Seleccionar</th>
+                                <th>Grupo</th>
+                                <th>Descripción</th>
+                                <th>Unidad</th>
+                                <th>Precio</th>
+                                <th class="oculto">Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(item => `
+                                <tr>
+                                    <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
+                                    <td>${item.categoria}</td>
+                                    <td>${item.descripcion}</td>
+                                    <td>${item.unidad}</td>
+                                    <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
+                                    <td class="oculto">${item.tipo}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    `;
+                    seleccionItemsContainer.appendChild(table);
+        
+                    // Actualizar paginación
+                    paginacionContainer.innerHTML = '';
+                    const maxPagesToShow = 5;
+                    const half = Math.floor(maxPagesToShow / 2);
+                    let startPage = Math.max(1, pagina - half);
+                    let endPage = Math.min(totalPaginas, pagina + half);
+        
+                    if (pagina - half < 1) {
+                        endPage = Math.min(totalPaginas, endPage + (half - pagina + 1));
+                    }
+                    if (pagina + half > totalPaginas) {
+                        startPage = Math.max(1, startPage - (pagina + half - totalPaginas));
+                    }
+        
+                    if (pagina > 1) {
+                        const firstButton = document.createElement('button');
+                        firstButton.textContent = '<<';
+                        firstButton.addEventListener('click', () => verTodosItems(itemNumber, 1, busqueda));
+                        paginacionContainer.appendChild(firstButton);
+        
+                        const prevButton = document.createElement('button');
+                        prevButton.textContent = '<';
+                        prevButton.addEventListener('click', () => verTodosItems(itemNumber, pagina - 1, busqueda));
+                        paginacionContainer.appendChild(prevButton);
+                    }
+        
+                    for (let i = startPage; i <= endPage; i++) {
+                        const button = document.createElement('button');
+                        button.textContent = i;
+                        button.disabled = i === pagina;
+                        button.addEventListener('click', () => verTodosItems(itemNumber, i, busqueda));
+                        paginacionContainer.appendChild(button);
+                    }
+        
+                    if (pagina < totalPaginas) {
+                        const nextButton = document.createElement('button');
+                        nextButton.textContent = '>';
+                        nextButton.addEventListener('click', () => verTodosItems(itemNumber, pagina + 1, busqueda));
+                        paginacionContainer.appendChild(nextButton);
+        
+                        const lastButton = document.createElement('button');
+                        lastButton.textContent = '>>';
+                        lastButton.addEventListener('click', () => verTodosItems(itemNumber, totalPaginas, busqueda));
+                        paginacionContainer.appendChild(lastButton);
+                    }
+        
+                    // Configurar el evento de búsqueda
+                    buscador.addEventListener('input', debounce(() => {
+                        const busqueda = buscador.value;
+                        verTodosItems(itemNumber, 1, busqueda);
+                    }, 300));
+        
+                    isLoading = false; // Rehabilitar búsqueda
+                }, 1500); // Retraso de 2 segundos
             });
     }
 

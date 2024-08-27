@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 5.8.4.4) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.8.4.5) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 27 de agosto de 2024, 4:30 pm
+
+Cambios Recientes
+v5.8.4.5
+
+En esta versión, agregamos la función de ordenar las cotizaciones en orden descentente teniendo como parametro la fecha.
+
 
 # Fecha de lanzamiento: 27 de agosto de 2024, 3:10 pm
 

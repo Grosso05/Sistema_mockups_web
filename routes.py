@@ -15,9 +15,6 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
 
-
-
-
     
 routes_blueprint = Blueprint('routes', __name__)
 
@@ -256,7 +253,7 @@ def crear_cotizacion():
 
 
 
-#Ruta para 
+#Ruta para guardar en bd la cotizacion
 
 
 @routes_blueprint.route('/guardar-cotizacion', methods=['POST'])
@@ -331,10 +328,6 @@ def guardar_cotizacion():
 
 
 
-
-
-
-
 @routes_blueprint.route('/guardar_items', methods=['POST'])
 def guardar_items():
     data = request.json
@@ -396,6 +389,37 @@ def listar_cotizaciones():
     
     return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones)
 
+#ruta para editar la cotizacion
+
+@routes_blueprint.route('/editar_cotizacion/<int:cotizacion_id>', methods=['GET', 'POST'])
+def editar_cotizacion(cotizacion_id):
+    cotizacion = Cotizacion.query.get_or_404(cotizacion_id)
+
+    if request.method == 'POST':
+        # Obtener los datos del formulario
+        cotizacion.fecha_cotizacion = request.form['fecha_cotizacion']
+        cotizacion.cliente_cotizacion = request.form['cliente_cotizacion']
+        cotizacion.contacto_cotizacion = request.form['contacto_cotizacion']
+        cotizacion.proyecto_cotizacion = request.form['proyecto_cotizacion']
+        cotizacion.vendedor_cotizacion = int(request.form['vendedor_cotizacion'])
+        cotizacion.negociacion = request.form['negociacion']
+        cotizacion.forma_de_pago_cotizacion = request.form.get('forma_de_pago_cotizacion')
+        cotizacion.validez_cotizacion = request.form.get('validez_cotizacion')
+        cotizacion.descuento_cotizacion = request.form.get('descuento_cotizacion')
+        cotizacion.recibe_cotizacion = request.form.get('recibe_cotizacion')
+        cotizacion.numero_contacto_cotizacion = request.form.get('numero_contacto_cotizacion')
+        cotizacion.direccion_cotizacion = request.form.get('direccion_cotizacion')
+        cotizacion.iva_seleccionado = request.form['iva_seleccionado']
+
+        # Guardar los cambios en la base de datos
+        db.session.commit()
+
+        # Redirigir al usuario a la página de listado de cotizaciones
+        return redirect(url_for('routes.listar_cotizaciones'))
+
+    return render_template('editar_cotizacion.html', cotizacion=cotizacion)
+
+
 
 
 # Definir las dimensiones de las imágenes
@@ -418,20 +442,16 @@ def generar_reporte(cotizacion_id):
     if not cotizacion:
         return "Cotización no encontrada", 404
 
-    # Crear un buffer para almacenar el PDF
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
-    width, height = landscape(letter)  # Obtener el ancho y alto de la página
+    width, height = landscape(letter)
 
-    # Crear el contenido del documento
     elements = []
 
-    # Estilos
     styles = getSampleStyleSheet()
     normal_style = styles['Normal']
     heading_style = styles['Heading1']
 
-    # Estilo para permitir saltos de línea en el nombre del producto
     product_style = ParagraphStyle(
         'ProductStyle',
         parent=styles['Normal'],
@@ -441,12 +461,10 @@ def generar_reporte(cotizacion_id):
         wordWrap='CJK'
     )
 
-    # Añadir título con estilo
     title = Paragraph(f"Cotización - Negociación: {cotizacion.negociacion}", heading_style)
     elements.append(title)
     elements.append(Spacer(1, 12))
 
-    # Datos de la cotización en una tabla horizontal
     data = [
         ["Fecha", cotizacion.fecha_cotizacion, "Cliente", Paragraph(cotizacion.cliente_cotizacion, normal_style)],
         ["Proyecto", Paragraph(cotizacion.proyecto_cotizacion, normal_style), "Contacto", Paragraph(cotizacion.contacto_cotizacion, normal_style)]
@@ -454,44 +472,43 @@ def generar_reporte(cotizacion_id):
 
     table = Table(data, colWidths=[1.5*inch, 2.5*inch, 1*inch, 2.5*inch])
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
-        ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#d0d0d0')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
     ]))
     elements.append(table)
     elements.append(Spacer(1, 12))
 
-    # Cabecera de la tabla de productos
     header_data = [
         ["ITEM", "Imagen", "Producto", "Medidas", "Descripción", "Materiales", "Cantidad", "Valor Unidad", "Valor Total"]
     ]
 
     header_table = Table(header_data, colWidths=[0.3*inch, 1*inch, 1.5*inch, 1*inch, 2*inch, 2.3*inch, 0.7*inch, 0.9*inch, 0.9*inch])
     header_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), '#4CAF50'),  # Color de fondo
-        ('TEXTCOLOR', (0, 0), (-1, 0), '#FFFFFF'),  # Color del texto
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4CAF50')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, 0), 6),
-        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
     ]))
     elements.append(header_table)
     elements.append(Spacer(1, 6))
 
-    # Detalle de Productos
     item_counter = 1
     subtotal = 0
-    multiple_quantities = False  # Indicador de múltiples cantidades
+    multiple_quantities = False
+
+    descuento_porcentaje = cotizacion.descuento_cotizacion / 100 if cotizacion.descuento_cotizacion else 0
 
     for producto_cotizado in cotizacion.productos_cotizados:
         producto = Productos.query.get(producto_cotizado.producto_seleccionado_id)
 
-        # Manejo de cantidades y valores totales
         cantidades = producto_cotizado.cantidades.split(',')
         resúmenes_costos = ResumenDeCostos.query.filter_by(producto_id=producto_cotizado.id).all()
 
@@ -504,10 +521,18 @@ def generar_reporte(cotizacion_id):
 
         for i, cantidad in enumerate(cantidades):
             if i < len(resúmenes_costos):
-                valor_total = resúmenes_costos[i].oferta_antes_iva
-                subtotal += valor_total
-                valor_unitario = valor_total / float(cantidad) if float(cantidad) > 0 else 0
-                valores_totales.append(locale.format_string("$ %d", valor_total, grouping=True))
+                valor_total_inicial = resúmenes_costos[i].oferta_antes_iva
+
+                # Si hay un descuento, inflamos el precio
+                if descuento_porcentaje > 0:
+                    valor_total_incrementado = valor_total_inicial / (1 - descuento_porcentaje)
+                else:
+                    valor_total_incrementado = valor_total_inicial
+
+                subtotal += valor_total_incrementado
+                valor_unitario = valor_total_incrementado / float(cantidad) if float(cantidad) > 0 else 0
+
+                valores_totales.append(locale.format_string("$ %d", valor_total_incrementado, grouping=True))
                 valores_unitarios.append(locale.format_string("$ %.2f", valor_unitario, grouping=True))
             else:
                 valores_totales.append("$ 0")
@@ -516,97 +541,107 @@ def generar_reporte(cotizacion_id):
         valores_totales_paragraph = Paragraph("<br/>".join(valores_totales), normal_style)
         valores_unitarios_paragraph = Paragraph("<br/>".join(valores_unitarios), normal_style)
 
-        # Información del Producto
         item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
         items_description = "<br/>".join(item_names) if item_names else "No se especifican items."
         items_paragraph = Paragraph(items_description, product_style)
         producto_descripcion = Paragraph(producto_cotizado.descripcion, product_style)
 
-        # Ajusta el ancho de la columna del producto para permitir saltos de línea
         product_name_paragraph = Paragraph(producto.nombre, product_style)
 
-        # Crear la fila del producto
         data = [
-            str(item_counter),  # ITEM
-            "",  # Imagen (vacío por ahora)
-            product_name_paragraph,  # Producto con salto de línea
-            f"{producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}",  # Medidas
-            producto_descripcion,  # Descripción
-            items_paragraph,  # Materiales
-            cantidades_paragraph,  # Cantidades
-            valores_unitarios_paragraph,  # Valor Unidad
-            valores_totales_paragraph  # Valor Total
+            str(item_counter),
+            "",
+            product_name_paragraph,
+            f"{producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}",
+            producto_descripcion,
+            items_paragraph,
+            cantidades_paragraph,
+            valores_unitarios_paragraph,
+            valores_totales_paragraph
         ]
 
         product_table = Table([data], colWidths=[0.3*inch, 1*inch, 1.5*inch, 1*inch, 2*inch, 2.3*inch, 0.7*inch, 0.9*inch, 0.9*inch])
         product_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), '#FFFFFF'),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 6),
             ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
-            ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-            ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+            ('BOX', (0, 0), (-1, -1), 1, colors.black),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ]))
         elements.append(product_table)
-        elements.append(Spacer(1, -11))
+        elements.append(Spacer(1, 1))
 
         item_counter += 1
 
+            # Definir un estilo de tabla común
+        table_style = ParagraphStyle(
+            'TableStyle',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=8,  # Ajustar el tamaño de la fuente si es necesario
+            alignment=1,
+            wordWrap='CJK'
+        )
+
+    # Calcular IVA y Total
     if multiple_quantities:
-        # Añadir un mensaje que indica que los valores no incluyen IVA
         elements.append(Paragraph("Estos valores no incluyen IVA", normal_style))
     else:
-        # Calcular IVA y Total
-        iva = 0
-        total = subtotal
-
-        if cotizacion.iva_seleccionado.lower() == "si":
-            iva = subtotal * 0.19
-            total = subtotal + iva
-
-            # Formatear IVA y Total
-            iva_formateado = locale.format_string("$ %d", iva, grouping=True)
-            total_formateado = locale.format_string("$ %d", total, grouping=True)
-
-            # Añadir resumen al final
+        if cotizacion.iva_seleccionado.lower() == "no":
+            iva = 0
+            total = subtotal
+            elements.append(Paragraph("Estos valores no incluyen IVA", normal_style))
             summary_data = [
                 ["Subtotal", locale.format_string("$ %d", subtotal, grouping=True)],
-                ["IVA (19%)", iva_formateado],
-                ["Total", total_formateado]
+                ["Total", locale.format_string("$ %d", total, grouping=True)]
             ]
-
-            summary_table = Table(summary_data, colWidths=[2*inch, 2*inch])
-            summary_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
-                ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
-                ('ALIGN', (10, 0), (-1, 0), 'RIGHT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 8),
-                ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-                ('GRID', (0, 0), (-1, -1), 1, '#000000'),
-            ]))
         else:
-            # Mostrar solo el subtotal y el mensaje de IVA no incluido
-            summary_data = [
-                ["Subtotal", locale.format_string("$ %d", subtotal, grouping=True)]
-            ]
+            if descuento_porcentaje > 0:
+                valor_descuento = subtotal * descuento_porcentaje
+                subtotal_con_descuento = subtotal - valor_descuento
+                iva = subtotal_con_descuento * 0.19
+                total = subtotal_con_descuento + iva
 
-            summary_table = Table(summary_data, colWidths=[2*inch, 2*inch])
-            summary_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
-                ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
-                ('ALIGN', (0, 0), (-1, 0), 'RIGHT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 8),
-                ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-                ('GRID', (0, 0), (-1, -1), 1, '#000000'),
-            ]))
-            elements.append(Paragraph("Estos valores no incluyen IVA", normal_style))
+                valor_descuento_formateado = locale.format_string("$ %d", valor_descuento, grouping=True)
+                subtotal_con_descuento_formateado = locale.format_string("$ %d", subtotal_con_descuento, grouping=True)
+                iva_formateado = locale.format_string("$ %d", iva, grouping=True)
+                total_formateado = locale.format_string("$ %d", total, grouping=True)
 
-        # Añadir la tabla de resumen al final
+                summary_data = [
+                    ["Subtotal antes de descuento", locale.format_string("$ %d", subtotal, grouping=True)],
+                    [f"Descuento ({cotizacion.descuento_cotizacion}%)", f"-{valor_descuento_formateado}"],
+                    ["Subtotal con descuento", subtotal_con_descuento_formateado],
+                    ["IVA (19%)", iva_formateado],
+                    ["Total", total_formateado]
+                ]
+            else:
+                iva = subtotal * 0.19
+                total = subtotal + iva
+
+                iva_formateado = locale.format_string("$ %d", iva, grouping=True)
+                total_formateado = locale.format_string("$ %d", total, grouping=True)
+                subtotal_formateado = locale.format_string("$ %d", subtotal, grouping=True)
+
+                summary_data = [
+                    ["Subtotal", subtotal_formateado],
+                    ["IVA (19%)", iva_formateado],
+                    ["Total", total_formateado]
+                ]
+
+        summary_table = Table(summary_data, colWidths=[2.5*inch, 1.5*inch])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.white),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),  # Asegúrate de que el tamaño sea consistente
+            ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+            ('BOX', (0, 0), (-1, -1), 1, colors.black),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
         elements.append(summary_table)
-        elements.append(Spacer(1, 10))
 
     # Construir PDF
         # Añadir imagen de encabezado y pie de página
@@ -619,9 +654,8 @@ def generar_reporte(cotizacion_id):
         canvas.restoreState()
 
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
-    # Devolver el PDF como respuesta
-    buffer.seek(0)
 
+    buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f'Cotizacion_{cotizacion.negociacion}.pdf', mimetype='application/pdf')
 
 # Ruta para generar OP

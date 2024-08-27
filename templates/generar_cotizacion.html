@@ -588,6 +588,8 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (target.matches('.editar-producto-btn')) {
         const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
         seleccionItemsContainer.style.display = 'block';
+
+
     } else if (target.matches('.eliminar-producto-btn')) {
         const producto = document.getElementById(`producto-${target.dataset.productoId}`);
         numerosEliminados.push(parseInt(target.dataset.productoId, 10)); // Añadir el número del producto eliminado al array
@@ -734,6 +736,28 @@ function actualizarResumenesDeCostos() {
         actualizarTotalProducto(productoId);
     });
 }
+
+function editarProducto(productoId) {
+    const productoDiv = document.getElementById(`producto-${productoId}`);
+    
+    // Convertir el h4 de descripción a un textarea editable
+    const descripcionElement = productoDiv.querySelector('h4:nth-child(2)');
+    const descripcionTexto = descripcionElement.textContent.replace("Descripción: ", "");
+    descripcionElement.innerHTML = `<textarea>${descripcionTexto}</textarea>`;
+    
+    // Convertir los campos de medidas a inputs
+    const medidasElement = productoDiv.querySelector('h4:nth-child(3)');
+    const [alto, ancho, fondo] = medidasElement.textContent.split(' || ').map(texto => texto.split(': ')[1]);
+    medidasElement.innerHTML = `
+        <label>Alto (Cm):</label><input type="number" value="${alto}">
+        <label>Ancho (Cm):</label><input type="number" value="${ancho}">
+        <label>Fondo (Cm):</label><input type="number" value="${fondo}">
+    `;
+    
+    // Si deseas editar la cantidad, puedes hacer algo similar
+    // Aquí solo muestro un ejemplo con la descripción y las medidas
+}
+
 
 
 function toggleFormulario(numeroProducto) {

@@ -5,7 +5,7 @@
 Cambios Recientes
 v5.8.4
 
-En esta nueva version, estamos trabajando la edicion de productos ya creados, actualmente podemos editar descripcion y medidas y se envian al backend
+En esta nueva version, estamos trabajando la edicion de productos ya creados, actualmente podemos editar descripcion y medidas y se envian al backend (¡¡ACA FUE INCLUIDA LA FUNCIÓN QUE IMPIDE GUARDAR PRODUCTOS DUPLICADOS!!)
 
 
 # Fecha de lanzamiento: 27 de agosto de 2024, 9:34 am

@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 5.8.2) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.8.2.2) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 24 de agosto de 2024, 9:10 am
+
+Cambios Recientes
+v5.8.2.2
+
+En esta actualizacion, mostramos al usuario el porcentaje aplicado a los calculos de extras en el resumen de costos.
+
 
 # Fecha de lanzamiento: 24 de agosto de 2024, 8:40 am
 

@@ -461,7 +461,7 @@ def generar_reporte(cotizacion_id):
         wordWrap='CJK'
     )
 
-    title = Paragraph(f"Cotización - Negociación: {cotizacion.negociacion}", heading_style)
+    title = Paragraph(f"Negociación: {cotizacion.negociacion}", heading_style)
     elements.append(title)
     elements.append(Spacer(1, 12))
 
@@ -542,7 +542,7 @@ def generar_reporte(cotizacion_id):
         valores_unitarios_paragraph = Paragraph("<br/>".join(valores_unitarios), normal_style)
 
         item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
-        items_description = "<br/>".join(item_names) if item_names else "No se especifican items."
+        items_description = "//".join(item_names) if item_names else "No se especifican items."
         items_paragraph = Paragraph(items_description, product_style)
         producto_descripcion = Paragraph(producto_cotizado.descripcion, product_style)
 

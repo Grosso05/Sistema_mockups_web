@@ -436,12 +436,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
                 // Crear el contenido del nuevo producto
                 nuevoProducto.innerHTML = `
-                   <h3 style="color: #00b04f;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
-                    <h4>Descripción: ${descripcion}</h4>
-                    <h4>Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
+            <div class="producto" id="producto-${nuevoNumeroProducto}">
+                <h3 contenteditable="true" style="color: #00b04f;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
+                <h4 contenteditable="true">Descripción: ${descripcion}</h4>
+                <h4 contenteditable="true">Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
     
                     <!-- Añadimos el productoId con un nombre diferente -->
                     <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
+
+                        <button id="btnGuardar-${nuevoNumeroProducto}" onclick="guardarCambios(${nuevoNumeroProducto})">Guardar Cambios</button>
+</div>
     
                     ${cantidadesSeleccionadasHTML}
                     <div class="itemsseleccionados">
@@ -683,6 +687,25 @@ nuevoProductoDuplicado.querySelectorAll('.cantidad').forEach(input => {
         actualizarResumenDeCostos(nuevoNumeroProductoDuplicado); // Actualiza el resumen de costos
     });
 });
+
+
+function guardarCambios(productoId) {
+    const producto = document.getElementById(`producto-${productoId}`);
+    
+    // Obtener valores editados
+    const descripcion = producto.querySelector('h4').textContent.replace('Descripción: ', '').trim();
+    const alto = producto.querySelector('h4:nth-of-type(2)').textContent.split('Alto (Cm): ')[1].split(' || ')[0].trim();
+    const ancho = producto.querySelector('h4:nth-of-type(2)').textContent.split('Ancho (Cm): ')[1].split(' || ')[0].trim();
+    const fondo = producto.querySelector('h4:nth-of-type(2)').textContent.split('Fondo (Cm): ')[1].trim();
+    
+    // Actualizar los datos del producto en el DOM si es necesario
+    producto.querySelector('h4').textContent = `Descripción: ${descripcion}`;
+    producto.querySelector('h4:nth-of-type(2)').textContent = `Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |`;
+
+    // Puedes agregar lógica adicional si necesitas actualizar el backend o hacer otras operaciones
+
+    alert('Cambios guardados.');
+}
 
 
         // Modificación para manejar eventos en el producto duplicado
@@ -1392,7 +1415,6 @@ function agregarItemAlProducto(item, itemNumber) {
 
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('guardarCotizacionBtn').addEventListener('click', function() {
-            
             // Capturar datos generales de la cotización
             const fechaCotizacion = document.getElementById('fecha_cotizacion').value;
             const clienteCotizacion = document.getElementById('cliente_cotizacion').value;
@@ -1410,18 +1432,27 @@ function agregarItemAlProducto(item, itemNumber) {
     
             // Capturar productos en la cotización
             const productos = [];
+            const productoIdsCapturados = new Set(); // Para evitar duplicación
+    
             document.querySelectorAll('.producto').forEach(function(productoDiv) {
                 const productoId = productoDiv.id.split('-')[1];
-                const productoSeleccionadoId = productoDiv.querySelector('input[name="producto_seleccionado_id"]').value;
-                const descripcion = productoDiv.querySelector('h4:nth-child(2)').innerText;
     
-                const medidasText = productoDiv.querySelector('h4:nth-child(3)').innerText;
+                // Verificar si el producto ya ha sido capturado
+                if (productoIdsCapturados.has(productoId)) {
+                    return; // Saltar este producto ya que es un duplicado
+                }
+                productoIdsCapturados.add(productoId);
+    
+                const productoSeleccionadoId = productoDiv.querySelector('input[name="producto_seleccionado_id"]').value;
+                const descripcion = productoDiv.querySelector('h4').innerText;
+    
+                const medidasText = productoDiv.querySelector('h4:nth-of-type(2)').innerText;
                 const medidasMatch = medidasText.match(/Alto \(Cm\): (\d+) \|\| Ancho \(Cm\): (\d+) \|\| Fondo \(Cm\): (\d+)/);
     
                 const alto = medidasMatch ? parseFloat(medidasMatch[1]) : null;
                 const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
                 const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
-
+    
                 // Capturar las cantidades seleccionadas para el producto
                 const cantidadesSeleccionadas = [];
                 productoDiv.querySelectorAll('h4').forEach(function(cantidadH4) {
@@ -1485,17 +1516,14 @@ function agregarItemAlProducto(item, itemNumber) {
                     }
                 });
     
-                // Luego, puedes usar el array resúmenesCostos para lo que necesites
-                console.log('Resúmenes de costos para el producto:', resúmenesCostos);
-    
                 productos.push({
                     productoId: parseInt(productoId),
-                    productoSeleccionadoId: parseInt(productoSeleccionadoId), // Incluye el nuevo ID
+                    productoSeleccionadoId: parseInt(productoSeleccionadoId),
                     descripcion: descripcion.trim(),
                     alto: alto,
                     ancho: ancho,
                     fondo: fondo,
-                    cantidadesSeleccionadas: cantidadesSeleccionadas,  // Incluye las cantidades seleccionadas                    
+                    cantidadesSeleccionadas: cantidadesSeleccionadas,
                     items: items,
                     resúmenesCostos: resúmenesCostos
                 });
@@ -1515,7 +1543,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 recibeCotizacion: recibeCotizacion,
                 numeroContacto: numeroContacto,
                 direccionCotizacion: direccionCotizacion,
-                ivaSeleccionado: ivaSeleccionado, // Agrega el valor del select
+                ivaSeleccionado: ivaSeleccionado,
                 productos: productos
             };
     

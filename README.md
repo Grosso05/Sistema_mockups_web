@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Versión 5.8.3) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.8.4) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 27 de agosto de 2024, 11:25 am
+
+Cambios Recientes
+v5.8.4
+
+En esta nueva version, estamos trabajando la edicion de productos ya creados, actualmente podemos editar descripcion y medidas y se envian al backend
+
 
 # Fecha de lanzamiento: 27 de agosto de 2024, 9:34 am
 

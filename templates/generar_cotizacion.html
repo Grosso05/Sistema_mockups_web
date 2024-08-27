@@ -21,7 +21,7 @@
         
         .iva-selector {
             margin: 10px 0;
-            font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif; 
         }
         
         .iva-selector label {
@@ -68,7 +68,7 @@
                 <label for="seleccionarProducto">Producto:</label>
                 <select id="seleccionarProducto" name="seleccionarProducto" onchange="cargarPorcentajesProducto()">
                     <option value="">Seleccionar</option>
-                    <!-- Los productos se cargarán aquí dinámicamente -->
+
                 </select>
 
                 <label for="alto-1">Alto (Cm):</label>
@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Establecer el valor mínimo en el input de utilidad
                             const inputUtilidad = document.getElementById('utilidadSeleccionada');
                             
-                            inputUtilidad.placeholder = `El porcentaje mínimo es: ${porcentajes.utilidad}`;
+                            inputUtilidad.placeholder = `El porcentaje mínimo es cargarPorcentajesProducto: ${porcentajes.utilidad}`;
                             inputUtilidad.min = porcentajes.utilidad;
                         }
                     }
@@ -438,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const cantidadesSeleccionadasHTML = valoresCantidad.map((valor, index) => 
             `<h4>Cantidad seleccionada (${index + 1}): ${valor} unidades</h4>`
         ).join('');
-
+    
         // Cargar porcentajes desde el backend y almacenarlos en los atributos de data del elemento
         fetch(`/porcentajes/${productoId}`)
             .then(response => response.json())
@@ -456,9 +456,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
                     <!-- Añadimos el productoId con un nombre diferente -->
                     <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
-
+    
                         <button id="btnGuardar-${nuevoNumeroProducto}" onclick="guardarCambios(${nuevoNumeroProducto})">Guardar Cambios</button>
-</div>
+            </div>
     
                     ${cantidadesSeleccionadasHTML}
                     <div class="itemsseleccionados">
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div>
                             <h4>Seleccionar Ítems</h4>
                             <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
-
+    
                             <div id="seleccion-items-${nuevoNumeroProducto}"></div>
                             <div id="paginacion-items-${nuevoNumeroProducto}"></div>
                             <div class="botones-container">
@@ -512,22 +512,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
                     </div>
     
-<div class="resumen-costos">
-    ${valoresCantidad.map((valor, index) => `
-        <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
-            <h4>Resumen de Costos (${valor})</h4>
-            <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
-            <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
-            <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-            <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-            <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-            <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
-            <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
-            <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
-            <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
-        </div>
-    `).join('')}
-</div>
+                    <div class="resumen-costos">
+                        ${valoresCantidad.map((valor, index) => `
+                            <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+                                <h4>Resumen de Costos (${valor})</h4>
+                                <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
+                                <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
+                                <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
+                                <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+                                <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
+                                <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+                            </div>
+                        `).join('')}
+                    </div>
     
                     <div class="acciones">
                         <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
@@ -538,8 +538,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
     
                 productosContainer.appendChild(nuevoProducto);
-
-                
     
                 // Limpiar los campos de entrada después de agregar el producto
                 descripcionInput.value = '';
@@ -564,9 +562,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
                 cargarItemsProducto(productoId, nuevoNumeroProducto, 1, '');
     
-                // Añadir manejadores de eventos para la utilidad
-                let timeout;
-                const utilidadInput = document.getElementById(`utilidadSeleccionada-${nuevoNumeroProducto}`);
+            // Añadir manejadores de eventos para la utilidad
+            let timeout;
+            valoresCantidad.forEach((valor, index) => {
+                const utilidadInput = document.getElementById(`utilidadSeleccionada-${nuevoNumeroProducto}-${index}`);
                 if (utilidadInput) {
                     utilidadInput.addEventListener('input', function() {
                         clearTimeout(timeout);
@@ -577,6 +576,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 if (productoElement) {
                                     const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
                                     if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
+                                        // Solo realiza el cálculo y actualización si el valor es válido
                                         actualizarTotalProducto(nuevoNumeroProducto, nuevoValorUtilidad);
                                     } else {
                                         alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
@@ -587,14 +587,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         }, 300); 
                     });
                 } else {
-                    console.error(`Elemento con ID utilidadSeleccionada-${nuevoNumeroProducto} no encontrado.`);
+                    console.error(`Elemento con ID utilidadSeleccionada-${nuevoNumeroProducto}-${index} no encontrado.`);
                 }
-    
-                // Actualizar los totales al agregar un nuevo producto
-                actualizarTotalesExtras(nuevoNumeroProducto, 0); // Inicia con costo directo 0
-            })
+            });
 
-    });
+            // Actualizar los totales al agregar un nuevo producto
+            actualizarTotalesExtras(nuevoNumeroProducto, 0); // Inicia con costo directo 0
+        })
+        .catch(error => {
+            console.error('Error al cargar los porcentajes:', error);
+        });
+});
     
  // Delegación de eventos para los botones de productos
  document.addEventListener('click', function(event) {

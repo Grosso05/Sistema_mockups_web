@@ -222,28 +222,28 @@
 
     //funcion para evento de seleccion de linea
 
-document.addEventListener('DOMContentLoaded', function() {
-    const lineaSelect = document.getElementById('seleccionarLinea');
-    const productoSelect = document.getElementById('seleccionarProducto');
+    document.addEventListener('DOMContentLoaded', function() {
+        const lineaSelect = document.getElementById('seleccionarLinea');
+        const productoSelect = document.getElementById('seleccionarProducto');
 
-    // Función para cargar todos los productos
-    function cargarTodosLosProductos() {
-        fetch('/todos_los_productos') // Asegúrate de que esta ruta devuelva todos los productos en formato JSON
-            .then(response => response.json())
-            .then(productos => {
-                productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Reiniciar opciones
-                productos.forEach(producto => {
-                    const option = document.createElement('option');
-                    option.value = producto.id;
-                    option.textContent = producto.nombre;
-                    option.dataset.lineaId = producto.linea_id; // Guardamos el ID de la línea en un data attribute
-                    productoSelect.appendChild(option);
+        // Función para cargar todos los productos
+        function cargarTodosLosProductos() {
+            fetch('/todos_los_productos') // Asegúrate de que esta ruta devuelva todos los productos en formato JSON
+                .then(response => response.json())
+                .then(productos => {
+                    productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Reiniciar opciones
+                    productos.forEach(producto => {
+                        const option = document.createElement('option');
+                        option.value = producto.id;
+                        option.textContent = producto.nombre;
+                        option.dataset.lineaId = producto.linea_id; // Guardamos el ID de la línea en un data attribute
+                        productoSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar todos los productos:', error);
                 });
-            })
-            .catch(error => {
-                console.error('Error al cargar todos los productos:', error);
-            });
-    }
+        }
 
     // Función para cargar productos filtrados por línea
     function cargarProductosPorLinea(lineaId) {

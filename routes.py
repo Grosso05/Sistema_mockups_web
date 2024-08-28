@@ -406,8 +406,26 @@ def editar_cotizacion(cotizacion_id):
     # Consulta los productos cotizados asociados a la cotización
     productos_cotizados = ProductoCotizado.query.filter_by(cotizacion_id=cotizacion_id).all()
 
-    # Consulta los ítems cotizados asociados a cada producto cotizado
-    items_cotizados = ItemCotizado.query.join(ProductoCotizado).filter(ProductoCotizado.cotizacion_id == cotizacion_id).all()
+    # Consulta los ítems cotizados asociados a cada producto cotizado y completa la información desde la tabla Items
+    items_cotizados = []
+    for item_cotizado in ItemCotizado.query.join(ProductoCotizado).filter(ProductoCotizado.cotizacion_id == cotizacion_id).all():
+        item = item_cotizado.to_dict()
+        
+        # Consultar la relación con la tabla Items
+        related_item = Items.query.get(item_cotizado.item_id)
+        
+        if related_item:
+            item['grupo'] = related_item.categoria.CATEGORIA_NOMBRE if related_item.categoria else 'N/A'
+            item['descripcion'] = related_item.nombre
+            item['unidad'] = related_item.unidad
+            item['tipo'] = related_item.tipo
+        else:
+            item['grupo'] = 'N/A'
+            item['descripcion'] = 'N/A'
+            item['unidad'] = 'N/A'
+            item['tipo'] = 'N/A'
+        
+        items_cotizados.append(item)
 
     # Consulta los resúmenes de costos asociados a los productos cotizados
     resumen_costos = []
@@ -416,12 +434,20 @@ def editar_cotizacion(cotizacion_id):
         if resumen:
             resumen_costos.append(resumen)
 
+    # Generar cabeceras para cantidad y total, basado en valores reales
+    valoresCantidad = ['Cantidad1']  # Aquí debes poner tus valores reales, ajustado a la cantidad que deseas mostrar
+
+    cantidadHeader = ''.join([f'<th>Cantidad ({valor})</th>' for valor in valoresCantidad])
+    totalHeader = ''.join([f'<th>Total ({valor})</th>' for valor in valoresCantidad])
+
     return render_template(
         'editar_cotizacion.html',
         cotizacion=cotizacion.to_dict(),
         productos_cotizados=[p.to_dict() for p in productos_cotizados],
-        items_cotizados=[i.to_dict() for i in items_cotizados],
-        resumen_costos=[r.to_dict() for r in resumen_costos]
+        items_cotizados=items_cotizados,
+        resumen_costos=[r.to_dict() for r in resumen_costos],
+        cantidadHeader=cantidadHeader,
+        totalHeader=totalHeader
     )
 
 

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import DECIMAL, TIMESTAMP, Boolean, Column, Date, Float, ForeignKey, Integer, Numeric, String, text
 from sqlalchemy.orm import relationship
 from sqlalchemy import Index
+from datetime import datetime
 
 from flask_login import UserMixin  # Importa la clase UserMixin de flask_login
 db = SQLAlchemy()
@@ -196,7 +197,7 @@ class Proveedores(db.Model):
 class Cotizacion(db.Model):
     __tablename__ = 'cotizacion'
     id_cotizacion = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    fecha_cotizacion = db.Column(db.String(50), nullable=False)
+    fecha_cotizacion = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     cliente_cotizacion = db.Column(db.String(255), nullable=False)
     contacto_cotizacion = db.Column(db.String(255), nullable=False)
     proyecto_cotizacion = db.Column(db.String(255), nullable=False)
@@ -212,7 +213,23 @@ class Cotizacion(db.Model):
 
     vendedor = db.relationship('Users', backref='cotizaciones')
 
-
+    def to_dict(self):
+        return {
+            'id_cotizacion': self.id_cotizacion,
+            'fecha_cotizacion': self.fecha_cotizacion.isoformat(),
+            'cliente_cotizacion': self.cliente_cotizacion,
+            'contacto_cotizacion': self.contacto_cotizacion,
+            'proyecto_cotizacion': self.proyecto_cotizacion,
+            'vendedor_cotizacion': self.vendedor_cotizacion,
+            'negociacion': self.negociacion,
+            'forma_de_pago_cotizacion': self.forma_de_pago_cotizacion,
+            'validez_cotizacion': self.validez_cotizacion,
+            'descuento_cotizacion': self.descuento_cotizacion,
+            'recibe_cotizacion': self.recibe_cotizacion,
+            'numero_contacto_cotizacion': self.numero_contacto_cotizacion,
+            'direccion_cotizacion': self.direccion_cotizacion,
+            'iva_seleccionado': self.iva_seleccionado,
+        }
 
 class ProductoCotizado(db.Model):
     __tablename__ = 'producto_cotizado'
@@ -233,11 +250,44 @@ class ProductoCotizado(db.Model):
 
     def __repr__(self):
         return f"<ProductoCotizado {self.descripcion}>"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'descripcion': self.descripcion,
+            'linea_id': self.linea_id,
+            'producto_id': self.producto_id,
+            'producto_seleccionado_id': self.producto_seleccionado_id,
+            'alto': self.alto,
+            'ancho': self.ancho,
+            'fondo': self.fondo,
+            'cotizacion_id': self.cotizacion_id,
+            'cantidades': self.cantidades,
+        }
 
+class ItemCotizado(db.Model):
+    __tablename__ = 'items_cotizados'
+    id = db.Column(db.Integer, primary_key=True)
+    producto_cotizado_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('items.item_id'), nullable=False)
+    cantidad = db.Column(db.Integer, nullable=False)
+    precio_unitario = db.Column(db.Float, nullable=False)
+    temporal = db.Column(db.Boolean, default=False, nullable=False)
+    total_item = db.Column(db.Float, nullable=False)
 
+    producto = db.relationship('ProductoCotizado', backref='items')
+    item = db.relationship('Items', backref='cotizaciones')
 
-
-
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'producto_cotizado_id': self.producto_cotizado_id,
+            'item_id': self.item_id,
+            'cantidad': self.cantidad,
+            'precio_unitario': self.precio_unitario,
+            'temporal': self.temporal,
+            'total_item': self.total_item,
+        }
 
 class ResumenDeCostos(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -248,20 +298,22 @@ class ResumenDeCostos(db.Model):
     oferta_antes_iva = db.Column(db.Float, nullable=False)
     iva = db.Column(db.Float, nullable=False)
     valor_oferta = db.Column(db.Float, nullable=False)
-    producto_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=False)    
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=False)
 
-class ItemCotizado(db.Model):
-    __tablename__ = 'items_cotizados'  # Nombre correcto de la tabla
-    id = db.Column(db.Integer, primary_key=True)
-    producto_cotizado_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey('items.item_id'), nullable=False)  # Corrige aquí
-    cantidad = db.Column(db.Integer, nullable=False)
-    precio_unitario = db.Column(db.Float, nullable=False)
-    temporal = db.Column(db.Boolean, default=False, nullable=False)  # Si es un ítem temporal
-    total_item = db.Column(db.Float, nullable=False)
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'costo_directo': self.costo_directo,
+            'administracion': self.administracion,
+            'imprevistos': self.imprevistos,
+            'utilidad': self.utilidad,
+            'oferta_antes_iva': self.oferta_antes_iva,
+            'iva': self.iva,
+            'valor_oferta': self.valor_oferta,
+            'producto_id': self.producto_id,
+        }
 
-    producto = db.relationship('ProductoCotizado', backref='items')
-    item = db.relationship('Items', backref='cotizaciones')  
+
 
 
     

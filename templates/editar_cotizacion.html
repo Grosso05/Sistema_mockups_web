@@ -37,6 +37,7 @@
     <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
         <section class="flex">
             <div class="seccion-izquierda flex-item">
+                <!-- Formulario de Edición de Productos -->
                 <h2> Productos </h2>
                 <div class="item-descripcion-container">
                     <div class="item-number" id="itemNumber"></div>
@@ -55,12 +56,10 @@
                     <label for="seleccionarProducto">Producto:</label>
                     <select id="seleccionarProducto" name="seleccionarProducto" onchange="cargarPorcentajesProducto()">
                         <option value="">Seleccionar</option>
-
                         {% for producto in productos %}
                             <option value="{{ producto.producto_id }}" {% if producto.producto_id == cotizacion.producto_id %}selected{% endif %}>{{ producto.nombre }}</option>
                         {% endfor %}
                     </select>
-
                     <label for="alto-1">Alto (Cm):</label>
                     <input type="number" class="alto-input" name="alto" value="{{ cotizacion.alto }}" />
                     <label for="ancho-1">Ancho (Cm):</label>
@@ -159,8 +158,8 @@
                             <div class="iva-selector">
                                 <label for="iva-select">IVA:</label>
                                 <select id="iva-select" name="iva">
-                                    <option value="si" {% if cotizacion.iva == 'si' %}selected{% endif %}>Sí</option>
-                                    <option value="no" {% if cotizacion.iva == 'no' %}selected{% endif %}>No</option>
+                                    <option value="si" {% if cotizacion.iva_seleccionado == 'si' %}selected{% endif %}>Sí</option>
+                                    <option value="no" {% if cotizacion.iva_seleccionado == 'no' %}selected{% endif %}>No</option>
                                 </select>
                             </div>
                         </div>
@@ -174,11 +173,88 @@
         <div id="productos-cotizacion" class="productos-cotizacion">
             <h2 style="text-align: center;">Productos de la Cotización</h2>
             <div id="notification-container" class="notification-container"></div>
-            <div id="productos-container"></div>
+            <div id="productos-container">
+                {% for producto in productos_cotizados %}
+                    <div class="producto" id="producto-{{ loop.index }}">
+                        <h3 contenteditable="true" style="color: #00b04f;">Producto {{ loop.index }}: {{ producto.descripcion }}</h3>
+                        <h4 contenteditable="true">Descripción: {{ producto.descripcion }}</h4>
+                        <h4 contenteditable="true">Alto (Cm): {{ producto.alto }} || Ancho (Cm): {{ producto.ancho }} || Fondo (Cm): {{ producto.fondo }} |</h4>
+        
+                        <!-- Añadimos el productoId con un nombre diferente -->
+                        <input type="hidden" name="producto_seleccionado_id" value="{{ producto.producto_id }}">
+        
+                        <button id="btnGuardar-{{ loop.index }}" onclick="guardarCambios({{ loop.index }})">Guardar Cambios</button>
+        
+                        <!-- Mostrar los ítems asociados al producto -->
+                        <div class="itemsseleccionados">
+                            <h4>Items Seleccionados</h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Grupo</th>
+                                        <th>Descripción</th>
+                                        <th>Unidad</th>
+                                        <th>Precio</th>
+                                        <!-- Aquí agregas más encabezados si los necesitas -->
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsseleccionados-{{ loop.index }}">
+                                    {% for item in items_cotizados %}
+                                        {% if item.producto_id == producto.producto_id %}
+                                            <tr>
+                                                <td>{{ item.id }}</td>
+                                                <td>{{ item.grupo }}</td>
+                                                <td>{{ item.descripcion }}</td>
+                                                <td>{{ item.unidad }}</td>
+                                                <td>{{ item.precio }}</td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+        
+                        <!-- Mostrar el resumen de costos asociado al producto -->
+                        <div class="resumen-costos">
+                            {% for resumen in resumen_costos %}
+                                {% if resumen.producto_id == producto.producto_id %}
+                                    <div class="resumen-costos-individual">
+                                        <h4>Resumen de Costos</h4>
+                                        <p>Costo Directo: {{ resumen.costo_directo }}</p>
+                                        <p>Costo Unitario: {{ resumen.costo_unitario }}</p>
+                                        <p>Administración: {{ resumen.administracion }} <span>({{ resumen.porcentaje_administracion }}%)</span></p>
+                                        <p>Imprevistos: {{ resumen.imprevistos }} <span>({{ resumen.porcentaje_imprevistos }}%)</span></p>
+                                        <p>Utilidad: {{ resumen.utilidad }} <span>({{ resumen.porcentaje_utilidad }}%)</span></p>
+                                        <input type="number" value="{{ resumen.utilidad }}" placeholder="El porcentaje mínimo es: {{ resumen.porcentaje_minimo_utilidad }}" onchange="actualizarTotalProducto({{ loop.index }})">
+                                        <p>Oferta Antes De IVA: {{ resumen.oferta_antes_iva }}</p>
+                                        <p>IVA: {{ resumen.iva }}</p>
+                                        <p style="color: #00b04f;">Valor Oferta Impuestos Incluidos: {{ resumen.valor_oferta }}</p>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+        
+                        <div class="acciones">
+                            <button class="confirmar-producto-btn" data-producto-id="{{ producto.producto_id }}">Confirmar Producto</button>
+                            <button class="editar-producto-btn" data-producto-id="{{ producto.producto_id }}">Editar Producto</button>
+                            <button class="eliminar-producto-btn" data-producto-id="{{ producto.producto_id }}">Eliminar Producto</button>
+                            <button class="duplicar-producto-btn" data-producto-id="{{ producto.producto_id }}">Duplicar Producto</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
     </main>
 
     <script>
+
+        console.log("Cotización:", {{ cotizacion | tojson }});
+        console.log("Productos Cotizados:", {{ productos_cotizados | tojson }});
+        console.log("Ítems Cotizados:", {{ items_cotizados | tojson }});
+        console.log("Resumen de Costos:", {{ resumen_costos | tojson }});
+          
+
         document.getElementById('btnCrear').addEventListener('click', function() {
             const descripcionInput = document.getElementById('descripcion');
             const altoInput = document.querySelector('.alto-input');

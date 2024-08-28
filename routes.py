@@ -5,7 +5,7 @@ from flask_login import login_required, login_user, current_user
 from models import Categoria, Cotizacion, ItemCotizado, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db
 from utils import roles_required
 import locale
-
+from datetime import datetime, timezone
 from io import BytesIO
 from flask import send_file
 from reportlab.lib.pagesizes import letter, landscape
@@ -260,12 +260,15 @@ def crear_cotizacion():
 def guardar_cotizacion():
     data = request.json
     print(data)  # Para depuración
-    
+
     negociacion = data.get('negociacion') or ''  # Reemplaza None con una cadena vacía o un valor por defecto
+
+    # Convertir la cadena de fecha y hora a un objeto datetime
+    fecha_cotizacion = datetime.fromisoformat(data['fechaCotizacion']).astimezone(timezone.utc)
 
     # Crear la nueva cotización
     nueva_cotizacion = Cotizacion(
-        fecha_cotizacion=data['fechaCotizacion'],
+        fecha_cotizacion=fecha_cotizacion,
         cliente_cotizacion=data['clienteCotizacion'],
         contacto_cotizacion=data['contactoCotizacion'],
         proyecto_cotizacion=data['proyectoCotizacion'],
@@ -277,7 +280,7 @@ def guardar_cotizacion():
         recibe_cotizacion=data['recibeCotizacion'],
         numero_contacto_cotizacion=data['numeroContacto'],
         direccion_cotizacion=data['direccionCotizacion'],
-        iva_seleccionado=data['ivaSeleccionado']  # Guardar el valor del IVA
+        iva_seleccionado=data['ivaSeleccionado']
     )
     db.session.add(nueva_cotizacion)
     db.session.flush()  # Para obtener el ID de la cotización
@@ -381,43 +384,45 @@ def guardar_producto():
 def listar_cotizaciones():
     search = request.args.get('search')
     if search:
-        # Filtrar las cotizaciones según el término de búsqueda
-        cotizaciones = Cotizacion.query.filter(Cotizacion.negociacion.ilike(f'%{search}%')).all()
+        # Filtrar y ordenar las cotizaciones según el término de búsqueda
+        cotizaciones = Cotizacion.query.filter(Cotizacion.negociacion.ilike(f'%{search}%')).order_by(Cotizacion.fecha_cotizacion.desc()).all()
     else:
-        # Obtener todas las cotizaciones si no se ha ingresado un término de búsqueda
-        cotizaciones = Cotizacion.query.all()
+        # Obtener todas las cotizaciones y ordenarlas si no se ha ingresado un término de búsqueda
+        cotizaciones = Cotizacion.query.order_by(Cotizacion.fecha_cotizacion.desc()).all()
     
     return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones)
 
+
 #ruta para editar la cotizacion
 
-@routes_blueprint.route('/editar_cotizacion/<int:cotizacion_id>', methods=['GET', 'POST'])
+@routes_blueprint.route('/editar_cotizacion/<int:cotizacion_id>', methods=['GET'])
 def editar_cotizacion(cotizacion_id):
-    cotizacion = Cotizacion.query.get_or_404(cotizacion_id)
+    # Consulta la cotización por ID
+    cotizacion = Cotizacion.query.filter_by(id_cotizacion=cotizacion_id).first()
 
-    if request.method == 'POST':
-        # Obtener los datos del formulario
-        cotizacion.fecha_cotizacion = request.form['fecha_cotizacion']
-        cotizacion.cliente_cotizacion = request.form['cliente_cotizacion']
-        cotizacion.contacto_cotizacion = request.form['contacto_cotizacion']
-        cotizacion.proyecto_cotizacion = request.form['proyecto_cotizacion']
-        cotizacion.vendedor_cotizacion = int(request.form['vendedor_cotizacion'])
-        cotizacion.negociacion = request.form['negociacion']
-        cotizacion.forma_de_pago_cotizacion = request.form.get('forma_de_pago_cotizacion')
-        cotizacion.validez_cotizacion = request.form.get('validez_cotizacion')
-        cotizacion.descuento_cotizacion = request.form.get('descuento_cotizacion')
-        cotizacion.recibe_cotizacion = request.form.get('recibe_cotizacion')
-        cotizacion.numero_contacto_cotizacion = request.form.get('numero_contacto_cotizacion')
-        cotizacion.direccion_cotizacion = request.form.get('direccion_cotizacion')
-        cotizacion.iva_seleccionado = request.form['iva_seleccionado']
+    if not cotizacion:
+        return "Cotización no encontrada", 404
 
-        # Guardar los cambios en la base de datos
-        db.session.commit()
+    # Consulta los productos cotizados asociados a la cotización
+    productos_cotizados = ProductoCotizado.query.filter_by(cotizacion_id=cotizacion_id).all()
 
-        # Redirigir al usuario a la página de listado de cotizaciones
-        return redirect(url_for('routes.listar_cotizaciones'))
+    # Consulta los ítems cotizados asociados a cada producto cotizado
+    items_cotizados = ItemCotizado.query.join(ProductoCotizado).filter(ProductoCotizado.cotizacion_id == cotizacion_id).all()
 
-    return render_template('editar_cotizacion.html', cotizacion=cotizacion)
+    # Consulta los resúmenes de costos asociados a los productos cotizados
+    resumen_costos = []
+    for producto in productos_cotizados:
+        resumen = ResumenDeCostos.query.filter_by(producto_id=producto.id).first()
+        if resumen:
+            resumen_costos.append(resumen)
+
+    return render_template(
+        'editar_cotizacion.html',
+        cotizacion=cotizacion.to_dict(),
+        productos_cotizados=[p.to_dict() for p in productos_cotizados],
+        items_cotizados=[i.to_dict() for i in items_cotizados],
+        resumen_costos=[r.to_dict() for r in resumen_costos]
+    )
 
 
 
@@ -441,6 +446,16 @@ def generar_reporte(cotizacion_id):
     cotizacion = Cotizacion.query.get(cotizacion_id)
     if not cotizacion:
         return "Cotización no encontrada", 404
+
+    # Si fecha_cotizacion es un datetime, formatear directamente
+    if isinstance(cotizacion.fecha_cotizacion, datetime):
+        fecha_cotizacion = cotizacion.fecha_cotizacion.strftime('%Y-%m-%d')
+    else:
+        # Si es un string, tratar de convertirlo primero
+        try:
+            fecha_cotizacion = datetime.strptime(cotizacion.fecha_cotizacion, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+        except ValueError:
+            fecha_cotizacion = cotizacion.fecha_cotizacion  # Usar la fecha original si el formato no es el esperado
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
@@ -466,7 +481,7 @@ def generar_reporte(cotizacion_id):
     elements.append(Spacer(1, 12))
 
     data = [
-        ["Fecha", cotizacion.fecha_cotizacion, "Cliente", Paragraph(cotizacion.cliente_cotizacion, normal_style)],
+        ["Fecha", fecha_cotizacion, "Cliente", Paragraph(cotizacion.cliente_cotizacion, normal_style)],
         ["Proyecto", Paragraph(cotizacion.proyecto_cotizacion, normal_style), "Contacto", Paragraph(cotizacion.contacto_cotizacion, normal_style)]
     ]
 

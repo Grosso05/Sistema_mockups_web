@@ -632,37 +632,67 @@ document.addEventListener('DOMContentLoaded', function() {
         // Actualizar el ID del producto clonado
         nuevoProductoDuplicado.id = `producto-${nuevoNumeroProductoDuplicado}`;
 
-        // Actualizar los IDs de los elementos internos y los eventos del producto duplicado
-        const actualizarIdsYEventos = (element, nuevoId) => {
-            element.querySelectorAll('[id]').forEach(child => {
-                const partesId = child.id.split('-');
-                partesId[partesId.length - 1] = nuevoId;
-                child.id = partesId.join('-');
-            });
-            element.querySelectorAll('[for]').forEach(child => {
-                const partesFor = child.getAttribute('for').split('-');
-                partesFor[partesFor.length - 1] = nuevoId;
-                child.setAttribute('for', partesFor.join('-'));
-            });
-            element.querySelectorAll('[name]').forEach(child => {
-                const partesName = child.name.split('-');
-                partesName[partesName.length - 1] = nuevoId;
-                child.name = partesName.join('-');
-            });
-            element.querySelectorAll('[data-producto-id]').forEach(child => {
-                child.setAttribute('data-producto-id', nuevoId);
-            });
+// Actualizar los IDs de los elementos internos y los eventos del producto duplicado
+const actualizarIdsYEventos = (element, nuevoId) => {
+    element.querySelectorAll('[id]').forEach(child => {
+        const partesId = child.id.split('-');
+        partesId[partesId.length - 1] = nuevoId;
+        child.id = partesId.join('-');
+    });
+    element.querySelectorAll('[for]').forEach(child => {
+        const partesFor = child.getAttribute('for').split('-');
+        partesFor[partesFor.length - 1] = nuevoId;
+        child.setAttribute('for', partesFor.join('-'));
+    });
+    element.querySelectorAll('[name]').forEach(child => {
+        const partesName = child.name.split('-');
+        partesName[partesName.length - 1] = nuevoId;
+        child.name = partesName.join('-');
+    });
+    element.querySelectorAll('[data-producto-id]').forEach(child => {
+        child.setAttribute('data-producto-id', nuevoId);
+    });
 
-            // Actualizar los eventos `onclick` de los botones
-            element.querySelectorAll('button').forEach(button => {
-                const originalOnClick = button.getAttribute('onclick');
-                if (originalOnClick) {
-                    button.setAttribute('onclick', originalOnClick.replace(/\d+/, nuevoId));
+    // Actualizar los eventos `onclick` de los botones
+    element.querySelectorAll('button').forEach(button => {
+        const originalOnClick = button.getAttribute('onclick');
+        if (originalOnClick) {
+            button.setAttribute('onclick', originalOnClick.replace(/\d+/, nuevoId));
+        }
+    });
+
+    // Asegurarse de que los eventos de cambio de cantidad y utilidad están configurados
+    element.querySelectorAll('.cantidad').forEach(input => {
+        input.addEventListener('change', function() {
+            actualizarTotalProducto(nuevoId);
+            actualizarResumenDeCostos(nuevoId); // Actualiza el resumen de costos
+        });
+    });
+    element.querySelectorAll('.utilidadSeleccionada').forEach(input => {
+        input.addEventListener('input', function() {
+            let timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                const nuevoValorUtilidad = parseFloat(this.value);
+                if (!isNaN(nuevoValorUtilidad)) {
+                    const productoElement = document.querySelector(`#producto-${nuevoId}`);
+                    if (productoElement) {
+                        const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
+                        if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
+                            actualizarTotalProducto(nuevoId, nuevoValorUtilidad);
+                            actualizarResumenDeCostos(nuevoId); // Actualiza el resumen de costos
+                        } else {
+                            alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
+                        }
+                    }
                 }
-            });
-        };
+            }, 300);
+        });
+    });
+};
 
-        actualizarIdsYEventos(nuevoProductoDuplicado, nuevoNumeroProductoDuplicado);
+// Después de duplicar el producto, actualiza los IDs y agrega los eventos
+actualizarIdsYEventos(nuevoProductoDuplicado, nuevoNumeroProductoDuplicado);
 
         // Actualizar el contenido específico del producto duplicado
         nuevoProductoDuplicado.querySelector('h3').textContent = `Producto ${nuevoNumeroProductoDuplicado}: ${productoOriginal.querySelector('h3').textContent.split(': ')[1]}`;
@@ -673,7 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Actualizar el número de producto visible
         actualizarNumeroProducto();
 
-        // Añadir manejadores de eventos a los nuevos elementos del producto duplicado
+
 // Añadir manejadores de eventos a los nuevos elementos del producto duplicado
 let timeout;
 nuevoProductoDuplicado.querySelectorAll('.utilidadSeleccionada').forEach(input => {
@@ -795,7 +825,7 @@ function editarProducto(productoId) {
     `;
     
     // Si deseas editar la cantidad, puedes hacer algo similar
-    // Aquí solo muestro un ejemplo con la descripción y las medidas
+
 }
 
 
@@ -1451,7 +1481,10 @@ function agregarItemAlProducto(item, itemNumber) {
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('guardarCotizacionBtn').addEventListener('click', function() {
             // Capturar datos generales de la cotización
-            const fechaCotizacion = document.getElementById('fecha_cotizacion').value;
+            const fecha = new Date();
+            const fechaCotizacion = new Date().toISOString(); // Fecha y hora en formato ISO 8601
+    
+            // Captura otros datos
             const clienteCotizacion = document.getElementById('cliente_cotizacion').value;
             const contactoCotizacion = document.getElementById('contacto_cotizacion').value;
             const proyectoCotizacion = document.getElementById('proyecto_cotizacion').value;
@@ -1463,32 +1496,25 @@ function agregarItemAlProducto(item, itemNumber) {
             const recibeCotizacion = document.getElementById('recibe_cotizacion').value;
             const numeroContacto = document.getElementById('numero_contacto').value;
             const direccionCotizacion = document.getElementById('direccion_cotizacion').value;
-            const ivaSeleccionado = document.getElementById('iva-select').value; // Captura el valor del select
+            const ivaSeleccionado = document.getElementById('iva-select').value;
     
             // Capturar productos en la cotización
             const productos = [];
-            const productoIdsCapturados = new Set(); // Para evitar duplicación
+            const productoIdsCapturados = new Set();
     
             document.querySelectorAll('.producto').forEach(function(productoDiv) {
                 const productoId = productoDiv.id.split('-')[1];
-    
-                // Verificar si el producto ya ha sido capturado
-                if (productoIdsCapturados.has(productoId)) {
-                    return; // Saltar este producto ya que es un duplicado
-                }
+                if (productoIdsCapturados.has(productoId)) return;
                 productoIdsCapturados.add(productoId);
     
                 const productoSeleccionadoId = productoDiv.querySelector('input[name="producto_seleccionado_id"]').value;
                 const descripcion = productoDiv.querySelector('h4').innerText;
-    
                 const medidasText = productoDiv.querySelector('h4:nth-of-type(2)').innerText;
                 const medidasMatch = medidasText.match(/Alto \(Cm\): (\d+) \|\| Ancho \(Cm\): (\d+) \|\| Fondo \(Cm\): (\d+)/);
-    
                 const alto = medidasMatch ? parseFloat(medidasMatch[1]) : null;
                 const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
                 const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
     
-                // Capturar las cantidades seleccionadas para el producto
                 const cantidadesSeleccionadas = [];
                 productoDiv.querySelectorAll('h4').forEach(function(cantidadH4) {
                     const cantidadText = cantidadH4.innerText;
@@ -1506,7 +1532,6 @@ function agregarItemAlProducto(item, itemNumber) {
                         const itemCantidad = cantidadInput.value;
                         const itemTotalText = itemRow.querySelector('td.total').innerText.trim();
                         const itemTotal = parseFloat(itemTotalText.replace('.', '').replace(',', '.'));
-    
                         items.push({
                             itemId: parseInt(itemId),
                             itemCantidad: parseInt(itemCantidad),
@@ -1515,7 +1540,6 @@ function agregarItemAlProducto(item, itemNumber) {
                     }
                 });
     
-                // Capturar los resúmenes de costos de cada producto
                 const resúmenesCostos = [];
                 productoDiv.querySelectorAll('.resumen-costos-individual').forEach(function(resumenDiv, index) {
                     const costoDirectoElement = resumenDiv.querySelector(`#costo-directo-${productoId}-${index}`);
@@ -1526,7 +1550,7 @@ function agregarItemAlProducto(item, itemNumber) {
                     const ivaElement = resumenDiv.querySelector(`#iva-${productoId}-${index}`);
                     const valorOfertaElement = resumenDiv.querySelector(`#valor-oferta-${productoId}-${index}`);
     
-                    if (costoDirectoElement && administracionElement && imprevistosElement && utilidadElement && 
+                    if (costoDirectoElement && administracionElement && imprevistosElement && utilidadElement &&
                         ofertaAntesIvaElement && ivaElement && valorOfertaElement) {
     
                         const costoDirecto = parseFloat(costoDirectoElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
@@ -1564,7 +1588,6 @@ function agregarItemAlProducto(item, itemNumber) {
                 });
             });
     
-            // Construir el objeto de datos para enviar al backend
             const cotizacionData = {
                 fechaCotizacion: fechaCotizacion,
                 clienteCotizacion: clienteCotizacion,
@@ -1584,7 +1607,6 @@ function agregarItemAlProducto(item, itemNumber) {
     
             console.log('Datos a enviar:', cotizacionData);
     
-            // Enviar los datos al backend
             fetch('/guardar-cotizacion', {
                 method: 'POST',
                 headers: {

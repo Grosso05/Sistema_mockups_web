@@ -1,5 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 5.8.6) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.8.6.2) desarrollada por: Brayan Grosso
 
+# Fecha de lanzamiento: 29 de agosto de 2024, 5:20 pm
+
+Cambios Recientes
+v5.8.6.2
+
+En esta version agregamos validaciones que impiden crear productos o cotizaciones sin completar los campos que no pueden ser null
 # Fecha de lanzamiento: 29 de agosto de 2024, 4:30 pm
 
 Cambios Recientes

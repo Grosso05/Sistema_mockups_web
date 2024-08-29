@@ -410,21 +410,29 @@ def editar_cotizacion(cotizacion_id):
     items_cotizados = []
     for item_cotizado in ItemCotizado.query.join(ProductoCotizado).filter(ProductoCotizado.cotizacion_id == cotizacion_id).all():
         item = item_cotizado.to_dict()
-        
+
         # Consultar la relación con la tabla Items
         related_item = Items.query.get(item_cotizado.item_id)
-        
+
         if related_item:
             item['grupo'] = related_item.categoria.CATEGORIA_NOMBRE if related_item.categoria else 'N/A'
             item['descripcion'] = related_item.nombre
             item['unidad'] = related_item.unidad
             item['tipo'] = related_item.tipo
+
+            # Consultar el precio desde la tabla ItemProveedores
+            precio_proveedor = ItemProveedores.query.filter_by(item_id=item_cotizado.item_id, tipo_proveedor=1).first()
+            if precio_proveedor:
+                item['precio_unitario'] = float(precio_proveedor.precio)
+            else:
+                item['precio_unitario'] = 0.0
         else:
             item['grupo'] = 'N/A'
             item['descripcion'] = 'N/A'
             item['unidad'] = 'N/A'
             item['tipo'] = 'N/A'
-        
+            item['precio_unitario'] = 0.0
+
         items_cotizados.append(item)
 
     # Consulta los resúmenes de costos asociados a los productos cotizados
@@ -439,6 +447,11 @@ def editar_cotizacion(cotizacion_id):
 
     cantidadHeader = ''.join([f'<th>Cantidad ({valor})</th>' for valor in valoresCantidad])
     totalHeader = ''.join([f'<th>Total ({valor})</th>' for valor in valoresCantidad])
+
+    print(cotizacion.to_dict())
+    print([p.to_dict() for p in productos_cotizados])
+    print(items_cotizados)
+    print([r.to_dict() for r in resumen_costos])
 
     return render_template(
         'editar_cotizacion.html',

@@ -227,7 +227,7 @@
                                                         N/A
                                                     {% endif %}
                                                 </td>
-                                                <td>{{ item['precio'] or '0.00' }}</td> <!-- Aseguramos que si precio es None, muestre 0.00 -->
+                                                <td>{{ item['precio_unitario'] or '0.00' }}</td>
                                                 <td>{{ item['cantidad'] }}</td>
                                                 <td>{{ item['total_item'] }}</td>
                                                 <td class="oculto">{{ item['tipo'] or 'N/A' }}</td>
@@ -274,6 +274,15 @@
         console.log("Productos Cotizados:", {{ productos_cotizados | tojson }});
         console.log("Ítems Cotizados:", {{ items_cotizados | tojson }});
         console.log("Resumen de Costos:", {{ resumen_costos | tojson }});
+
+        const productos = {{ productos_cotizados | tojson }};
+        console.log('Productos Cotizados:', productos);
+    
+        productos.forEach(producto => {
+            const productoId = producto.id;
+            console.log('Producto ID:', productoId);  // Verifica si productoId está definido aquí
+            mostrarItems(productoId, /* otros parámetros */);
+        });
           
 
         document.getElementById('btnCrear').addEventListener('click', function() {
@@ -490,17 +499,19 @@
         
         function generarFilasItems(items, valoresCantidad) {
             return items.map(item => {
-                // Genera las celdas de cantidad y total según los valores de cantidades
+                // Verifica que item.precio_unitario tenga el valor esperado
+                console.log('Item:', item); // Debugging
+        
                 const celdasCantidad = valoresCantidad.map(valor => `<td>${item.cantidad || 0}</td>`).join('');
-                const celdasTotal = valoresCantidad.map(valor => `<td>${(item.cantidad * item.precio_unitario).toFixed(2) || 0}</td>`).join('');
-                
+                const celdasTotal = valoresCantidad.map(valor => `<td>${(item.cantidad * item.precio_unitario || 0).toFixed(2)}</td>`).join('');
+        
                 return `
                     <tr>
                         <td>${item.id}</td>
                         <td>${item.grupo || 'N/A'}</td>
                         <td>${item.descripcion || 'N/A'}</td>
                         <td>${item.unidad || 'N/A'}</td>
-                        <td>${item.precio_unitario || 0}</td>
+                        <td>${item.precio_unitario ? item.precio_unitario.toFixed(2) : '0.00'}</td>
                         ${celdasCantidad}
                         ${celdasTotal}
                         <td class="oculto">${item.tipo || 'N/A'}</td>
@@ -521,7 +532,8 @@
 
         
         // Llama a esta función cuando cargues los datos
-        mostrarItems(104, items, valoresCantidad);
+        mostrarItems(productoId, items_cotizados, valoresCantidad);
+
     </script>
 </body>
 </html>

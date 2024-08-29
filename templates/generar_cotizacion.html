@@ -10,7 +10,7 @@
         /* CSS para ocultar la tabla durante la carga */
         .loading-active table {
             display: none;
-}
+        }
 
         .loading {
             text-align: center;
@@ -47,6 +47,11 @@
 </head>
 <body>
 
+
+    {% include 'navbar.html' %}
+
+    {% include 'sidebar.html' %}
+
     <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
     <section class="flex">
         <div class="seccion-izquierda flex-item">
@@ -71,12 +76,12 @@
 
                 </select>
 
-                <label for="alto-1">Alto (Cm):</label>
+                <label for="alto-1">Alto: (Cm):</label>
                 <input type="number" class="alto-input" name="alto" />
-                <label for="ancho-1">Ancho (Cm):</label>
+                <label for="ancho-1">Ancho: (Cm):</label>
                 <input type="number" class="ancho-input" name="ancho" />
-                <label for="fondo-1">Fondo (Cm):</label>
-                <input type="number" class="fondo-input" name="fondo" />
+                <label for="fondo-1">Fondo: (Cm):</label>
+                <input type="number" class="fondo-input" name="fondo" /> 
             </div>
             <div id="cantidad-container">
                 <label for="cantidadUnidades">Cantidad de Unidades:</label>
@@ -99,24 +104,24 @@
         <div class="grupo-columns" id="formulario-cotizacion">
             <div class="grupo-columna">
                 <div class="grupo">
-                    <label for="fecha_cotizacion"> Fecha </label>
+                    <label for="fecha_cotizacion"> Fecha: </label>
                     <input type="date" id="fecha_cotizacion" name="fecha_cotizacion" value="" required>
                 </div>
 
                 <div class="grupo">
-                    <label for="cliente_cotizacion"> Cliente  </label>
+                    <label for="cliente_cotizacion"> Cliente:  </label>
                     <input type="text" id="cliente_cotizacion" name="cliente_cotizacion" required>
                 </div>
                 <div class="grupo">
-                    <label for="contacto_cotizacion"> Contacto  </label>
+                    <label for="contacto_cotizacion"> Contacto:  </label>
                     <input type="text" id="contacto_cotizacion" name="contacto_cotizacion" required>
                 </div>
                 <div class="grupo">
-                    <label for="proyecto_cotizacion"> Proyecto  </label>
+                    <label for="proyecto_cotizacion"> Proyecto:  </label>
                     <input type="text" id="proyecto_cotizacion" name="proyecto_cotizacion" required>
                 </div>
                 <div class="grupo">
-                    <label for="vendedor_cotizacion"> Vendedor </label>
+                    <label for="vendedor_cotizacion"> Vendedor: </label>
                     <select id="vendedor_cotizacion" name="vendedor_cotizacion" required>
                         <option value="">Seleccionar</option>
                         {% for vendedor in vendedores %}
@@ -125,13 +130,13 @@
                     </select>
                 </div>
                 <div class="grupo">
-                    <label for="negociacion"> N° Negociacion </label>
+                    <label for="negociacion"> N° Negociacion: </label>
                         <input type="text" id="negociacion" name=" negociacion " required>
                     </div>
             </div>
             <div class="grupo-columna">
                 <div class="grupo">
-                    <label for="forma_pago"> Forma de Pago  </label>
+                    <label for="forma_pago"> Forma de Pago:  </label>
                     <select id="forma_pago" name="forma_pago" required>
                         <option value="">Seleccionar</option>
                         <option value="Contado" selected>Contado</option>
@@ -141,7 +146,7 @@
                     </select>
                 </div>
                 <div class="grupo">
-                    <label for="validez_cotizacion"> Validez  </label>
+                    <label for="validez_cotizacion"> Validez:  </label>
                     <select id="validez_cotizacion" name="validez_cotizacion" required>
                         <option value="15">15 días</option>
                         <option value="30" selected>30 días</option>
@@ -149,19 +154,19 @@
                     </select>
                 </div>
                 <div class="grupo">
-                    <label for="descuento_cotizacion"> Porcentaje Descuento </label>
+                    <label for="descuento_cotizacion"> Porcentaje Descuento: </label>
                     <input type="number" id="descuento_cotizacion" name="descuento_cotizacion" min="0" max="100" required>
                 </div>
                 <div class="grupo">
-                    <label for="recibe_cotizacion"> Persona que Recibe  </label>
+                    <label for="recibe_cotizacion"> Persona que Recibe:  </label>
                     <input type="text" id="recibe_cotizacion" name="recibe_cotizacion" required>
                 </div>
                 <div class="grupo">
-                    <label for="numero_contacto"> Número de Contacto </label>
+                    <label for="numero_contacto"> Número de Contacto: </label>
                     <input type="tel" id="numero_contacto" name="numero_contacto" required>
                 </div>
                 <div class="grupo">
-                    <label for="direccion_cotizacion"> Dirección  </label>
+                    <label for="direccion_cotizacion"> Dirección:  </label>
                     <textarea id="direccion_cotizacion" name="direccion_cotizacion" rows="3" required></textarea>
                         </div>
                         <div class="iva-selector">

@@ -14,7 +14,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
-
+# Establecer la configuración regional para Colombia
+locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
     
 routes_blueprint = Blueprint('routes', __name__)
 
@@ -60,8 +61,7 @@ def generar_catalogouser():
 
 # <------------------------------------------------------------------ SISTEMA COTIZADOR --------------------------------------------------------------------------------->
 
-# Configurar locale
-locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')  # Ajusta según tu configuración regional
+
 
 @routes_blueprint.route('/generar_cotizacion')
 def generar_cotizacion():
@@ -331,52 +331,7 @@ def guardar_cotizacion():
 
 
 
-@routes_blueprint.route('/guardar_items', methods=['POST'])
-def guardar_items():
-    data = request.json
-    cotizacion_id = data['cotizacion_id']
-    items = data['items']
-    
-    for item_data in items:
-        item_cotizado = ItemCotizado(
-            producto_cotizado_id=item_data['producto_cotizado_id'],
-            item_id=item_data['item_id'],
-            cantidad=item_data['cantidad'],
-            precio_unitario=item_data['precio_unitario'],
-            temporal=item_data['temporal']
-        )
-        db.session.add(item_cotizado)
-    
-    db.session.commit()
-    
-    return jsonify({'message': 'Ítems guardados correctamente'})
 
-@routes_blueprint.route('/guardar_producto', methods=['POST'])
-def guardar_producto():
-    data = request.get_json()
-    try:
-        # Obtén el producto y la cotización de la base de datos
-        cotizacion = Cotizacion.query.get(data.get('cotizacion_id'))
-        if not cotizacion:
-            return jsonify({'error': 'Cotización no encontrada'}), 404
-        
-        producto_id = data.get('producto_id')
-        cantidad = data.get('cantidad')
-        precio_unitario = data.get('precio_unitario')
-
-        # Guarda el producto en la cotización
-        item = ItemCotizado(
-            cotizacion_id=cotizacion.id_cotizacion,
-            producto_id=producto_id,
-            cantidad=cantidad,
-            precio_unitario=precio_unitario
-        )
-        db.session.add(item)
-        db.session.commit()
-        return jsonify({'message': 'Producto guardado exitosamente'}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 400
 
 #Ruta para listar cotizaciones
 
@@ -646,6 +601,7 @@ def generar_reporte(cotizacion_id):
             wordWrap='CJK'
         )
 
+
     # Calcular IVA y Total
     if multiple_quantities:
         elements.append(Paragraph("Estos valores no incluyen IVA", normal_style))
@@ -691,17 +647,23 @@ def generar_reporte(cotizacion_id):
                     ["Total", total_formateado]
                 ]
 
-        summary_table = Table(summary_data, colWidths=[2.5*inch, 1.5*inch])
+        # Ajusta el ancho de las columnas para mover la tabla a la derecha
+        col_widths = [2.5*inch, 1.5*inch]  # Ajusta el ancho de las columnas según sea necesario
+        summary_table = Table(summary_data, colWidths=col_widths)
         summary_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.white),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('ALIGN', (0, 0), (-1, 0), 'RIGHT'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, 0), 8),  # Asegúrate de que el tamaño sea consistente
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
             ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
             ('BOX', (0, 0), (-1, -1), 1, colors.black),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ]))
+
+        # Agregar un espacio para mover la tabla hacia la derecha
+        right_space = Spacer(10, 2)  # Ajusta el tamaño del espacio según sea necesario
+        elements.append(right_space)
         elements.append(summary_table)
 
     # Construir PDF
@@ -718,8 +680,7 @@ def generar_reporte(cotizacion_id):
 
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f'Cotizacion_{cotizacion.negociacion}.pdf', mimetype='application/pdf')
-
-# Ruta para generar OP
+# < ----------------------------------------------------------  Ruta para generar OP ---------------------------------------------------------------------------------------->
 @routes_blueprint.route('/generar-op/<int:cotizacion_id>', methods=['GET'])
 def generar_op(cotizacion_id):
     # Buscar la cotización por ID
@@ -847,9 +808,9 @@ def generar_op(cotizacion_id):
     def add_header_footer(canvas, doc):
         canvas.saveState()
         # Ajustar la imagen del encabezado
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 90, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 10, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
         # Ajustar la imagen del pie de página
-        canvas.drawImage("static/images/footer_cotizacion.png", 90, footer_margin, width=footer_width, height=footer_height, mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 20, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()
 
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
@@ -857,3 +818,151 @@ def generar_op(cotizacion_id):
     # Enviar el PDF como respuesta
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"OP_{cotizacion.negociacion}.pdf", mimetype='application/pdf')
+
+
+# <-------------------------------------------------------- Ruta para generar Requisición ------------------------------------------------------------------------------------------------->
+
+# Ruta para generar la Requisición
+@routes_blueprint.route('/generar-requisicion/<int:cotizacion_id>', methods=['GET'])
+def generar_requisicion(cotizacion_id):
+    # Buscar la cotización por ID
+    cotizacion = Cotizacion.query.get(cotizacion_id)
+
+    if not cotizacion:
+        return "Cotización no encontrada", 404
+
+    # Crear un buffer para almacenar el PDF
+    buffer = BytesIO()
+
+    # Crear el documento PDF
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
+    width, height = landscape(letter)
+
+    # Crear el contenido del documento
+    elements = []
+
+    # Estilos
+    styles = getSampleStyleSheet()
+    normal_style = styles['Normal']
+    heading_style = styles['Heading1']
+
+    # Añadir título con estilo
+    title = Paragraph(f"Requisición - {cotizacion.negociacion}", heading_style)
+    elements.append(title)
+    elements.append(Spacer(1, 12))
+
+    # Datos de la OP en una tabla horizontal
+    data = [
+        ["Fecha", cotizacion.fecha_cotizacion, "Cliente", cotizacion.cliente_cotizacion],
+        ["Proyecto", cotizacion.proyecto_cotizacion, "Vendedor", cotizacion.vendedor_cotizacion]
+    ]
+
+    table = Table(data, colWidths=[1*inch, 3.5*inch, 1*inch, 3.5*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
+        ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 12))
+
+    # Cabecera de la tabla de productos
+    header_data = [
+        ["ITEM", "Descripción", "Medidas", "Cantidad", "Valor Unit", "Precio Total"]
+    ]
+
+    header_table = Table(header_data, colWidths=[0.5*inch, 3.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch])
+    header_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), '#4CAF50'),
+        ('TEXTCOLOR', (0, 0), (-1, 0), '#FFFFFF'),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+    ]))
+    elements.append(header_table)
+    elements.append(Spacer(1, 6))
+
+    # Detalle de Productos
+    item_counter = 1
+    for producto_cotizado in cotizacion.productos_cotizados:
+        producto = Productos.query.get(producto_cotizado.producto_id)
+
+        # Información del Producto
+        producto_descripcion = Paragraph(producto_cotizado.descripcion, normal_style)
+        medidas = f"{producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}"
+
+        # Crear la fila del producto
+        data = [
+            str(item_counter),  # ITEM
+            producto_descripcion,  # Descripción
+            medidas,  # Medidas
+            ""  # Cantidad (vacío por ahora)
+        ]
+
+        product_table = Table([data], colWidths=[0.5*inch, 3.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch])
+        product_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), '#e0e0e0'),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+            ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        elements.append(product_table)
+        elements.append(Spacer(1, 6))
+
+        # Crear tabla de materiales
+        items_data = [
+            ["Material", "Unidad", "Cantidad", "Valor Unit", "Precio Total"]
+        ]
+
+        for item_cotizado in producto_cotizado.items:
+            item_nombre = Items.query.get(item_cotizado.item_id).nombre
+            item_unidad = Items.query.get(item_cotizado.item_id).unidad
+            cantidad = item_cotizado.cantidad
+            precio_total = item_cotizado.total_item
+
+            # Calcular valor_unit y formatear precio_total
+            valor_unit = precio_total / cantidad if cantidad != 0 else 0
+            precio_total_formateado = locale.format_string("%d", precio_total, grouping=True)
+            valor_unit_formateado = locale.format_string("%d", valor_unit, grouping=True)
+
+            items_data.append([item_nombre, item_unidad, cantidad, valor_unit_formateado, precio_total_formateado])
+
+        items_table = Table(items_data, colWidths=[3.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch])
+        items_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), '#c0c0c0'),
+            ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+            ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        elements.append(items_table)
+        elements.append(Spacer(1, 12))
+
+        item_counter += 1
+
+    # Añadir imagen de encabezado y pie de página
+    def add_header_footer(canvas, doc):
+        canvas.saveState()
+        # Ajustar la imagen del encabezado
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 10, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
+        # Ajustar la imagen del pie de página
+        canvas.drawImage("static/images/footer_cotizacion.png", 20, footer_margin, width=footer_width, height=footer_height, mask='auto')
+        canvas.restoreState()
+
+    doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
+
+    # Enviar el PDF como respuesta
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=f"Requisicion_{cotizacion.negociacion}.pdf", mimetype='application/pdf')

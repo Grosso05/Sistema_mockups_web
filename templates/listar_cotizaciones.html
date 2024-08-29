@@ -134,6 +134,7 @@
                     <form action="{{ url_for('routes.editar_cotizacion', cotizacion_id=cotizacion.id_cotizacion) }}" method="GET">
                         <button type="submit">Editar</button>
                     </form>
+                    <button onclick="window.location.href='/generar-requisicion/{{ cotizacion.id_cotizacion }}'">Generar Requisicion</button>
                     <button onclick="window.location.href='/generar-reporte/{{ cotizacion.id_cotizacion }}'">Generar Cotizacion</button>
                     <button onclick="window.location.href='/generar-op/{{ cotizacion.id_cotizacion }}'">Generar OP</button>
                 </td>

@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Index
 from datetime import datetime
 
-from flask_login import UserMixin  # Importa la clase UserMixin de flask_login
+from flask_login import UserMixin  
 db = SQLAlchemy()
 
 class UsersRol(db.Model):
@@ -312,9 +312,6 @@ class ResumenDeCostos(db.Model):
             'valor_oferta': self.valor_oferta,
             'producto_id': self.producto_id,
         }
-
-
-
 
     
 

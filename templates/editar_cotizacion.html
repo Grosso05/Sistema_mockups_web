@@ -30,6 +30,12 @@
             outline: none;
         }
 
+        .grupo-columns {
+            margin-top: 2%;
+            display: flex;
+            gap: 20px;
+        }
+
     </style>
 </head>
 <body>
@@ -37,7 +43,7 @@
     <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
         <section class="flex">
             <div class="seccion-izquierda flex-item">
-                <!-- Formulario de Edición de Productos -->
+
                 <h2> Productos </h2>
                 <div class="item-descripcion-container">
                     <div class="item-number" id="itemNumber"></div>
@@ -180,7 +186,6 @@
                         <h4 contenteditable="true">Descripción: {{ producto.descripcion }}</h4>
                         <h4 contenteditable="true">Alto (Cm): {{ producto.alto }} || Ancho (Cm): {{ producto.ancho }} || Fondo (Cm): {{ producto.fondo }} |</h4>
         
-                        <!-- Añadimos el productoId con un nombre diferente -->
                         <input type="hidden" name="producto_seleccionado_id" value="{{ producto.id }}">
         
                         <button id="btnGuardar-{{ producto.id }}" onclick="guardarCambios({{ producto.id }})">Guardar Cambios</button>
@@ -232,8 +237,7 @@
                                                 <td>{{ item['total_item'] }}</td>
                                                 <td class="oculto">{{ item['tipo'] or 'N/A' }}</td>
                                                 <td>
-                                                    <button onclick="editarItem({{ item['id'] }})">Editar</button>
-                                                    <button onclick="eliminarItem({{ item['id'] }})">Eliminar</button>
+                                                    <button onclick="eliminarItemSeleccionado(this)">Eliminar</button>
                                                 </td>
                                             </tr>
                                         {% endif %}
@@ -242,7 +246,6 @@
                             </table>
                         </div>
         
-                        <!-- Mostrar resúmenes de costos -->
                         <div class="resumen-costos">
                             {% for resumen in resumen_costos %}
                                 {% if resumen.producto_id == producto.id %}
@@ -261,6 +264,14 @@
                                 {% endif %}
                             {% endfor %}
                         </div>
+        
+                        <!-- Mover los botones de acción dentro del div -->
+                        <div class="acciones">
+                            <button class="confirmar-producto-btn" data-producto-id="{{ producto.id }}">Confirmar Producto</button>
+                            <button class="editar-producto-btn" data-producto-id="{{ producto.id }}">Editar Producto</button>
+                            <button class="eliminar-producto-btn" data-producto-id="{{ producto.id }}">Eliminar Producto</button>
+                            <button class="duplicar-producto-btn" data-producto-id="{{ producto.id }}">Duplicar Producto</button>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
@@ -269,6 +280,8 @@
     </main>
 
     <script>
+
+        console.log("Archivo JavaScript cargado correctamente");
 
         console.log("Cotización:", {{ cotizacion | tojson }});
         console.log("Productos Cotizados:", {{ productos_cotizados | tojson }});
@@ -280,10 +293,33 @@
     
         productos.forEach(producto => {
             const productoId = producto.id;
-            console.log('Producto ID:', productoId);  // Verifica si productoId está definido aquí
+            console.log('Producto ID:', productoId);  
             mostrarItems(productoId, /* otros parámetros */);
         });
           
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.acciones').addEventListener('click', function(event) {
+                const target = event.target;
+        
+                if (target.classList.contains('confirmar-producto-btn')) {
+                    console.log('Confirmar Producto clicado');
+                    // Aquí el código para confirmar el producto
+                } else if (target.classList.contains('editar-producto-btn')) {
+                    console.log('Editar Producto clicado');
+                    // Aquí el código para editar el producto
+                } else if (target.classList.contains('eliminar-producto-btn')) {
+                    console.log('Eliminar Producto clicado');
+                    // Aquí el código para eliminar el producto
+                } else if (target.classList.contains('duplicar-producto-btn')) {
+                    console.log('Duplicar Producto clicado');
+                    // Aquí el código para duplicar el producto
+                }
+            }) });
+
+function duplicarProducto(productoId, nuevoNumeroProductoDuplicado) {
+    // Lógica para duplicar el producto
+    // Esto puede incluir copiar los datos del producto y crear un nuevo producto con un nuevo ID
+}
 
         document.getElementById('btnCrear').addEventListener('click', function() {
             const descripcionInput = document.getElementById('descripcion');
@@ -443,6 +479,8 @@
                 })
                 .catch(error => console.error('Error al obtener porcentajes:', error));
         });
+
+            
         
         function toggleFormulario(numeroProducto) {
             const contenedorFormulario = document.getElementById(`formAgregarItem-${numeroProducto}`);
@@ -486,9 +524,11 @@
             document.getElementById(`nuevo-item-cantidad-${numeroProducto}`).value = '1';
         }
         
-        function eliminarItem(button) {
-            const row = button.closest('tr');
-            row.remove();
+        function eliminarItemSeleccionado(button) {
+            const fila = button.closest('tr');
+            const itemNumber = fila.closest('tbody').id.split('-')[1];
+            fila.remove();
+            actualizarTotalProducto(itemNumber); // Actualizar el total del producto después de eliminar el ítem
         }
 
         function generarCabeceras(valoresCantidad) {

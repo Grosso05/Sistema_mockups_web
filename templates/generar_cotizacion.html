@@ -48,9 +48,7 @@
 <body>
 
 
-    {% include 'navbar.html' %}
 
-    {% include 'sidebar.html' %}
 
     <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
     <section class="flex">
@@ -409,17 +407,20 @@
         const anchoInput = document.querySelector('.ancho-input');
         const fondoInput = document.querySelector('.fondo-input');        
         const productoSelect = document.getElementById('seleccionarProducto');
-    
+        const cantidadInput = document.querySelector('.cantidad-input');
+        
         const descripcion = descripcionInput.value.trim();
         const productoId = productoSelect.value;  // ID del producto seleccionado desde el select
         const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
-    
+        
         const alto = altoInput.value.trim();
         const ancho = anchoInput.value.trim();
-        const fondo= fondoInput.value.trim();
-    
-        if (descripcion === "" || productoId === "") {
-            alert("Por favor, ingrese una descripción y seleccione un producto.");
+        const fondo = fondoInput.value.trim();
+        
+        const cantidad = parseInt(cantidadInput.value.trim(), 10);
+        
+        if (descripcion === "" || productoId === "" || cantidad <= 0) {
+            alert("Por favor, ingrese una descripción, seleccione un producto y asegúrese de que la cantidad sea mayor a 0.");
             return;
         }
     
@@ -1490,19 +1491,28 @@ function agregarItemAlProducto(item, itemNumber) {
             const fechaCotizacion = new Date().toISOString(); // Fecha y hora en formato ISO 8601
     
             // Captura otros datos
-            const clienteCotizacion = document.getElementById('cliente_cotizacion').value;
-            const contactoCotizacion = document.getElementById('contacto_cotizacion').value;
-            const proyectoCotizacion = document.getElementById('proyecto_cotizacion').value;
-            const vendedorCotizacion = document.getElementById('vendedor_cotizacion').value;
-            const negociacion = document.getElementById('negociacion').value;
-            const formaPago = document.getElementById('forma_pago').value;
-            const validezCotizacion = document.getElementById('validez_cotizacion').value;
-            const descuentoCotizacion = document.getElementById('descuento_cotizacion').value;
-            const recibeCotizacion = document.getElementById('recibe_cotizacion').value;
-            const numeroContacto = document.getElementById('numero_contacto').value;
-            const direccionCotizacion = document.getElementById('direccion_cotizacion').value;
-            const ivaSeleccionado = document.getElementById('iva-select').value;
+            const clienteCotizacion = document.getElementById('cliente_cotizacion').value.trim();
+            const contactoCotizacion = document.getElementById('contacto_cotizacion').value.trim();
+            const proyectoCotizacion = document.getElementById('proyecto_cotizacion').value.trim();
+            const vendedorCotizacion = document.getElementById('vendedor_cotizacion').value.trim();
+            const negociacion = document.getElementById('negociacion').value.trim();
+            const formaPago = document.getElementById('forma_pago').value.trim();
+            const validezCotizacion = document.getElementById('validez_cotizacion').value.trim();
+            const descuentoCotizacion = document.getElementById('descuento_cotizacion').value.trim();
+            const recibeCotizacion = document.getElementById('recibe_cotizacion').value.trim();
+            const numeroContacto = document.getElementById('numero_contacto').value.trim();
+            const direccionCotizacion = document.getElementById('direccion_cotizacion').value.trim();
+            const ivaSeleccionado = document.getElementById('iva-select').value.trim();
     
+            // Validar campos esenciales
+            if (!clienteCotizacion || !contactoCotizacion || !proyectoCotizacion || !vendedorCotizacion || !negociacion) {
+                alert("Por favor, complete todos los campos obligatorios: Cliente, Contacto, Proyecto, Vendedor y Negociación.");
+                return;
+            }
+    
+
+            
+
             // Capturar productos en la cotización
             const productos = [];
             const productoIdsCapturados = new Set();

@@ -680,7 +680,9 @@ def generar_reporte(cotizacion_id):
 
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f'Cotizacion_{cotizacion.negociacion}.pdf', mimetype='application/pdf')
+
 # < ----------------------------------------------------------  Ruta para generar OP ---------------------------------------------------------------------------------------->
+
 @routes_blueprint.route('/generar-op/<int:cotizacion_id>', methods=['GET'])
 def generar_op(cotizacion_id):
     # Buscar la cotización por ID

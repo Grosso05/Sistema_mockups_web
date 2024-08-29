@@ -423,16 +423,19 @@ def editar_cotizacion(cotizacion_id):
             # Consultar el precio desde la tabla ItemProveedores
             precio_proveedor = ItemProveedores.query.filter_by(item_id=item_cotizado.item_id, tipo_proveedor=1).first()
             if precio_proveedor:
-                item['precio_unitario'] = float(precio_proveedor.precio)
+                item['precio_unitario'] = format(float(precio_proveedor.precio), ',.0f')
             else:
-                item['precio_unitario'] = 0.0
+                item['precio_unitario'] = '0.00'
         else:
             item['grupo'] = 'N/A'
             item['descripcion'] = 'N/A'
             item['unidad'] = 'N/A'
             item['tipo'] = 'N/A'
-            item['precio_unitario'] = 0.0
+            item['precio_unitario'] = '0.00'
 
+        # Formatear el total del ítem
+        item['total_item'] = format(float(item['total_item']), ',.0f')
+        
         items_cotizados.append(item)
 
     # Consulta los resúmenes de costos asociados a los productos cotizados
@@ -440,7 +443,16 @@ def editar_cotizacion(cotizacion_id):
     for producto in productos_cotizados:
         resumen = ResumenDeCostos.query.filter_by(producto_id=producto.id).first()
         if resumen:
-            resumen_costos.append(resumen)
+            resumen_dict = resumen.to_dict()
+            # Formatear los valores del resumen de costos
+            resumen_dict['costo_directo'] = format(resumen.costo_directo, ',.0f')
+            resumen_dict['administracion'] = format(resumen.administracion, ',.0f')
+            resumen_dict['imprevistos'] = format(resumen.imprevistos, ',.0f')
+            resumen_dict['utilidad'] = format(resumen.utilidad, ',.0f')
+            resumen_dict['oferta_antes_iva'] = format(resumen.oferta_antes_iva, ',.0f')
+            resumen_dict['iva'] = format(resumen.iva, ',.0f')
+            resumen_dict['valor_oferta'] = format(resumen.valor_oferta, ',.0f')
+            resumen_costos.append(resumen_dict)
 
     # Generar cabeceras para cantidad y total, basado en valores reales
     valoresCantidad = ['Cantidad1']  # Aquí debes poner tus valores reales, ajustado a la cantidad que deseas mostrar
@@ -448,17 +460,12 @@ def editar_cotizacion(cotizacion_id):
     cantidadHeader = ''.join([f'<th>Cantidad ({valor})</th>' for valor in valoresCantidad])
     totalHeader = ''.join([f'<th>Total ({valor})</th>' for valor in valoresCantidad])
 
-    print(cotizacion.to_dict())
-    print([p.to_dict() for p in productos_cotizados])
-    print(items_cotizados)
-    print([r.to_dict() for r in resumen_costos])
-
     return render_template(
         'editar_cotizacion.html',
         cotizacion=cotizacion.to_dict(),
         productos_cotizados=[p.to_dict() for p in productos_cotizados],
         items_cotizados=items_cotizados,
-        resumen_costos=[r.to_dict() for r in resumen_costos],
+        resumen_costos=resumen_costos,
         cantidadHeader=cantidadHeader,
         totalHeader=totalHeader
     )

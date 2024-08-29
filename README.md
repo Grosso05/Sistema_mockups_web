@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 5.8.5.3) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.8.6) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 29 de agosto de 2024, 4:30 pm
+
+Cambios Recientes
+v5.8.6
+
+En esta version estamos trabajando en el reporte de la requisicion de materiales, tenemos una version primitiva muy completa, faltando las sumas y subtotales.
 
 # Fecha de lanzamiento: 29 de agosto de 2024, 8:44 am
 

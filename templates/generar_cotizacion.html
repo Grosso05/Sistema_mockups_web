@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generar Costos</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
     <style>
+
+        .list-unstyled {
+            list-style-type: none; /* Elimina los puntos o viñetas */
+            padding-left: 0; /* Elimina el padding izquierdo */
+            margin: 0; /* Opcional: elimina el margen si es necesario */
+        }
 
         /* CSS para ocultar la tabla durante la carga */
         .loading-active table {
@@ -43,11 +51,207 @@
             outline: none;
         }
         
+        .navbar {
+            background-color: #f8f9fa;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar_user {
+            display: flex;
+            flex: 1; /* Ocupa el espacio disponible */
+            justify-content: center; /* Centra horizontalmente el contenido */
+            align-items: center; /* Centra verticalmente el contenido */
+            font-size: 1.25rem; /* Ajusta el tamaño del texto según sea necesario */
+            font-weight: bold; /* Pone el texto en negrita */
+        }
+        
+
+          
+          .sidebar.collapsed {
+            width: 0; /* Ocultar la barra lateral al cambiar el ancho a 0 */
+            transform: translateX(-100%); /* Mover el sidebar fuera de la vista */
+          }
+          
+          .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: #DC0070;
+            color: #ffffff;
+            font-size: 20px;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+          }
+          
+          .menu-button {
+            cursor: pointer;
+            font-size: 24px;
+            background: none;
+            border: none;
+          }
+        
+          .sidebar .list-unstyled li a i {
+            margin-right: 10px;
+            color: #fff; /* Color blanco para los iconos */
+        }
+        
+        .sidebar .list-unstyled li a {
+            color: #c8c9ce; /* Color de texto para los enlaces */
+        }
+        
+        .sidebar .list-unstyled li a i {
+            margin-right: 10px;
+            color: #fff;
+        }
+        
+        .sidebar .list-unstyled li a i {
+            margin-right: 10px;
+            color: #fff; /* Color blanco para los iconos */
+        }
+
+        .sidebar .sub-components li {
+            margin-left: 40px; /* Ajusta este valor según sea necesario */
+        }
+
+        .sidebar .sub-components li a {
+            font-size: 16px; /* Ajusta el tamaño de la fuente */
+            color: #e0e0e0; /* Color de texto más claro */
+        }
+        
+        .sidebar-divider {
+            border-top: 1px solid #fff; /* Línea blanca entre categorías */
+        }
+        
+        .sidebar-header {
+            padding: 10px 15px;
+            background-color: #777777;
+            border-bottom: 1px solid #ccc; /* Add a border to the bottom of the sidebar header */
+            padding: 10px 0; /* Add padding to the sidebar header */
+            text-align:justify ;
+        }
+
+        .sidebar-header h6 {
+            color: #fff; /* Color blanco */
+            font-size: 18px; /* Tamaño de fuente más grande */
+            text-align: center; /* Centrar el texto */
+            margin: 10px 0; /* Ajustar el margen si es necesario */
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0px; /* Altura del navbar */
+            bottom: 0;
+            left: 0;
+            width: 250px;
+            z-index: 1;
+            background-color: #777777;
+            padding-top: 20px;
+            overflow-y: auto;
+            padding: 20px;
+          }
+        
+          .navbar_logout a {
+            position: absolute;
+            padding: 05px 10px;
+            background-color: #DC0070;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            bottom: 12%;
+            left: 25%;
+        }
+
     </style>
 </head>
 <body>
 
+    <div class="sidebar">
+        <div class="close-button" onclick="closeSidebar()">X</div> 
 
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Your Logo" class="logo">
+        </div>
+        <hr class="sidebar-divider">
+        <ul class="list-unstyled components">
+            <li>
+                <a href="{{ url_for('routes.admin') }}">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            </li>
+            <div class="sidebar-header">
+                <h6> Apartado de Gestiones </h6>
+            </div>
+
+            <li class="dropdown">
+                <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
+                    <i class="fas fa-users"></i> Gestión de Usuarios
+                    <i class="fas fa-chevron-down"></i> <!-- Flecha hacia abajo -->
+                </a>
+                <ul id="sub-components-1" class="list-unstyled sub-components">
+                    <li>
+                        <a href="{{ url_for('users.listar_usuarios') }}">
+                            <i class="fas fa-eye"></i> Ver Usuarios
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('users.crear_usuario') }}">
+                            <i class="fas fa-user-plus"></i> Crear Usuario
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="{{ url_for('customers.listar_clientes') }}">
+                    <i class="fas fa-handshake"></i> Gestion de Clientes
+                </a>
+            </li>
+            <div class="sidebar-header">
+                <h6> Apartado Principal </h6>
+            </div>
+            <li>
+                <a href="{{ url_for('routes.generar_catalogo') }}">
+                    <i class="fas fa-brush"></i> Generar Catalogo
+                </a>
+            </li>
+
+            <li class="dropdown">
+                <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-2')">
+                    <i class="fas fa-receipt"></i> Gestion de Cotizaciones
+                    <i class="fas fa-chevron-down"></i> <!-- Flecha hacia abajo -->
+                </a>
+                <ul id="sub-components-2" class="list-unstyled sub-components">
+                    <li>
+                        <a href="{{ url_for('routes.listar_cotizaciones') }}">
+                            <i class="fas fa-eye"></i> Ver Cotizaciones
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('routes.generar_cotizacion') }}">
+                            <i class="fas fa-plus"></i> Crear Cotizacion
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <div class="navbar_logout">
+                <a href="{{ url_for('users.logout') }}">Cerrar sesión</a>
+            </div>
+        </ul>
+    </div>
+
+    <nav class="navbar navbar-light">
+        <div class="menu-button" onclick="toggleSidebar()">☰</div>
+        <div class="navbar_user">
+            <h6>Bienvenido, {{ session['username'] }}</h6>
+        </div>
+    </nav>
 
 
     <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
@@ -199,6 +403,45 @@
 </main>
 
 <script>
+
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const content = document.querySelector('main'); // Selecciona el contenedor principal
+
+        if (sidebar.classList.contains('collapsed')) {
+            sidebar.classList.remove('collapsed');
+            content.style.marginLeft = '250px'; // Ajusta el margen izquierdo del contenido
+            content.style.width = 'calc(100% - 250px)'; // Ajusta el ancho del contenido en función del ancho del sidebar expandido
+        } else {
+            sidebar.classList.add('collapsed');
+            content.style.marginLeft = '0'; // Restaura el margen izquierdo del contenido
+            content.style.width = '100%'; // Restaura el ancho del contenido al 100%
+        }
+    }
+
+    function closeSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const content = document.querySelector('main'); // Selecciona el contenedor principal
+
+        sidebar.classList.add('collapsed');
+        content.style.marginLeft = '0'; // Restaura el margen izquierdo del contenido
+        content.style.width = '100%'; // Restaura el ancho del contenido al 100%
+    }
+
+    function toggleDropdown(id) {
+        var dropdown = document.getElementById(id);
+        var icon = event.currentTarget.querySelector('i.fas.fa-chevron-down, i.fas.fa-chevron-up');
+    
+        if (dropdown.style.display === "block") {
+            dropdown.style.display = "none";
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        } else {
+            dropdown.style.display = "block";
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
+    }
 
 
     // Obtener la fecha actual en formato YYYY-MM-DD

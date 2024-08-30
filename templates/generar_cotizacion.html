@@ -174,7 +174,7 @@
 
     <div class="sidebar">
         <div class="close-button" onclick="closeSidebar()">X</div> 
-
+    
         <div class="logo">
             <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Your Logo" class="logo">
         </div>
@@ -188,7 +188,8 @@
             <div class="sidebar-header">
                 <h6> Apartado de Gestiones </h6>
             </div>
-
+    
+            {% if user_rol == 1 %}
             <li class="dropdown">
                 <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
                     <i class="fas fa-users"></i> Gestión de Usuarios
@@ -207,9 +208,11 @@
                     </li>
                 </ul>
             </li>
+            {% endif %}
+    
             <li>
                 <a href="{{ url_for('customers.listar_clientes') }}">
-                    <i class="fas fa-handshake"></i> Gestion de Clientes
+                    <i class="fas fa-handshake"></i> Gestión de Clientes
                 </a>
             </li>
             <div class="sidebar-header">
@@ -220,10 +223,10 @@
                     <i class="fas fa-brush"></i> Generar Catalogo
                 </a>
             </li>
-
+    
             <li class="dropdown">
                 <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-2')">
-                    <i class="fas fa-receipt"></i> Gestion de Cotizaciones
+                    <i class="fas fa-receipt"></i> Gestión de Cotizaciones
                     <i class="fas fa-chevron-down"></i> <!-- Flecha hacia abajo -->
                 </a>
                 <ul id="sub-components-2" class="list-unstyled sub-components">
@@ -234,12 +237,12 @@
                     </li>
                     <li>
                         <a href="{{ url_for('routes.generar_cotizacion') }}">
-                            <i class="fas fa-plus"></i> Crear Cotizacion
+                            <i class="fas fa-plus"></i> Crear Cotización
                         </a>
                     </li>
                 </ul>
             </li>
-
+    
             <div class="navbar_logout">
                 <a href="{{ url_for('users.logout') }}">Cerrar sesión</a>
             </div>

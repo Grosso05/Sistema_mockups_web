@@ -13,6 +13,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from flask_login import current_user
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8') 
@@ -68,8 +69,9 @@ def generar_catalogouser():
 def generar_cotizacion():
     lineas = Lineas.query.all()
     productos = Productos.query.all()
-    vendedores = Users.query.all() 
-    return render_template('generar_cotizacion.html', lineas=lineas, productos=productos, vendedores=vendedores)
+    vendedores = Users.query.all()
+    user_rol = current_user.user_rol if current_user.is_authenticated else None
+    return render_template('generar_cotizacion.html', lineas=lineas, productos=productos, vendedores=vendedores, user_rol=user_rol)
 
 @routes_blueprint.route('/productos_por_linea/<int:linea_id>')
 def productos_por_linea(linea_id):

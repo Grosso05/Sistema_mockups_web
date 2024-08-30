@@ -1540,13 +1540,16 @@ function agregarItemAlProducto(item, itemNumber) {
                 });
     
                 const items = [];
-                productoDiv.querySelectorAll('tbody tr').forEach(function(itemRow) {
+                document.querySelectorAll('tbody tr').forEach(function(itemRow) {
                     const cantidadInput = itemRow.querySelector('input[type="number"]');
                     if (cantidadInput) {
                         const itemId = itemRow.querySelector('td:nth-child(1)').innerText.trim();
                         const itemCantidad = cantidadInput.value;
                         const itemTotalText = itemRow.querySelector('td.total').innerText.trim();
-                        const itemTotal = parseFloat(itemTotalText.replace('.', '').replace(',', '.'));
+                
+                        // Reemplazar separadores de miles y cambiar coma por punto decimal
+                        const itemTotal = parseFloat(itemTotalText.replace(/\./g, '').replace(',', '.'));
+                
                         items.push({
                             itemId: parseInt(itemId),
                             itemCantidad: parseInt(itemCantidad),

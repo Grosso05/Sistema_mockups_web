@@ -14,8 +14,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
-# Establecer la configuración regional para Colombia
-locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
+import locale
+locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8') 
     
 routes_blueprint = Blueprint('routes', __name__)
 
@@ -60,6 +60,7 @@ def generar_catalogouser():
     return render_template('generarcatalogouserregistrado.html')
 
 # <------------------------------------------------------------------ SISTEMA COTIZADOR --------------------------------------------------------------------------------->
+
 
 
 
@@ -824,7 +825,11 @@ def generar_op(cotizacion_id):
 
 # <-------------------------------------------------------- Ruta para generar Requisición ------------------------------------------------------------------------------------------------->
 
-# Ruta para generar la Requisición
+# Función para formatear números
+def formatear_numero(valor):
+    # Formatear con puntos como separadores de miles
+    return "{:,.0f}".format(valor).replace(",", ".")
+
 @routes_blueprint.route('/generar-requisicion/<int:cotizacion_id>', methods=['GET'])
 def generar_requisicion(cotizacion_id):
     # Buscar la cotización por ID
@@ -892,6 +897,8 @@ def generar_requisicion(cotizacion_id):
 
     # Detalle de Productos
     item_counter = 1
+    total_precio_total = 0  # Variable para acumular el total
+
     for producto_cotizado in cotizacion.productos_cotizados:
         producto = Productos.query.get(producto_cotizado.producto_id)
 
@@ -933,10 +940,12 @@ def generar_requisicion(cotizacion_id):
 
             # Calcular valor_unit y formatear precio_total
             valor_unit = precio_total / cantidad if cantidad != 0 else 0
-            precio_total_formateado = locale.format_string("%d", precio_total, grouping=True)
-            valor_unit_formateado = locale.format_string("%d", valor_unit, grouping=True)
+            precio_total_formateado = formatear_numero(precio_total)
+            valor_unit_formateado = formatear_numero(valor_unit)
+
 
             items_data.append([item_nombre, item_unidad, cantidad, valor_unit_formateado, precio_total_formateado])
+            total_precio_total += precio_total  # Acumular el total
 
         items_table = Table(items_data, colWidths=[3.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch])
         items_table.setStyle(TableStyle([
@@ -954,6 +963,24 @@ def generar_requisicion(cotizacion_id):
 
         item_counter += 1
 
+    # Añadir suma total
+    total_data = [
+        ["", "", "", "Total", locale.format_string("%d", total_precio_total, grouping=True)]
+    ]
+
+    total_table = Table(total_data, colWidths=[0.5*inch, 3.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch])
+    total_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), '#f0f0f0'),
+        ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+        ('ALIGN', (0, 0), (-1, 0), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+    ]))
+    elements.append(total_table)
+    elements.append(Spacer(1, 12))
+
     # Añadir imagen de encabezado y pie de página
     def add_header_footer(canvas, doc):
         canvas.saveState()
@@ -968,3 +995,4 @@ def generar_requisicion(cotizacion_id):
     # Enviar el PDF como respuesta
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"Requisicion_{cotizacion.negociacion}.pdf", mimetype='application/pdf')
+

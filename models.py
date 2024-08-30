@@ -130,7 +130,7 @@ class ItemProveedores(db.Model):
         return f"<ItemProveedor item_id: {self.item_id}, id_proveedor: {self.id_proveedor}, tipo_proveedor: {self.tipo_proveedor}>"
 
 
-
+# cuanto son 3/5 de 26000
   
 class Lineas(db.Model):
   """

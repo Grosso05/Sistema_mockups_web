@@ -308,12 +308,17 @@ textarea {
 
 .producto:nth-child(even) {
     background-color: #e7e7e7;
+    border: 1px solid #00b04f; /* Cambia el color #ff0000 al que prefieras */
+    border-radius: 5px; /* Opcional: para bordes redondeados */
 }
+
 
 .producto:nth-child(odd) {
     background-color: #ffffff;
+    border: 1px solid #000000; /* Cambia el color #ff0000 al que prefieras */
+    border-radius: 5px; /* Opcional: para bordes redondeados */
 }
-
+/**/
 .producto {
     margin-bottom: 20px;
     padding: 15px;

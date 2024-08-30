@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 5.8.6.5) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.8.6.6) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 30 de agosto de 2024, 12:30 pm
+
+Cambios Recientes
+v5.8.6.6
+
+En esta nueva versión, agregamos validacion para mostrar u ocultar elementos del sidebar segun rol
 
 # Fecha de lanzamiento: 30 de agosto de 2024, 11:40 am
 

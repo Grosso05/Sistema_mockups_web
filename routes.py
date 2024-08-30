@@ -692,6 +692,13 @@ def generar_op(cotizacion_id):
     if not cotizacion:
         return "Cotización no encontrada", 404
 
+        # Buscar el vendedor
+    vendedor = Users.query.get(cotizacion.vendedor_cotizacion)
+    if vendedor:
+        vendedor_nombre = f"{vendedor.user_name} {vendedor.user_last_name}"
+    else:
+        vendedor_nombre = "Desconocido"    
+
     # Crear un buffer para almacenar el PDF
     buffer = BytesIO()
 
@@ -715,7 +722,7 @@ def generar_op(cotizacion_id):
     # Datos de la OP en una tabla horizontal
     data = [
         ["Fecha", cotizacion.fecha_cotizacion, "Cliente", cotizacion.cliente_cotizacion],
-        ["Proyecto", cotizacion.proyecto_cotizacion, "Vendedor", cotizacion.vendedor_cotizacion]
+        ["Proyecto", cotizacion.proyecto_cotizacion, "Vendedor", vendedor_nombre]
     ]
 
     table = Table(data, colWidths=[1*inch, 3.5*inch, 1*inch, 3.5*inch]) #8inch
@@ -763,7 +770,7 @@ def generar_op(cotizacion_id):
             str(item_counter),  # ITEM
             producto_descripcion,  # Descripción
             medidas,  # Medidas
-            ""  # Cantidad (vacío por ahora)
+            producto_cotizado.cantidades
         ]
 
         product_table = Table([data], colWidths=[0.5*inch, 5*inch, 3*inch, 0.5*inch])
@@ -838,6 +845,13 @@ def generar_requisicion(cotizacion_id):
     if not cotizacion:
         return "Cotización no encontrada", 404
 
+    # Buscar el vendedor
+    vendedor = Users.query.get(cotizacion.vendedor_cotizacion)
+    if vendedor:
+        vendedor_nombre = f"{vendedor.user_name} {vendedor.user_last_name}"
+    else:
+        vendedor_nombre = "Desconocido"
+
     # Crear un buffer para almacenar el PDF
     buffer = BytesIO()
 
@@ -861,7 +875,7 @@ def generar_requisicion(cotizacion_id):
     # Datos de la OP en una tabla horizontal
     data = [
         ["Fecha", cotizacion.fecha_cotizacion, "Cliente", cotizacion.cliente_cotizacion],
-        ["Proyecto", cotizacion.proyecto_cotizacion, "Vendedor", cotizacion.vendedor_cotizacion]
+        ["Proyecto", cotizacion.proyecto_cotizacion, "Vendedor", vendedor_nombre]
     ]
 
     table = Table(data, colWidths=[1*inch, 3.5*inch, 1*inch, 3.5*inch])
@@ -879,10 +893,10 @@ def generar_requisicion(cotizacion_id):
 
     # Cabecera de la tabla de productos
     header_data = [
-        ["ITEM", "Descripción", "Medidas", "Cantidad", "Valor Unit", "Precio Total"]
+        ["ITEM", "Descripción", "Cantidad"]
     ]
 
-    header_table = Table(header_data, colWidths=[0.5*inch, 3.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch])
+    header_table = Table(header_data, colWidths=[0.5*inch, 3.5*inch, 1*inch])
     header_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), '#4CAF50'),
         ('TEXTCOLOR', (0, 0), (-1, 0), '#FFFFFF'),
@@ -904,17 +918,15 @@ def generar_requisicion(cotizacion_id):
 
         # Información del Producto
         producto_descripcion = Paragraph(producto_cotizado.descripcion, normal_style)
-        medidas = f"{producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}"
 
         # Crear la fila del producto
         data = [
             str(item_counter),  # ITEM
             producto_descripcion,  # Descripción
-            medidas,  # Medidas
-            ""  # Cantidad (vacío por ahora)
+            producto_cotizado.cantidades  # Cantidad del producto
         ]
 
-        product_table = Table([data], colWidths=[0.5*inch, 3.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch])
+        product_table = Table([data], colWidths=[0.5*inch, 3.5*inch, 1*inch])
         product_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), '#e0e0e0'),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
@@ -943,9 +955,11 @@ def generar_requisicion(cotizacion_id):
             precio_total_formateado = formatear_numero(precio_total)
             valor_unit_formateado = formatear_numero(valor_unit)
 
-
             items_data.append([item_nombre, item_unidad, cantidad, valor_unit_formateado, precio_total_formateado])
             total_precio_total += precio_total  # Acumular el total
+
+        # Añadir fila de total a la tabla de ítems
+        items_data.append(["", "", "", "             Total", formatear_numero(total_precio_total)])
 
         items_table = Table(items_data, colWidths=[3.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch])
         items_table.setStyle(TableStyle([
@@ -963,29 +977,11 @@ def generar_requisicion(cotizacion_id):
 
         item_counter += 1
 
-    # Añadir suma total
-    total_data = [
-        ["", "", "", "Total", locale.format_string("%d", total_precio_total, grouping=True)]
-    ]
-
-    total_table = Table(total_data, colWidths=[0.5*inch, 3.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch])
-    total_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), '#f0f0f0'),
-        ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
-        ('ALIGN', (0, 0), (-1, 0), 'RIGHT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 8),
-        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
-    ]))
-    elements.append(total_table)
-    elements.append(Spacer(1, 12))
-
     # Añadir imagen de encabezado y pie de página
     def add_header_footer(canvas, doc):
         canvas.saveState()
         # Ajustar la imagen del encabezado
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 10, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 10, height - encabezado_height - 10, width=encabezado_width, height=encabezado_height, mask='auto')
         # Ajustar la imagen del pie de página
         canvas.drawImage("static/images/footer_cotizacion.png", 20, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()
@@ -995,4 +991,3 @@ def generar_requisicion(cotizacion_id):
     # Enviar el PDF como respuesta
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"Requisicion_{cotizacion.negociacion}.pdf", mimetype='application/pdf')
-

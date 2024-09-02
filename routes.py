@@ -451,15 +451,14 @@ def generar_reporte(cotizacion_id):
     if not cotizacion:
         return "Cotización no encontrada", 404
 
-    # Si fecha_cotizacion es un datetime, formatear directamente
+    # Formateo de fecha
     if isinstance(cotizacion.fecha_cotizacion, datetime):
         fecha_cotizacion = cotizacion.fecha_cotizacion.strftime('%Y-%m-%d')
     else:
-        # Si es un string, tratar de convertirlo primero
         try:
             fecha_cotizacion = datetime.strptime(cotizacion.fecha_cotizacion, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
         except ValueError:
-            fecha_cotizacion = cotizacion.fecha_cotizacion  # Usar la fecha original si el formato no es el esperado
+            fecha_cotizacion = cotizacion.fecha_cotizacion
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
@@ -469,8 +468,15 @@ def generar_reporte(cotizacion_id):
 
     styles = getSampleStyleSheet()
     normal_style = styles['Normal']
-    heading_style = styles['Heading1']
+    heading_style = ParagraphStyle(
+        'SmallHeading',
+        parent=styles['Heading1'],
+        fontName='Helvetica-Bold',
+        fontSize=12,  # Reducir tamaño del título
+        textColor=colors.HexColor("#ffffff")  # Texto blanco
+    )
 
+    # Definir el estilo `product_style` antes de su uso
     product_style = ParagraphStyle(
         'ProductStyle',
         parent=styles['Normal'],
@@ -480,33 +486,45 @@ def generar_reporte(cotizacion_id):
         wordWrap='CJK'
     )
 
-    title = Paragraph(f"Negociación: {cotizacion.negociacion}", heading_style)
-    elements.append(title)
-    elements.append(Spacer(1, 12))
+    # Título encerrado en una forma
+    title_background = colors.HexColor("#4CAF50")  # Color de fondo para el título
+    title = Table(
+        [[Paragraph(f"Negociación: {cotizacion.negociacion}", heading_style)]],
+        style=[
+            ('BACKGROUND', (0, 0), (-1, -1), title_background),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
+            ('BOX', (0, 0), (-1, -1), 1, colors.black),
+            ('PADDING', (0, 0), (-1, -1), 6),  # Añadir espacio interno
+        ]
+    )
 
+    # Datos de la cotización
     data = [
         ["Fecha", fecha_cotizacion, "Cliente", Paragraph(cotizacion.cliente_cotizacion, normal_style)],
         ["Proyecto", Paragraph(cotizacion.proyecto_cotizacion, normal_style), "Contacto", Paragraph(cotizacion.contacto_cotizacion, normal_style)]
     ]
-
+    
     table = Table(data, colWidths=[1.5*inch, 2.5*inch, 1*inch, 2.5*inch])
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#d0d0d0')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
         ('BOX', (0, 0), (-1, -1), 1, colors.black),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
     ]))
-    elements.append(table)
+
+    # Disposición horizontal de la tabla y el título
+    table_and_title = Table([[table, title]], colWidths=[7.8*inch, 2.5*inch])
+    elements.append(table_and_title)
     elements.append(Spacer(1, 12))
 
     header_data = [
         ["ITEM", "Imagen", "Producto", "Medidas", "Descripción", "Materiales", "Cantidad", "Valor Unidad", "Valor Total"]
     ]
 
-    header_table = Table(header_data, colWidths=[0.3*inch, 1*inch, 1.5*inch, 1*inch, 2*inch, 2.3*inch, 0.7*inch, 0.9*inch, 0.9*inch])
+    header_table = Table(header_data, colWidths=[0.3*inch, 1*inch, 1.5*inch, 1*inch, 2*inch, 2.3*inch, 0.5*inch, 1.1*inch, 0.9*inch])
     header_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4CAF50')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
@@ -579,7 +597,7 @@ def generar_reporte(cotizacion_id):
             valores_totales_paragraph
         ]
 
-        product_table = Table([data], colWidths=[0.3*inch, 1*inch, 1.5*inch, 1*inch, 2*inch, 2.3*inch, 0.7*inch, 0.9*inch, 0.9*inch])
+        product_table = Table([data], colWidths=[0.3*inch, 1*inch, 1.5*inch, 1*inch, 2*inch, 2.3*inch, 0.5*inch, 1.1*inch, 0.9*inch])
         product_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
@@ -650,9 +668,11 @@ def generar_reporte(cotizacion_id):
                     ["Total", total_formateado]
                 ]
 
-        # Ajusta el ancho de las columnas para mover la tabla a la derecha
-        col_widths = [2.5*inch, 1.5*inch]  # Ajusta el ancho de las columnas según sea necesario
-        summary_table = Table(summary_data, colWidths=col_widths)
+        # Agregar espacio para mover la tabla de totales hacia la derecha
+        right_align_space = Spacer(5*inch, 0)  # Ajusta el tamaño del espacio según sea necesario
+
+        # Ajustar la tabla de resumen (subtotal, IVA, total)
+        summary_table = Table(summary_data, colWidths=[3*inch, 2*inch])  # Ajusta el ancho de las columnas según sea necesario
         summary_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.white),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
@@ -664,9 +684,8 @@ def generar_reporte(cotizacion_id):
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ]))
 
-        # Agregar un espacio para mover la tabla hacia la derecha
-        right_space = Spacer(10, 2)  # Ajusta el tamaño del espacio según sea necesario
-        elements.append(right_space)
+        # Añadir el espacio y la tabla de resumen al documento
+        elements.append(right_align_space)  # Esto mueve la tabla hacia la derecha
         elements.append(summary_table)
 
     # Construir PDF

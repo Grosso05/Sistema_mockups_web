@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Versión 5.8.6.8) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Versión 5.8.7) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 02 de septiembre de 2024, 2:40 pm
+
+Cambios Recientes
+v5.8.7
+
+En esta nueva versión, dejamos el ped de cotizacion con firma, condiciones y estilos. unicamente queda pendiente la logica de seleccion de firma según usuario
 
 # Fecha de lanzamiento: 02 de septiembre de 2024, 9:32 am
 

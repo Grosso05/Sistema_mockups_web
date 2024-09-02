@@ -12,8 +12,10 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable, Image
 from flask_login import current_user
+
+
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8') 
@@ -472,11 +474,10 @@ def generar_reporte(cotizacion_id):
         'SmallHeading',
         parent=styles['Heading1'],
         fontName='Helvetica-Bold',
-        fontSize=12,  # Reducir tamaño del título
-        textColor=colors.HexColor("#ffffff")  # Texto blanco
+        fontSize=12,
+        textColor=colors.HexColor("#ffffff")
     )
 
-    # Definir el estilo `product_style` antes de su uso
     product_style = ParagraphStyle(
         'ProductStyle',
         parent=styles['Normal'],
@@ -487,7 +488,7 @@ def generar_reporte(cotizacion_id):
     )
 
     # Título encerrado en una forma
-    title_background = colors.HexColor("#4CAF50")  # Color de fondo para el título
+    title_background = colors.HexColor("#4CAF50")
     title = Table(
         [[Paragraph(f"Negociación: {cotizacion.negociacion}", heading_style)]],
         style=[
@@ -496,7 +497,7 @@ def generar_reporte(cotizacion_id):
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
             ('BOX', (0, 0), (-1, -1), 1, colors.black),
-            ('PADDING', (0, 0), (-1, -1), 6),  # Añadir espacio interno
+            ('PADDING', (0, 0), (-1, -1), 6),
         ]
     )
 
@@ -560,7 +561,6 @@ def generar_reporte(cotizacion_id):
             if i < len(resúmenes_costos):
                 valor_total_inicial = resúmenes_costos[i].oferta_antes_iva
 
-                # Si hay un descuento, inflamos el precio
                 if descuento_porcentaje > 0:
                     valor_total_incrementado = valor_total_inicial / (1 - descuento_porcentaje)
                 else:
@@ -612,17 +612,6 @@ def generar_reporte(cotizacion_id):
 
         item_counter += 1
 
-            # Definir un estilo de tabla común
-        table_style = ParagraphStyle(
-            'TableStyle',
-            parent=styles['Normal'],
-            fontName='Helvetica',
-            fontSize=8,  # Ajustar el tamaño de la fuente si es necesario
-            alignment=1,
-            wordWrap='CJK'
-        )
-
-
     # Calcular IVA y Total
     if multiple_quantities:
         elements.append(Paragraph("Estos valores no incluyen IVA", normal_style))
@@ -668,25 +657,54 @@ def generar_reporte(cotizacion_id):
                     ["Total", total_formateado]
                 ]
 
-        # Agregar espacio para mover la tabla de totales hacia la derecha
-        right_align_space = Spacer(5*inch, 0)  # Ajusta el tamaño del espacio según sea necesario
+    # Crear párrafo de condiciones comerciales
+    condiciones_comerciales = Paragraph(
+        f"<b>Condiciones Comerciales:</b><br/><br/>"
+        f"<b>Forma de Pago:</b> {cotizacion.forma_de_pago_cotizacion}<br/><br/>"
+        f"<b>Validez de la Cotización:</b> {cotizacion.validez_cotizacion} días",
+        normal_style
+    )
 
-        # Ajustar la tabla de resumen (subtotal, IVA, total)
-        summary_table = Table(summary_data, colWidths=[3*inch, 2*inch])  # Ajusta el ancho de las columnas según sea necesario
-        summary_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.white),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-            ('ALIGN', (0, 0), (-1, 0), 'RIGHT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, 0), 8),
-            ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
-            ('BOX', (0, 0), (-1, -1), 1, colors.black),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ]))
+    # Crear tabla de resumen ya existente
+    summary_table = Table(summary_data, colWidths=[2.5*inch, 2.5*inch])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
 
-        # Añadir el espacio y la tabla de resumen al documento
-        elements.append(right_align_space)  # Esto mueve la tabla hacia la derecha
-        elements.append(summary_table)
+    # Colocar las condiciones comerciales y la tabla de resumen lado a lado
+    summary_and_conditions = Table([[condiciones_comerciales, summary_table]], colWidths=[4*inch, 4*inch])
+    elements.append(summary_and_conditions)
+
+    # Crear una línea separadora
+    separator_line = HRFlowable(width="110%", thickness=1, lineCap='round', color=colors.black, spaceBefore=10, spaceAfter=10)
+
+    # Texto de agradecimiento
+    agradecimiento = Paragraph(
+        "Gracias por la confianza depositada en nuestra empresa, quedamos a la espera de sus comentarios. Cordialmente",
+        normal_style
+    )
+
+
+
+    # Ruta de la imagen de la firma del vendedor
+    firma_path = "static/images/FIRMA_FELDMAN_RODRIGUEZ.jpg"
+
+    # Imagen de la firma del vendedor
+    firma_vendedor = Image(firma_path, width=6*inch, height=1*inch)
+
+    # Añadir todos los elementos al documento
+    elements.append(separator_line)
+    elements.append(Spacer(1, 12))  # Añadir un pequeño espacio después de la línea
+    elements.append(agradecimiento)
+    elements.append(Spacer(1, 12))  # Añadir un pequeño espacio antes de la firma
+    elements.append(firma_vendedor)
 
     # Construir PDF
         # Añadir imagen de encabezado y pie de página
@@ -699,9 +717,9 @@ def generar_reporte(cotizacion_id):
         canvas.restoreState()
 
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
-
     buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name=f'Cotizacion_{cotizacion.negociacion}.pdf', mimetype='application/pdf')
+
+    return send_file(buffer, as_attachment=True, download_name=f"cotizacion_{cotizacion_id}.pdf", mimetype='application/pdf')
 
 # < ----------------------------------------------------------  Ruta para generar OP ---------------------------------------------------------------------------------------->
 

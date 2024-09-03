@@ -57,16 +57,14 @@ class Categoria(db.Model):
 
 
 
-
-# The Customers model already exists, so we don't need to create it again
-
 class Items(db.Model):
     __tablename__ = 'items'  # Nombre correcto de la tabla
     item_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nombre = db.Column(db.String(255), nullable=False, index= True)
+    nombre = db.Column(db.String(255), nullable=False, index=True)
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.CATEGORIA_ID'))
     unidad = db.Column(db.String(255))
     tipo = db.Column(db.String(255))
+    tiene_precios_escalonados = db.Column(db.Boolean, default=False)  # Corrección aquí
 
     categoria = db.relationship("Categoria", backref="items")
 
@@ -74,6 +72,7 @@ class Items(db.Model):
 
     def __repr__(self):
         return f"<Items {self.nombre}>"
+
     
 
 
@@ -129,8 +128,22 @@ class ItemProveedores(db.Model):
     def __repr__(self):
         return f"<ItemProveedor item_id: {self.item_id}, id_proveedor: {self.id_proveedor}, tipo_proveedor: {self.tipo_proveedor}>"
 
+class PrecioEscalonado(db.Model):
+    __tablename__ = 'precio_escalonado'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('items.item_id'), nullable=False)
+    id_proveedor = db.Column(db.Integer, db.ForeignKey('itemproveedores.id_proveedor'), nullable=False)
+    min_cantidad = db.Column(db.Integer, nullable=False)
+    max_cantidad = db.Column(db.Integer, nullable=False)
+    precio_unitario = db.Column(db.DECIMAL(10, 2), nullable=False)
 
-# cuanto son 3/5 de 26000
+    item = db.relationship('Items', backref='precio_escalonado')
+    proveedor = db.relationship('ItemProveedores', backref='precio_escalonado')
+
+    def __repr__(self):
+        return f"<PrecioEscalonado item_id: {self.item_id}, id_proveedor: {self.id_proveedor}, min_cantidad: {self.min_cantidad}, max_cantidad: {self.max_cantidad}, precio_unitario: {self.precio_unitario}>"
+
   
 class Lineas(db.Model):
   """

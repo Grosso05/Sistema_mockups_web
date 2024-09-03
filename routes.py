@@ -2,7 +2,7 @@ import datetime
 from sqlite3 import IntegrityError
 from flask import Blueprint, flash, jsonify, render_template, request, redirect, session, url_for,send_file
 from flask_login import login_required, login_user, current_user
-from models import Categoria, Cotizacion, ItemCotizado, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db
+from models import Categoria, Cotizacion, ItemCotizado, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db, PrecioEscalonado
 from utils import roles_required
 import locale
 from datetime import datetime, timezone
@@ -160,25 +160,57 @@ def todos_los_items():
     busqueda = request.args.get('busqueda', '', type=str)
     items_por_pagina = 20
 
+    # Crear la consulta con uniones externas
     query = Items.query \
-        .outerjoin(ItemProveedores, (ItemProveedores.item_id == Items.item_id) & (ItemProveedores.tipo_proveedor == 1))
+        .outerjoin(ItemProveedores, (ItemProveedores.item_id == Items.item_id) & (ItemProveedores.tipo_proveedor == 1)) \
+        .outerjoin(PrecioEscalonado, (PrecioEscalonado.item_id == Items.item_id) & (PrecioEscalonado.id_proveedor == ItemProveedores.id_proveedor))
     
+    # Filtrar por búsqueda si se proporciona
     if busqueda:
         query = query.filter(Items.nombre.ilike(f'%{busqueda}%'))
 
+    # Contar el total de ítems y calcular el total de páginas
     total_items = query.count()
     total_paginas = (total_items // items_por_pagina) + (1 if total_items % items_por_pagina > 0 else 0)
 
+    # Paginación
     items = query.paginate(page=pagina, per_page=items_por_pagina).items
 
-    items_json = [{
-        'id': item.item_id,
-        'descripcion': item.nombre,
-        'categoria': item.categoria.CATEGORIA_NOMBRE,
-        'unidad': item.unidad,
-        'tipo': item.tipo,
-        'precio': locale.format_string("%.2f", next((item_prov.precio for item_prov in item.itemproveedores if item_prov.tipo_proveedor == 1), 0), grouping=True)
-    } for item in items]
+    items_json = []
+    for item in items:
+        proveedor = next((prov for prov in item.itemproveedores if prov.tipo_proveedor == 1), None)
+        if proveedor:
+            if item.tiene_precios_escalonados:
+                precios_escalonados = [pe for pe in item.precio_escalonado if pe.id_proveedor == proveedor.id_proveedor]
+                precios_escalonados = sorted(precios_escalonados, key=lambda pe: pe.min_cantidad)
+                item_precio = None  # Los precios escalonados reemplazarán al precio fijo
+            else:
+                precios_escalonados = []
+                item_precio = proveedor.precio
+            
+            items_json.append({
+                'id': item.item_id,
+                'descripcion': item.nombre,
+                'categoria': item.categoria.CATEGORIA_NOMBRE,
+                'unidad': item.unidad,
+                'tipo': item.tipo,
+                'precio': locale.format_string("%.2f", item_precio, grouping=True) if item_precio else 'SIN PRECIO',
+                'precios_escalonados': [{
+                    'min_cantidad': pe.min_cantidad,
+                    'max_cantidad': pe.max_cantidad,
+                    'precio_unitario': locale.format_string("%.2f", pe.precio_unitario, grouping=True)
+                } for pe in precios_escalonados]
+            })
+        else:
+            items_json.append({
+                'id': item.item_id,
+                'descripcion': item.nombre,
+                'categoria': item.categoria.CATEGORIA_NOMBRE,
+                'unidad': item.unidad,
+                'tipo': item.tipo,
+                'precio': 'SIN PRECIO',
+                'precios_escalonados': []
+            })
 
     return jsonify({
         'items': items_json,

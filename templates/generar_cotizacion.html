@@ -1199,7 +1199,7 @@ function agregarItemAlProducto(item, itemNumber) {
     const itemGrupo = item.tipo;
     const itemDescripcion = item.descripcion;
     const itemUnidad = "Unidad"; // Puedes ajustar esto según sea necesario
-    const itemPrecio = item.precio;
+    const preciosEscalonados = item.precios_escalonados; // Obtener precios escalonados del item
 
     // Crear las celdas de cantidad y total dinámicamente basadas en valoresCantidad
     const cantidadCeldas = valoresCantidad.map((valor, i) => 
@@ -1210,19 +1210,21 @@ function agregarItemAlProducto(item, itemNumber) {
         `<td class="total">0</td>`
     ).join('');
     
-    // Combinamos todas las celdas de cantidad y total en una sola fila
     const nuevaFila = document.createElement('tr');
     nuevaFila.innerHTML = `
         <td>${itemId}</td>
         <td>${itemGrupo}</td>
         <td>${itemDescripcion}</td>
         <td>${itemUnidad}</td>
-        <td>${itemPrecio}</td>
-        ${cantidadCeldas} <!-- Aquí se generan los td de cantidad -->
-        ${totalCeldas}    <!-- Aquí se generan los td de total -->
+        <td id="precio-${itemId}">${item.precio || 'SIN PRECIO'}</td>
+        ${cantidadCeldas}
+        ${totalCeldas}
         <td class="oculto">${itemGrupo}</td>
         <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
     `;
+    
+    // Guardar precios escalonados en un atributo data
+    nuevaFila.setAttribute('data-precios-escalonados', JSON.stringify(preciosEscalonados));
     
     let container;
     switch (itemGrupo) {
@@ -1242,18 +1244,16 @@ function agregarItemAlProducto(item, itemNumber) {
             container = transporteContainer;
             break;
         default:
-            container = itemsSeleccionadosContainer; // Para ítems temporales u otros tipos
+            container = itemsSeleccionadosContainer;
             break;
     }
     
-    // Añadir encabezado si aún no existe
     if (container && !container.querySelector('.tipo-header')) {
         const headerRow = document.createElement('tr');
         headerRow.innerHTML = `<td colspan="${5 + valoresCantidad.length * 2}" class="tipo-header"><strong>${itemGrupo}</strong></td>`;
         container.appendChild(headerRow);
     }
     
-    // Añadir la nueva fila a la tabla
     container.appendChild(nuevaFila);
     idsSeleccionados.add(itemId);
     
@@ -1455,7 +1455,17 @@ function agregarItemAlProducto(item, itemNumber) {
     
     
     
-    function actualizarTotalProducto(itemNumber, nuevoValorUtilidad = null) {
+    function calcularPrecioUnitario(preciosEscalonados, cantidad) {
+        // Encuentra el precio unitario adecuado basado en la cantidad
+        for (const escalonado of preciosEscalonados) {
+            if (cantidad >= escalonado.min_cantidad && (escalonado.max_cantidad === 0 || cantidad <= escalonado.max_cantidad)) {
+                return parseFloat(escalonado.precio_unitario.replace(/\./g, '').replace(/,/g, '.'));
+            }
+        }
+        return 0; // Precio por defecto si no se encuentra el rango adecuado
+    }
+    
+    function actualizarTotalProducto(itemNumber) {
         const contenedores = [
             document.getElementById(`materiaprima-${itemNumber}`),
             document.getElementById(`consumibles-${itemNumber}`),
@@ -1471,28 +1481,43 @@ function agregarItemAlProducto(item, itemNumber) {
         contenedores.forEach(container => {
             if (container) {
                 const filas = container.querySelectorAll('tr');
-                filas.forEach((fila) => {
+                filas.forEach(fila => {
                     const precioElement = fila.querySelector('td:nth-child(5)');
                     const cantidadInputs = fila.querySelectorAll('input.cantidad');
+                    const preciosEscalonados = JSON.parse(fila.getAttribute('data-precios-escalonados') || '[]');
     
                     if (precioElement && cantidadInputs.length > 0) {
-                        let precioTexto = precioElement.textContent.trim();
-                        precioTexto = precioTexto.replace(/\./g, '').replace(/,/g, '.');
-                        const precio = parseFloat(precioTexto);
+                        let precio = parseFloat(precioElement.textContent.trim().replace(/\./g, '').replace(/,/g, '.'));
     
-                        cantidadInputs.forEach((input, index) => {
-                            const cantidadTexto = input.value.trim();
-                            const cantidad = parseFloat(cantidadTexto);
+                        // Si hay precios escalonados, calcular el precio basado en la cantidad
+                        if (preciosEscalonados.length > 0) {
+                            cantidadInputs.forEach((input, index) => {
+                                const cantidad = parseFloat(input.value.trim()) || 0;
+                                const precioEscalonado = preciosEscalonados.find(pe => cantidad >= pe.min_cantidad && (cantidad <= pe.max_cantidad || pe.max_cantidad === 0));
     
-                            if (!isNaN(precio) && !isNaN(cantidad)) {
+                                if (precioEscalonado) {
+                                    precio = parseFloat(precioEscalonado.precio_unitario);
+                                }
+    
                                 const subtotal = precio * cantidad;
                                 const totalElement = fila.querySelectorAll('.total')[index];
                                 if (totalElement) {
                                     totalElement.textContent = formatearNumero(subtotal);
                                 }
-                                subtotalPorCantidad[index] += subtotal;  // Sumar subtotal a la cantidad correspondiente
-                            }
-                        });
+                                subtotalPorCantidad[index] += subtotal;
+                            });
+                        } else {
+                            // Si no hay precios escalonados, usar el precio fijo
+                            cantidadInputs.forEach((input, index) => {
+                                const cantidad = parseFloat(input.value.trim()) || 0;
+                                const subtotal = precio * cantidad;
+                                const totalElement = fila.querySelectorAll('.total')[index];
+                                if (totalElement) {
+                                    totalElement.textContent = formatearNumero(subtotal);
+                                }
+                                subtotalPorCantidad[index] += subtotal;
+                            });
+                        }
                     }
                 });
             }

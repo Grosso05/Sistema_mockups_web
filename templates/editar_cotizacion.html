@@ -3,12 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Cotización</title>
+    <title>Editar Cotizacio</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
     <style>
+
+        .list-unstyled {
+            list-style-type: none; /* Elimina los puntos o viñetas */
+            padding-left: 0; /* Elimina el padding izquierdo */
+            margin: 0; /* Opcional: elimina el margen si es necesario */
+        }
+
+        /* CSS para ocultar la tabla durante la carga */
+        .loading-active table {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+            color: #888;
+        }
+        
         .iva-selector {
             margin: 10px 0;
-            font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif; 
         }
         
         .iva-selector label {
@@ -26,554 +47,1890 @@
         }
         
         .iva-selector select:focus {
-            border-color: #007bff;  
+            border-color: #007bff;
             outline: none;
         }
-
-        .grupo-columns {
-            margin-top: 2%;
+        
+        .navbar {
+            background-color: #f8f9fa;
+            padding: 10px;
             display: flex;
-            gap: 20px;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar_user {
+            display: flex;
+            flex: 1; /* Ocupa el espacio disponible */
+            justify-content: center; /* Centra horizontalmente el contenido */
+            align-items: center; /* Centra verticalmente el contenido */
+            font-size: 1.25rem; /* Ajusta el tamaño del texto según sea necesario */
+            font-weight: bold; /* Pone el texto en negrita */
+        }
+        
+
+          
+          .sidebar.collapsed {
+            width: 0; /* Ocultar la barra lateral al cambiar el ancho a 0 */
+            transform: translateX(-100%); /* Mover el sidebar fuera de la vista */
+          }
+          
+          .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: #DC0070;
+            color: #ffffff;
+            font-size: 20px;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+          }
+          
+          .menu-button {
+            cursor: pointer;
+            font-size: 24px;
+            background: none;
+            border: none;
+          }
+        
+          .sidebar .list-unstyled li a i {
+            margin-right: 10px;
+            color: #fff; /* Color blanco para los iconos */
+        }
+        
+        .sidebar .list-unstyled li a {
+            color: #c8c9ce; /* Color de texto para los enlaces */
+        }
+        
+        .sidebar .list-unstyled li a i {
+            margin-right: 10px;
+            color: #fff;
+        }
+        
+        .sidebar .list-unstyled li a i {
+            margin-right: 10px;
+            color: #fff; /* Color blanco para los iconos */
+        }
+
+        .sidebar .sub-components li {
+            margin-left: 40px; /* Ajusta este valor según sea necesario */
+        }
+
+        .sidebar .sub-components li a {
+            font-size: 16px; /* Ajusta el tamaño de la fuente */
+            color: #e0e0e0; /* Color de texto más claro */
+        }
+        
+        .sidebar-divider {
+            border-top: 1px solid #fff; /* Línea blanca entre categorías */
+        }
+        
+        .sidebar-header {
+            padding: 10px 15px;
+            background-color: #777777;
+            border-bottom: 1px solid #ccc; /* Add a border to the bottom of the sidebar header */
+            padding: 10px 0; /* Add padding to the sidebar header */
+            text-align:justify ;
+        }
+
+        .sidebar-header h6 {
+            color: #fff; /* Color blanco */
+            font-size: 18px; /* Tamaño de fuente más grande */
+            text-align: center; /* Centrar el texto */
+            margin: 10px 0; /* Ajustar el margen si es necesario */
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0px; /* Altura del navbar */
+            bottom: 0;
+            left: 0;
+            width: 250px;
+            z-index: 1;
+            background-color: #777777;
+            padding-top: 20px;
+            overflow-y: auto;
+            padding: 20px;
+          }
+        
+          .navbar_logout a {
+            position: absolute;
+            padding: 05px 10px;
+            background-color: #DC0070;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            bottom: 12%;
+            left: 25%;
         }
 
     </style>
 </head>
 <body>
 
+    <div class="sidebar">
+        <div class="close-button" onclick="closeSidebar()">X</div> 
+    
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Your Logo" class="logo">
+        </div>
+        <hr class="sidebar-divider">
+        <ul class="list-unstyled components">
+            <li>
+                <a href="{{ url_for('routes.admin') }}">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            </li>
+            <div class="sidebar-header">
+                <h6> Apartado de Gestiones </h6>
+            </div>
+    
+            {% if user_rol == 1 %}
+            <li class="dropdown">
+                <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
+                    <i class="fas fa-users"></i> Gestión de Usuarios
+                    <i class="fas fa-chevron-down"></i> <!-- Flecha hacia abajo -->
+                </a>
+                <ul id="sub-components-1" class="list-unstyled sub-components">
+                    <li>
+                        <a href="{{ url_for('users.listar_usuarios') }}">
+                            <i class="fas fa-eye"></i> Ver Usuarios
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('users.crear_usuario') }}">
+                            <i class="fas fa-user-plus"></i> Crear Usuario
+                        </a>
+                    </li>
+                </ul>
+            </li>
+                {% endif %}
+    
+            <li>
+                <a href="{{ url_for('customers.listar_clientes') }}">
+                    <i class="fas fa-handshake"></i> Gestión de Clientes
+                </a>
+            </li>
+            <div class="sidebar-header">
+                <h6> Apartado Principal </h6>
+            </div>
+            <li>
+                <a href="{{ url_for('routes.generar_catalogo') }}">
+                    <i class="fas fa-brush"></i> Generar Catalogo
+                </a>
+            </li>
+    
+            <li class="dropdown">
+                <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-2')">
+                    <i class="fas fa-receipt"></i> Gestión de Cotizaciones
+                    <i class="fas fa-chevron-down"></i> <!-- Flecha hacia abajo -->
+                </a>
+                <ul id="sub-components-2" class="list-unstyled sub-components">
+                    <li>
+                        <a href="{{ url_for('routes.listar_cotizaciones') }}">
+                            <i class="fas fa-eye"></i> Ver Cotizaciones
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('routes.generar_cotizacion') }}">
+                            <i class="fas fa-plus"></i> Crear Cotización
+                        </a>
+                    </li>
+                </ul>
+            </li>
+    
+            <div class="navbar_logout">
+                <a href="{{ url_for('users.logout') }}">Cerrar sesión</a>
+            </div>
+        </ul>
+    </div>
+
+    <nav class="navbar navbar-light">
+        <div class="menu-button" onclick="toggleSidebar()">☰</div>
+        <div class="navbar_user">
+            <h6>Bienvenido, {{ session['username'] }}</h6>
+        </div>
+    </nav>
+
+
     <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
-        <section class="flex">
-            <div class="seccion-izquierda flex-item">
+    <section class="flex">
+        <div class="seccion-izquierda flex-item">
+            <h2> Productos </h2>
+            <div class="item-descripcion-container">
+                <div class="item-number" id="itemNumber"></div>
+                <textarea id="descripcion" name="descripcion" rows="2" class="descripcion-input" placeholder="Ingrese la descripción del producto" required></textarea>
+            </div>
+            <div class="grupo">
+                <label for="seleccionarLinea">Línea:</label>
+                <select id="seleccionarLinea" name="seleccionarLinea">
+                    <option value="">Seleccionar</option>
+                    {% for linea in lineas %}
+                        <option value="{{ linea.linea_id }}">{{ linea.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grupo">
+                <label for="seleccionarProducto">Producto:</label>
+                <select id="seleccionarProducto" name="seleccionarProducto" onchange="cargarPorcentajesProducto()">
+                    <option value="">Seleccionar</option>
 
-                <h2> Productos </h2>
-                <div class="item-descripcion-container">
-                    <div class="item-number" id="itemNumber"></div>
-                    <textarea id="descripcion" name="descripcion" rows="2" class="descripcion-input" placeholder="Ingrese la descripción del producto" required>{{ cotizacion.descripcion }}</textarea>
-                </div>
-                <div class="grupo">
-                    <label for="seleccionarLinea">Línea:</label>
-                    <select id="seleccionarLinea" name="seleccionarLinea">
-                        <option value="">Seleccionar</option>
-                        {% for linea in lineas %}
-                            <option value="{{ linea.linea_id }}" {% if linea.linea_id == cotizacion.linea_id %}selected{% endif %}>{{ linea.nombre }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="grupo">
-                    <label for="seleccionarProducto">Producto:</label>
-                    <select id="seleccionarProducto" name="seleccionarProducto" onchange="cargarPorcentajesProducto()">
-                        <option value="">Seleccionar</option>
-                        {% for producto in productos %}
-                            <option value="{{ producto.producto_id }}" {% if producto.producto_id == cotizacion.producto_id %}selected{% endif %}>{{ producto.nombre }}</option>
-                        {% endfor %}
-                    </select>
-                    <label for="alto-1">Alto (Cm):</label>
-                    <input type="number" class="alto-input" name="alto" value="{{ cotizacion.alto }}" />
-                    <label for="ancho-1">Ancho (Cm):</label>
-                    <input type="number" class="ancho-input" name="ancho" value="{{ cotizacion.ancho }}" />
-                    <label for="fondo-1">Fondo (Cm):</label>
-                    <input type="number" class="fondo-input" name="fondo" value="{{ cotizacion.fondo }}" />
-                </div>
-                <div id="cantidad-container">
-                    <label for="cantidadUnidades">Cantidad de Unidades:</label>
-                    <div id="cantidadUnidades">
-                        <input type="number" class="cantidad-input" name="cantidadUnidades" min="1" value="{{ cotizacion.cantidadUnidades }}" />
-                        <button id="btnAgregarCantidad">+</button>
-                        <button id="btnEliminarCantidad">-</button>
-                    </div>
-                </div>
-                <div class="grupo botones">
-                    <button id="btnCrear">Añadir</button>
+                </select>
+
+                <label for="alto-1">Alto: (Cm):</label>
+                <input type="number" class="alto-input" name="alto" />
+                <label for="ancho-1">Ancho: (Cm):</label>
+                <input type="number" class="ancho-input" name="ancho" />
+                <label for="fondo-1">Fondo: (Cm):</label>
+                <input type="number" class="fondo-input" name="fondo" /> 
+            </div>
+            <div id="cantidad-container">
+                <label for="cantidadUnidades">Cantidad de Unidades:</label>
+                <div id="cantidadUnidades">
+                    <input type="number" class="cantidad-input" name="cantidadUnidades" min="1" value="0" />
+                    <button id="btnAgregarCantidad">+</button>
+                    <button id="btnEliminarCantidad">-</button>
                 </div>
             </div>
-            <div class="seccion-derecha flex-item flex-grow">
-                <div class="header-cotizacion">
-                    <h2>Datos de Cotización</h2>
-                    <button id="toggleDatosBtn" class="flecha-btn">></button>
-                </div>
-                <div class="grupo-columns" id="formulario-cotizacion" style="display: block;">
-                    <div class="grupo-columns" id="formulario-cotizacion">
-                        <div class="grupo-columna">
-                            <div class="grupo">
-                                <label for="fecha_cotizacion">Fecha:</label>
-                                <input type="date" id="fecha_cotizacion" name="fecha_cotizacion" value="{{ cotizacion.fecha_cotizacion }}" required>
-                            </div>
-
-                            <div class="grupo">
-                                <label for="cliente_cotizacion">Cliente:</label>
-                                <input type="text" id="cliente_cotizacion" name="cliente_cotizacion" value="{{ cotizacion.cliente_cotizacion }}" required>
-                            </div>
-                            <div class="grupo">
-                                <label for="contacto_cotizacion">Contacto:</label>
-                                <input type="text" id="contacto_cotizacion" name="contacto_cotizacion" value="{{ cotizacion.contacto_cotizacion }}" required>
-                            </div>
-                            <div class="grupo">
-                                <label for="proyecto_cotizacion">Proyecto:</label>
-                                <input type="text" id="proyecto_cotizacion" name="proyecto_cotizacion" value="{{ cotizacion.proyecto_cotizacion }}" required>
-                            </div>
-                            <div class="grupo">
-                                <label for="vendedor_cotizacion">Vendedor:</label>
-                                <select id="vendedor_cotizacion" name="vendedor_cotizacion" required>
-                                    <option value="">Seleccionar</option>
-                                    {% for vendedor in vendedores %}
-                                        <option value="{{ vendedor.user_id }}" {% if vendedor.user_id == cotizacion.vendedor_cotizacion %}selected{% endif %}>
-                                            {{ vendedor.user_name }} {{ vendedor.user_last_name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="grupo">
-                                <label for="negociacion">N° Negociación:</label>
-                                <input type="text" id="negociacion" name="negociacion" value="{{ cotizacion.negociacion }}" required>
-                            </div>
-                        </div>
-                        <div class="grupo-columna">
-                            <div class="grupo">
-                                <label for="forma_pago">Forma de Pago:</label>
-                                <select id="forma_pago" name="forma_pago" required>
-                                    <option value="">Seleccionar</option>
-                                    <option value="Contado" {% if cotizacion.forma_de_pago_cotizacion == 'Contado' %}selected{% endif %}>Contado</option>
-                                    <option value="Credito 30 Dias" {% if cotizacion.forma_de_pago_cotizacion == 'Credito 30 Dias' %}selected{% endif %}>Crédito 30 Días</option>
-                                    <option value="Credito 60 Dias" {% if cotizacion.forma_de_pago_cotizacion == 'Credito 60 Dias' %}selected{% endif %}>Crédito 60 Días</option>
-                                    <option value="50% abono - 50% entrega" {% if cotizacion.forma_de_pago_cotizacion == '50% abono - 50% entrega' %}selected{% endif %}>50% Abono - 50% Entrega</option>
-                                </select>
-                            </div>
-                            <div class="grupo">
-                                <label for="validez_cotizacion">Validez:</label>
-                                <select id="validez_cotizacion" name="validez_cotizacion" required>
-                                    <option value="15" {% if cotizacion.validez_cotizacion == '15' %}selected{% endif %}>15 días</option>
-                                    <option value="30" {% if cotizacion.validez_cotizacion == '30' %}selected{% endif %}>30 días</option>
-                                    <option value="60" {% if cotizacion.validez_cotizacion == '60' %}selected{% endif %}>60 días</option>
-                                </select>
-                            </div>
-                            <div class="grupo">
-                                <label for="descuento_cotizacion">Porcentaje Descuento:</label>
-                                <input type="number" id="descuento_cotizacion" name="descuento_cotizacion" min="0" max="100" value="{{ cotizacion.descuento_cotizacion }}" required>
-                            </div>
-                            <div class="grupo">
-                                <label for="recibe_cotizacion">Persona que Recibe:</label>
-                                <input type="text" id="recibe_cotizacion" name="recibe_cotizacion" value="{{ cotizacion.recibe_cotizacion }}" required>
-                            </div>
-                            <div class="grupo">
-                                <label for="numero_contacto">Número de Contacto:</label>
-                                <input type="tel" id="numero_contacto" name="numero_contacto" value="{{ cotizacion.numero_contacto }}" required>
-                            </div>
-                            <div class="grupo">
-                                <label for="direccion_cotizacion">Dirección:</label>
-                                <textarea id="direccion_cotizacion" name="direccion_cotizacion" rows="3" required>{{ cotizacion.direccion_cotizacion }}</textarea>
-                            </div>
-                            <div class="iva-selector">
-                                <label for="iva-select">IVA:</label>
-                                <select id="iva-select" name="iva">
-                                    <option value="si" {% if cotizacion.iva_seleccionado == 'si' %}selected{% endif %}>Sí</option>
-                                    <option value="no" {% if cotizacion.iva_seleccionado == 'no' %}selected{% endif %}>No</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="acciones-globales">
-                    <button id="guardarCotizacionBtn">Guardar Cotización</button>
-                </div>
-            </div>
-        </section>
-        <div id="productos-cotizacion" class="productos-cotizacion">
-            <h2 style="text-align: center;">Productos de la Cotización</h2>
-            <div id="notification-container" class="notification-container"></div>
-            <div id="productos-container">
-                {% for producto in productos_cotizados %}
-                    <div class="producto" id="producto-{{ producto.id }}">
-                        <h3 contenteditable="true" style="color: #00b04f;">Producto {{ producto.id }}: {{ producto.nombre }}</h3>
-                        <h4 contenteditable="true">Descripción: {{ producto.descripcion }}</h4>
-                        <h4 contenteditable="true">Alto (Cm): {{ producto.alto }} || Ancho (Cm): {{ producto.ancho }} || Fondo (Cm): {{ producto.fondo }} |</h4>
-        
-                        <input type="hidden" name="producto_seleccionado_id" value="{{ producto.id }}">
-        
-                        <button id="btnGuardar-{{ producto.id }}" onclick="guardarCambios({{ producto.id }})">Guardar Cambios</button>
-        
-                        <div class="itemsseleccionados">
-                            <h4>Items Seleccionados</h4>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Grupo</th>
-                                        <th>Descripción</th>
-                                        <th>Unidad</th>
-                                        <th>Precio</th>
-                                        {{ cantidadHeader | safe }}
-                                        {{ totalHeader | safe }}
-                                        <th class="oculto">Tipo</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="itemsseleccionados-{{ producto.id }}">
-                                    {% for item in items_cotizados %}
-                                        {% if item['producto_cotizado_id'] == producto.id %}
-                                            <tr>
-                                                <td>{{ item['item_id'] }}</td>
-                                                <td>
-                                                    {% if item['grupo'] %}
-                                                        {{ item['grupo'] }}
-                                                    {% else %}
-                                                        N/A
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    {% if item['descripcion'] %}
-                                                        {{ item['descripcion'] }}
-                                                    {% else %}
-                                                        N/A
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    {% if item['unidad'] %}
-                                                        {{ item['unidad'] }}
-                                                    {% else %}
-                                                        N/A
-                                                    {% endif %}
-                                                </td>
-                                                <td>{{ item['precio_unitario'] or '0.00' }}</td>
-                                                <td>{{ item['cantidad'] }}</td>
-                                                <td>{{ item['total_item'] }}</td>
-                                                <td class="oculto">{{ item['tipo'] or 'N/A' }}</td>
-                                                <td>
-                                                    <button onclick="eliminarItemSeleccionado(this)">Eliminar</button>
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-        
-                        <div class="resumen-costos">
-                            {% for resumen in resumen_costos %}
-                                {% if resumen.producto_id == producto.id %}
-                                    <div class="resumen-costos-individual">
-                                        <h4>Resumen de Costos</h4>
-                                        <p>Costo Directo: {{ resumen.costo_directo }}</p>
-                                        <p>Costo Unitario: {{ resumen.costo_unitario }}</p>
-                                        <p>Administración: {{ resumen.administracion }} <span>({{ resumen.porcentaje_administracion }}%)</span></p>
-                                        <p>Imprevistos: {{ resumen.imprevistos }} <span>({{ resumen.porcentaje_imprevistos }}%)</span></p>
-                                        <p>Utilidad: {{ resumen.utilidad }} <span>({{ resumen.porcentaje_utilidad }}%)</span></p>
-                                        <input type="number" value="{{ resumen.utilidad }}" placeholder="El porcentaje mínimo es: {{ resumen.porcentaje_minimo_utilidad }}" onchange="actualizarTotalProducto({{ producto.id }})">
-                                        <p>Oferta Antes De IVA: {{ resumen.oferta_antes_iva }}</p>
-                                        <p>IVA: {{ resumen.iva }}</p>
-                                        <p style="color: #00b04f;">Valor Oferta Impuestos Incluidos: {{ resumen.valor_oferta }}</p>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-        
-                        <!-- Mover los botones de acción dentro del div -->
-                        <div class="acciones">
-                            <button class="confirmar-producto-btn" data-producto-id="{{ producto.id }}">Confirmar Producto</button>
-                            <button class="editar-producto-btn" data-producto-id="{{ producto.id }}">Editar Producto</button>
-                            <button class="eliminar-producto-btn" data-producto-id="{{ producto.id }}">Eliminar Producto</button>
-                            <button class="duplicar-producto-btn" data-producto-id="{{ producto.id }}">Duplicar Producto</button>
-                        </div>
-                    </div>
-                {% endfor %}
+            <div class="grupo botones">
+                <button id="btnCrear">Añadir</button>
             </div>
         </div>
-
-    </main>
-
-    <script>
-
-        console.log("Archivo JavaScript cargado correctamente");
-
-        console.log("Cotización:", {{ cotizacion | tojson }});
-        console.log("Productos Cotizados:", {{ productos_cotizados | tojson }});
-        console.log("Ítems Cotizados:", {{ items_cotizados | tojson }});
-        console.log("Resumen de Costos:", {{ resumen_costos | tojson }});
-
-        const productos = {{ productos_cotizados | tojson }};
-        console.log('Productos Cotizados:', productos);
-    
-        productos.forEach(producto => {
-            const productoId = producto.id;
-            console.log('Producto ID:', productoId);  
-            mostrarItems(productoId, /* otros parámetros */);
-        });
-          
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelector('.acciones').addEventListener('click', function(event) {
-                const target = event.target;
-        
-                if (target.classList.contains('confirmar-producto-btn')) {
-                    console.log('Confirmar Producto clicado');
-                    // Aquí el código para confirmar el producto
-                } else if (target.classList.contains('editar-producto-btn')) {
-                    console.log('Editar Producto clicado');
-                    // Aquí el código para editar el producto
-                } else if (target.classList.contains('eliminar-producto-btn')) {
-                    console.log('Eliminar Producto clicado');
-                    // Aquí el código para eliminar el producto
-                } else if (target.classList.contains('duplicar-producto-btn')) {
-                    console.log('Duplicar Producto clicado');
-                    // Aquí el código para duplicar el producto
-                }
-            }) });
-
-function duplicarProducto(productoId, nuevoNumeroProductoDuplicado) {
-    // Lógica para duplicar el producto
-    // Esto puede incluir copiar los datos del producto y crear un nuevo producto con un nuevo ID
-}
-
-        document.getElementById('btnCrear').addEventListener('click', function() {
-            const descripcionInput = document.getElementById('descripcion');
-            const altoInput = document.querySelector('.alto-input');
-            const anchoInput = document.querySelector('.ancho-input');
-            const fondoInput = document.querySelector('.fondo-input');        
-            const productoSelect = document.getElementById('seleccionarProducto');
-        
-            const descripcion = descripcionInput.value.trim();
-            const productoId = productoSelect.value;
-            const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
-        
-            const alto = altoInput.value.trim();
-            const ancho = anchoInput.value.trim();
-            const fondo = fondoInput.value.trim();
-        
-            if (descripcion === "" || productoId === "") {
-                alert("Por favor, ingrese una descripción y seleccione un producto.");
-                return;
-            }
-        
-            let nuevoNumeroProducto;
-        
-            if (numerosEliminados.length > 0) {
-                nuevoNumeroProducto = numerosEliminados.shift(); // Reutilizar el número más bajo disponible
-            } else {
-                nuevoNumeroProducto = ++itemNumber; // Incrementar el número de producto
-            }
-        
-            // Crear el nuevo producto
-            const nuevoProducto = document.createElement('div');
-            nuevoProducto.className = 'producto';
-            nuevoProducto.id = `producto-${nuevoNumeroProducto}`;
-        
-            // Generar las cabeceras dinámicas usando el arreglo valoresCantidad
-            const { cantidadHeader, totalHeader } = generarCabeceras();
-        
-            // Crear el h4 que muestra las cantidades seleccionadas
-            const cantidadesSeleccionadasHTML = valoresCantidad.map((valor, index) => 
-                `<h4>Cantidad seleccionada (${index + 1}): ${valor} unidades</h4>`
-            ).join('');
-        
-            // Cargar porcentajes desde el backend y almacenarlos en los atributos de data del elemento
-            fetch(`/porcentajes/${productoId}`)
-                .then(response => response.json())
-                .then(porcentajes => {
-                    nuevoProducto.dataset.administracion = porcentajes.administracion;
-                    nuevoProducto.dataset.imprevistos = porcentajes.imprevistos;
-                    nuevoProducto.dataset.utilidad = porcentajes.utilidad;
-        
-                    // Crear el contenido del nuevo producto
-                    nuevoProducto.innerHTML = `
-                        <h3 style="color: #00b04f;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
-                        <h4>Descripción: ${descripcion}</h4>
-                        <h4>Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
-        
-                        <!-- Añadimos el productoId con un nombre diferente -->
-                        <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
-        
-                        ${cantidadesSeleccionadasHTML}
-                        <div class="itemsseleccionados">
-                            <h4>Items Seleccionados</h4>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Grupo</th>
-                                        <th>Descripción</th>
-                                        <th>Unidad</th>
-                                        <th>Precio</th>
-                                        ${cantidadHeader}
-                                        ${totalHeader}
-                                        <th class="oculto">Tipo</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
-                                    <!-- Aquí se agregarán los ítems -->
-                                </tbody>
-                            </table>
+        <div class="seccion-derecha flex-item flex-grow">
+            <div class="header-cotizacion">
+                <h2>Datos de Cotización</h2>
+                <button id="toggleDatosBtn" class="flecha-btn">></button>
+            </div>
+            <div class="grupo-columns" id="formulario-cotizacion" style="display: none;">
+                <div class="grupo-columns" id="formulario-cotizacion">
+                    <div class="grupo-columna">
+                        <div class="grupo">
+                            <label for="fecha_cotizacion"> Fecha: </label>
+                            <input type="date" id="fecha_cotizacion" name="fecha_cotizacion" value="{{ cotizacion.fecha_cotizacion }}" required>
                         </div>
-                        <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
-                            <div>
-                                <h4>Seleccionar Ítems</h4>
-                                <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
-                                <div id="seleccion-items-${nuevoNumeroProducto}"></div>
-                                <div id="paginacion-items-${nuevoNumeroProducto}"></div>
-                                <div class="botones-container">
-                                    <button onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Ítems Seleccionados</button>
-                                    <button onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Ítems</button>
-                                </div>
+                        <div class="grupo">
+                            <label for="cliente_cotizacion"> Cliente: </label>
+                            <input type="text" id="cliente_cotizacion" name="cliente_cotizacion" value="{{ cotizacion.cliente_cotizacion }}" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="contacto_cotizacion"> Contacto: </label>
+                            <input type="text" id="contacto_cotizacion" name="contacto_cotizacion" value="{{ cotizacion.contacto_cotizacion }}" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="proyecto_cotizacion"> Proyecto: </label>
+                            <input type="text" id="proyecto_cotizacion" name="proyecto_cotizacion" value="{{ cotizacion.proyecto_cotizacion }}" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="vendedor_cotizacion"> Vendedor: </label>
+                            <select id="vendedor_cotizacion" name="vendedor_cotizacion" required>
+                                <option value="">Seleccionar</option>
+                                {% for vendedor in vendedores %}
+                                <option value="{{ vendedor.user_id }}" {% if vendedor.user_id == cotizacion.vendedor_cotizacion %}selected{% endif %}>
+                                    {{ vendedor.user_name }} {{ vendedor.user_last_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="grupo">
+                            <label for="negociacion"> N° Negociacion: </label>
+                            <input type="text" id="negociacion" name="negociacion" value="{{ cotizacion.negociacion }}" required>
+                        </div>
+                    </div>
+                    <div class="grupo-columna">
+                        <div class="grupo">
+                            <label for="forma_pago"> Forma de Pago: </label>
+                            <select id="forma_pago" name="forma_pago" required>
+                                <option value="">Seleccionar</option>
+                                <option value="Contado" {% if cotizacion.forma_pago == 'Contado' %}selected{% endif %}>Contado</option>
+                                <option value="Credito 30 Dias" {% if cotizacion.forma_pago == 'Credito 30 Dias' %}selected{% endif %}>Crédito 30 Días</option>
+                                <option value="Credito 60 Dias" {% if cotizacion.forma_pago == 'Credito 60 Dias' %}selected{% endif %}>Crédito 60 Días</option>
+                                <option value="50% abono - 50% entrega" {% if cotizacion.forma_pago == '50% abono - 50% entrega' %}selected{% endif %}>50% Abono - 50% Entrega</option>
+                            </select>
+                        </div>
+                        <div class="grupo">
+                            <label for="validez_cotizacion"> Validez: </label>
+                            <select id="validez_cotizacion" name="validez_cotizacion" required>
+                                <option value="15" {% if cotizacion.validez_cotizacion == '15' %}selected{% endif %}>15 días</option>
+                                <option value="30" {% if cotizacion.validez_cotizacion == '30' %}selected{% endif %}>30 días</option>
+                                <option value="60" {% if cotizacion.validez_cotizacion == '60' %}selected{% endif %}>60 días</option>
+                            </select>
+                        </div>
+                        <div class="grupo">
+                            <label for="descuento_cotizacion"> Porcentaje Descuento: </label>
+                            <input type="number" id="descuento_cotizacion" name="descuento_cotizacion" value="{{ cotizacion.descuento_cotizacion }}" min="0" max="100" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="recibe_cotizacion"> Persona que Recibe: </label>
+                            <input type="text" id="recibe_cotizacion" name="recibe_cotizacion" value="{{ cotizacion.recibe_cotizacion }}" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="numero_contacto"> Número de Contacto: </label>
+                            <input type="tel" id="numero_contacto" name="numero_contacto" value="{{ cotizacion.numero_contacto_cotizacion }}" required>
+                        </div>
+                        <div class="grupo">
+                            <label for="direccion_cotizacion"> Dirección: </label>
+                            <textarea id="direccion_cotizacion" name="direccion_cotizacion" rows="3" required>{{ cotizacion.direccion_cotizacion }}</textarea>
+                        </div>
+                        <div class="iva-selector">
+                            <label for="iva-select">IVA:</label>
+                            <select id="iva-select" name="iva">
+                                <option value="si" {% if cotizacion.iva == 'si' %}selected{% endif %}>Sí</option>
+                                <option value="no" {% if cotizacion.iva == 'no' %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                
+            </div>
+            <div class="acciones-globales">
+                <button id="guardarCotizacionBtn">Guardar Cotización</button>
+            </div>
+
+        </div>
+    </section>
+    <div id="productos-cotizacion" class="productos-cotizacion">
+        <h2 style="text-align: center;">Productos de la Cotización</h2>
+        <div id="notification-container" class="notification-container"></div>
+    
+
+        <div id="productos-container"></div>
+    </div>
+
+</main>
+
+<script>
+
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const content = document.querySelector('main'); // Selecciona el contenedor principal
+
+        if (sidebar.classList.contains('collapsed')) {
+            sidebar.classList.remove('collapsed');
+            content.style.marginLeft = '250px'; // Ajusta el margen izquierdo del contenido
+            content.style.width = 'calc(100% - 250px)'; // Ajusta el ancho del contenido en función del ancho del sidebar expandido
+        } else {
+            sidebar.classList.add('collapsed');
+            content.style.marginLeft = '0'; // Restaura el margen izquierdo del contenido
+            content.style.width = '100%'; // Restaura el ancho del contenido al 100%
+        }
+    }
+
+    function closeSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const content = document.querySelector('main'); // Selecciona el contenedor principal
+
+        sidebar.classList.add('collapsed');
+        content.style.marginLeft = '0'; // Restaura el margen izquierdo del contenido
+        content.style.width = '100%'; // Restaura el ancho del contenido al 100%
+    }
+
+    function toggleDropdown(id) {
+        var dropdown = document.getElementById(id);
+        var icon = event.currentTarget.querySelector('i.fas.fa-chevron-down, i.fas.fa-chevron-up');
+    
+        if (dropdown.style.display === "block") {
+            dropdown.style.display = "none";
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        } else {
+            dropdown.style.display = "block";
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
+    }
+
+
+    // Obtener la fecha actual en formato YYYY-MM-DD
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Establecer la fecha actual como valor por defecto
+    document.getElementById('fecha_cotizacion').value = today;
+
+
+    // Funciones para el formulario de cotizacion
+    
+    document.getElementById('toggleDatosBtn').addEventListener('click', function() {
+        const formularioCotizacion = document.getElementById('formulario-cotizacion');
+        formularioCotizacion.style.display = formularioCotizacion.style.display === 'none' ? 'flex' : 'none';
+        this.textContent = formularioCotizacion.style.display === 'none' ? '>' : 'v';
+        this.classList.toggle('expandido');
+    });
+
+
+    document.addEventListener('DOMContentLoaded', function(){
+        const formularioCotizacion = document.getElementById('formulario-cotizacion');
+        formularioCotizacion.style.display= 'flex';
+    });
+
+    //funcion para evento de seleccion de linea
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const lineaSelect = document.getElementById('seleccionarLinea');
+        const productoSelect = document.getElementById('seleccionarProducto');
+
+        // Función para cargar todos los productos
+        function cargarTodosLosProductos() {
+            fetch('/todos_los_productos') // Asegúrate de que esta ruta devuelva todos los productos en formato JSON
+                .then(response => response.json())
+                .then(productos => {
+                    productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Reiniciar opciones
+                    productos.forEach(producto => {
+                        const option = document.createElement('option');
+                        option.value = producto.id;
+                        option.textContent = producto.nombre;
+                        option.dataset.lineaId = producto.linea_id; // Guardamos el ID de la línea en un data attribute
+                        productoSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar todos los productos:', error);
+                });
+        }
+
+    // Función para cargar productos filtrados por línea
+    function cargarProductosPorLinea(lineaId) {
+        if (lineaId) {
+            fetch(`/productos_por_linea/${lineaId}`)
+                .then(response => response.json())
+                .then(productos => {
+                    productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Reiniciar opciones
+                    productos.forEach(producto => {
+                        const option = document.createElement('option');
+                        option.value = producto.id;
+                        option.textContent = producto.nombre;
+                        option.dataset.lineaId = producto.linea_id; // Guardamos el ID de la línea en un data attribute
+                        productoSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error(`Error al cargar productos para la línea ${lineaId}:`, error);
+                });
+        } else {
+            // Si no se selecciona ninguna línea, cargar todos los productos
+            cargarTodosLosProductos();
+        }
+    }
+
+    // Cargar todos los productos al cargar la página
+    cargarTodosLosProductos();
+
+    // Evento para cuando se cambia la selección de línea
+    lineaSelect.addEventListener('change', function() {
+        const lineaId = this.value;
+        cargarProductosPorLinea(lineaId);
+    });
+
+    // Evento para cuando se cambia la selección de producto
+    productoSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const lineaId = selectedOption.dataset.lineaId;
+
+        if (lineaId) {
+            // Actualizar la selección de línea sin disparar el evento 'change' nuevamente
+            if (lineaSelect.value !== lineaId) {
+                lineaSelect.value = lineaId;
+                // Opcional: Si deseas filtrar los productos al actualizar la línea automáticamente
+                // cargarProductosPorLinea(lineaId);
+            }
+        }
+    });
+});
+    
+    //funcion que consulta los porcentajes de cada producto en el backend
+
+    function cargarPorcentajesProducto() {
+        const productoId = document.getElementById('seleccionarProducto').value;
+    
+        if (productoId) {
+            fetch(`/porcentajes/${productoId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(porcentajes => {
+                    if (!porcentajes.error) {
+                        // Guardar los porcentajes en el objeto del producto seleccionado
+                        const productoElement = document.querySelector(`#producto-${productoId}`);
+                        if (productoElement) {
+                            productoElement.dataset.administracion = porcentajes.administracion;
+                            productoElement.dataset.imprevistos = porcentajes.imprevistos;
+                            productoElement.dataset.utilidad = porcentajes.utilidad;
+    
+                            // Establecer el valor mínimo en el input de utilidad
+                            const inputUtilidad = document.getElementById('utilidadSeleccionada');
+                            
+                            inputUtilidad.placeholder = `El porcentaje mínimo es cargarPorcentajesProducto: ${porcentajes.utilidad}`;
+                            inputUtilidad.min = porcentajes.utilidad;
+                        }
+                    }
+                })
+
+        }
+    }
+
+    let valoresCantidad = [];
+
+    // Función para actualizar los valores de los inputs
+    function actualizarValoresCantidad() {
+        const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
+        valoresCantidad = Array.from(cantidadInputs).map(input => parseInt(input.value, 10) || 1); // Default to 1 if NaN
+    }
+    
+    // Añadir eventos para actualizar los valores
+    document.getElementById('btnAgregarCantidad').addEventListener('click', function() {
+        const cantidadContainer = document.getElementById('cantidadUnidades');
+    
+        // Crear nuevo input
+        const newInput = document.createElement('input');
+        newInput.type = 'number';
+        newInput.className = 'cantidad-input';
+        newInput.name = 'cantidadUnidades';
+        newInput.min = '1';
+        newInput.value = '1';
+        cantidadContainer.appendChild(newInput);
+    
+        // Actualizar los valores
+        actualizarValoresCantidad();
+    });
+    
+    document.getElementById('btnEliminarCantidad').addEventListener('click', function() {
+        const cantidadContainer = document.getElementById('cantidadUnidades');
+        const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
+    
+        // Eliminar el último input si hay más de uno
+        if (cantidadInputs.length > 1) {
+            cantidadContainer.removeChild(cantidadInputs[cantidadInputs.length - 1]);
+            actualizarValoresCantidad();
+        }
+    });
+    
+    // Actualizar valores al cambiar inputs
+    document.addEventListener('input', function(event) {
+        if (event.target.classList.contains('cantidad-input')) {
+            actualizarValoresCantidad();
+        }
+    });
+    
+
+    
+    document.getElementById('btnEliminarCantidad').addEventListener('click', function() {
+        const cantidadContainer = document.getElementById('cantidadUnidades');
+        const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
+        
+        // Eliminar el último input si hay más de uno
+        if (cantidadInputs.length > 1) {
+            cantidadContainer.removeChild(cantidadInputs[cantidadInputs.length - 1]);
+        }
+        
+        // Contar los inputs
+        console.log('Número de inputs de cantidad:', cantidadInputs.length - 1);
+    });
+
+    let itemNumber = 0;
+    let numerosEliminados = [];
+    let temporalItemID = 1; // ID inicial para ítems temporales, será decreciente
+
+    const productosContainer = document.getElementById('productos-container'); // Define en el ámbito global
+
+    function generarCabeceras() {
+        const cantidadHeader = valoresCantidad.map(valor => `<th>Cantidad (${valor})</th>`).join('');
+        const totalHeader = valoresCantidad.map(valor => `<th>Total (${valor})</th>`).join('');
+        return { cantidadHeader, totalHeader };
+    }
+
+    document.getElementById('btnCrear').addEventListener('click', function() {
+        const descripcionInput = document.getElementById('descripcion');
+        const altoInput = document.querySelector('.alto-input');
+        const anchoInput = document.querySelector('.ancho-input');
+        const fondoInput = document.querySelector('.fondo-input');        
+        const productoSelect = document.getElementById('seleccionarProducto');
+        const cantidadInput = document.querySelector('.cantidad-input');
+        
+        const descripcion = descripcionInput.value.trim();
+        const productoId = productoSelect.value;  // ID del producto seleccionado desde el select
+        const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
+        
+        const alto = altoInput.value.trim();
+        const ancho = anchoInput.value.trim();
+        const fondo = fondoInput.value.trim();
+        
+        const cantidad = parseInt(cantidadInput.value.trim(), 10);
+        
+        if (descripcion === "" || productoId === "" || cantidad <= 0) {
+            alert("Por favor, ingrese una descripción, seleccione un producto y asegúrese de que la cantidad sea mayor a 0.");
+            return;
+        }
+    
+        let nuevoNumeroProducto;
+    
+        if (numerosEliminados.length > 0) {
+            nuevoNumeroProducto = numerosEliminados.shift(); // Reutilizar el número más bajo disponible
+        } else {
+            nuevoNumeroProducto = ++itemNumber; // Incrementar el número de producto
+        }
+    
+        // Crear el nuevo producto
+        const nuevoProducto = document.createElement('div');
+        nuevoProducto.className = 'producto';
+        nuevoProducto.id = `producto-${nuevoNumeroProducto}`;
+    
+        // Generar las cabeceras dinámicas usando el arreglo valoresCantidad
+        const { cantidadHeader, totalHeader } = generarCabeceras();
+    
+        // Crear el h4 que muestra las cantidades seleccionadas
+        const cantidadesSeleccionadasHTML = valoresCantidad.map((valor, index) => 
+            `<h4>Cantidad seleccionada (${index + 1}): ${valor} unidades</h4>`
+        ).join('');
+    
+        // Cargar porcentajes desde el backend y almacenarlos en los atributos de data del elemento
+        fetch(`/porcentajes/${productoId}`)
+            .then(response => response.json())
+            .then(porcentajes => {
+                nuevoProducto.dataset.administracion = porcentajes.administracion;
+                nuevoProducto.dataset.imprevistos = porcentajes.imprevistos;
+                nuevoProducto.dataset.utilidad = porcentajes.utilidad;
+    
+                // Crear el contenido del nuevo producto
+                nuevoProducto.innerHTML = `
+            <div class="producto" id="producto-${nuevoNumeroProducto}">
+                <h3 contenteditable="true" style="color: #00b04f;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
+                <h4 contenteditable="true">Descripción: ${descripcion}</h4>
+                <h4 contenteditable="true">Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
+    
+                    <!-- Añadimos el productoId con un nombre diferente -->
+                    <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
+
+            </div>
+    
+                    ${cantidadesSeleccionadasHTML}
+                    <div class="itemsseleccionados">
+                        <h4>Items Seleccionados</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Grupo</th>
+                                    <th>Descripción</th>
+                                    <th>Unidad</th>
+                                    <th>Precio</th>
+                                    ${cantidadHeader}
+                                    ${totalHeader}
+                                    <th class="oculto">Tipo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
+                                <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
+                                <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
+                                <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
+                                <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
+                                <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
+                        <div>
+                            <h4>Seleccionar Ítems</h4>
+                            <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
+    
+                            <div id="seleccion-items-${nuevoNumeroProducto}"></div>
+                            <div id="paginacion-items-${nuevoNumeroProducto}"></div>
+                            <div class="botones-container">
+                                <button onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Ítems Seleccionados</button>
+                                <button onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Ítems</button>
                             </div>
                         </div>
-        
-                        <!-- Botón para mostrar el formulario -->
-                        <button id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Nuevo Ítem</button>
-        
-                        <!-- Formulario para agregar ítems temporales -->
-                        <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
-                            <h4>Agregar Nuevo Ítem</h4>
-                            <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
-                            <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
-                            <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
-                            <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
-                        </div>
-        
-                        <div class="resumen-costos">
-                            ${valoresCantidad.map((valor, index) => `
-                                <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
-                                    <h4>Resumen de Costos (${valor})</h4>
-                                    <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
-                                    <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
-                                    <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                    <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                    <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                    <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
-                                    <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
-                                    <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
-                                    <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
-                                </div>
-                            `).join('')}
-                        </div>
-        
-                        <div class="acciones">
-                            <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
-                            <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
-                            <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
-                            <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
-                        </div>
-                    `;
-        
-                    productosContainer.appendChild(nuevoProducto);
-        
-                    // Limpiar los campos de entrada después de agregar el producto
-                    descripcionInput.value = '';
-                    productoSelect.value = '';
-        
-                    // Insertar el nuevo producto en la posición correcta
-                    let insertado = false;
-                    productosContainer.querySelectorAll('.producto').forEach(producto => {
-                        const numeroProducto = parseInt(producto.id.split('-')[1], 10);
-                        if (!insertado && nuevoNumeroProducto < numeroProducto) {
-                            productosContainer.insertBefore(nuevoProducto, producto);
-                            insertado = true;
-                        }
-                    });
-                    if (!insertado) {
-                        productosContainer.appendChild(nuevoProducto);
+                    </div>
+    
+                    <!-- Botón para mostrar el formulario -->
+                    <button id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Nuevo Ítem</button>
+    
+                    <!-- Formulario para agregar ítems temporales -->
+                    <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
+                        <h4>Agregar Nuevo Ítem</h4>
+                        <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
+                        <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
+                        <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
+                        <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
+                    </div>
+    
+                    <div class="resumen-costos">
+                        ${valoresCantidad.map((valor, index) => `
+                            <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+                                <h4>Resumen de Costos (${valor})</h4>
+                                <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
+                                <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
+                                <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
+                                <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+                                <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
+                                <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+                            </div>
+                        `).join('')}
+                    </div>
+    
+                    <div class="acciones">
+                        <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
+                        <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
+                        <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
+                        <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
+                    </div>
+                `;
+    
+                productosContainer.appendChild(nuevoProducto);
+    
+                // Limpiar los campos de entrada después de agregar el producto
+                descripcionInput.value = '';
+                productoSelect.value = '';
+                
+                // Insertar el nuevo producto en la posición correcta
+                let insertado = false;
+                productosContainer.querySelectorAll('.producto').forEach(producto => {
+                    const numeroProducto = parseInt(producto.id.split('-')[1], 10);
+                    if (nuevoNumeroProducto < numeroProducto) {
+                        productosContainer.insertBefore(nuevoProducto, producto);
+                        insertado = true;
+                        return false; // Rompe el bucle forEach
                     }
-        
-                    // Limpiar los valores de la cantidad seleccionada
-                    valoresCantidad = [];
-                    document.querySelectorAll('.cantidad-seleccionada').forEach(el => el.value = '');
-        
-                    // Mostrar el contenedor de ítems
-                    toggleFormulario(nuevoNumeroProducto);
-                })
-                .catch(error => console.error('Error al obtener porcentajes:', error));
+                });
+                if (!insertado) {
+                    productosContainer.appendChild(nuevoProducto); // Si no se insertó, agregar al final
+                }
+    
+                // Actualizar el número de producto dentro del div itemNumber
+                actualizarNumeroProducto();
+    
+                cargarItemsProducto(productoId, nuevoNumeroProducto, 1, '');
+    
+            // Añadir manejadores de eventos para la utilidad
+            let timeout;
+            valoresCantidad.forEach((valor, index) => {
+                const utilidadInput = document.getElementById(`utilidadSeleccionada-${nuevoNumeroProducto}-${index}`);
+                if (utilidadInput) {
+                    utilidadInput.addEventListener('input', function() {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => {
+                            const nuevoValorUtilidad = parseFloat(this.value);
+                            if (!isNaN(nuevoValorUtilidad)) {
+                                const productoElement = document.querySelector(`#producto-${nuevoNumeroProducto}`);
+                                if (productoElement) {
+                                    const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
+                                    if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
+                                        // Solo realiza el cálculo y actualización si el valor es válido
+                                        actualizarTotalProducto(nuevoNumeroProducto, nuevoValorUtilidad);
+                                    } else {
+                                        alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
+                                        this.value = ''; // Limpiar el campo para forzar un valor válido
+                                    }
+                                }
+                            }
+                        }, 300); 
+                    });
+                } else {
+                    console.error(`Elemento con ID utilidadSeleccionada-${nuevoNumeroProducto}-${index} no encontrado.`);
+                }
+            });
+
+            // Actualizar los totales al agregar un nuevo producto
+            actualizarTotalesExtras(nuevoNumeroProducto, 0); // Inicia con costo directo 0
+        })
+        .catch(error => {
+            console.error('Error al cargar los porcentajes:', error);
+        });
+});
+    
+ // Delegación de eventos para los botones de productos
+ document.addEventListener('click', function(event) {
+    const target = event.target;
+
+    if (target.matches('.confirmar-producto-btn')) {
+        const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
+        seleccionItemsContainer.style.display = 'none';
+    } else if (target.matches('.editar-producto-btn')) {
+        const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
+        seleccionItemsContainer.style.display = 'block';
+
+
+    } else if (target.matches('.eliminar-producto-btn')) {
+        const producto = document.getElementById(`producto-${target.dataset.productoId}`);
+        numerosEliminados.push(parseInt(target.dataset.productoId, 10)); // Añadir el número del producto eliminado al array
+        producto.remove();
+        actualizarNumeroProducto(); // Actualizar el número de producto visible
+        actualizarResumenesDeCostos(); // Actualizar los resúmenes de costos
+    } else if (target.matches('.duplicar-producto-btn')) {
+        let nuevoNumeroProductoDuplicado;
+        if (numerosEliminados.length > 0) {
+            nuevoNumeroProductoDuplicado = numerosEliminados.shift();
+        } else {
+            nuevoNumeroProductoDuplicado = ++itemNumber;
+        }
+
+        // Clonar el producto
+        const productoOriginal = document.getElementById(`producto-${target.dataset.productoId}`);
+        const nuevoProductoDuplicado = productoOriginal.cloneNode(true);
+
+        // Actualizar el ID del producto clonado
+        nuevoProductoDuplicado.id = `producto-${nuevoNumeroProductoDuplicado}`;
+
+// Actualizar los IDs de los elementos internos y los eventos del producto duplicado
+const actualizarIdsYEventos = (element, nuevoId) => {
+    element.querySelectorAll('[id]').forEach(child => {
+        const partesId = child.id.split('-');
+        partesId[partesId.length - 1] = nuevoId;
+        child.id = partesId.join('-');
+    });
+    element.querySelectorAll('[for]').forEach(child => {
+        const partesFor = child.getAttribute('for').split('-');
+        partesFor[partesFor.length - 1] = nuevoId;
+        child.setAttribute('for', partesFor.join('-'));
+    });
+    element.querySelectorAll('[name]').forEach(child => {
+        const partesName = child.name.split('-');
+        partesName[partesName.length - 1] = nuevoId;
+        child.name = partesName.join('-');
+    });
+    element.querySelectorAll('[data-producto-id]').forEach(child => {
+        child.setAttribute('data-producto-id', nuevoId);
+    });
+
+    // Actualizar los eventos `onclick` de los botones
+    element.querySelectorAll('button').forEach(button => {
+        const originalOnClick = button.getAttribute('onclick');
+        if (originalOnClick) {
+            button.setAttribute('onclick', originalOnClick.replace(/\d+/, nuevoId));
+        }
+    });
+
+    // Asegurarse de que los eventos de cambio de cantidad y utilidad están configurados
+    element.querySelectorAll('.cantidad').forEach(input => {
+        input.addEventListener('change', function() {
+            actualizarTotalProducto(nuevoId);
+            actualizarResumenDeCostos(nuevoId); // Actualiza el resumen de costos
+        });
+    });
+    element.querySelectorAll('.utilidadSeleccionada').forEach(input => {
+        input.addEventListener('input', function() {
+            let timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                const nuevoValorUtilidad = parseFloat(this.value);
+                if (!isNaN(nuevoValorUtilidad)) {
+                    const productoElement = document.querySelector(`#producto-${nuevoId}`);
+                    if (productoElement) {
+                        const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
+                        if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
+                            actualizarTotalProducto(nuevoId, nuevoValorUtilidad);
+                            actualizarResumenDeCostos(nuevoId); // Actualiza el resumen de costos
+                        } else {
+                            alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
+                        }
+                    }
+                }
+            }, 300);
+        });
+    });
+};
+
+// Después de duplicar el producto, actualiza los IDs y agrega los eventos
+actualizarIdsYEventos(nuevoProductoDuplicado, nuevoNumeroProductoDuplicado);
+
+        // Actualizar el contenido específico del producto duplicado
+        nuevoProductoDuplicado.querySelector('h3').textContent = `Producto ${nuevoNumeroProductoDuplicado}: ${productoOriginal.querySelector('h3').textContent.split(': ')[1]}`;
+
+        // Agregar el producto duplicado al contenedor de productos
+        productosContainer.appendChild(nuevoProductoDuplicado);
+
+        // Actualizar el número de producto visible
+        actualizarNumeroProducto();
+
+
+// Añadir manejadores de eventos a los nuevos elementos del producto duplicado
+let timeout;
+nuevoProductoDuplicado.querySelectorAll('.utilidadSeleccionada').forEach(input => {
+    input.addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            const nuevoValorUtilidad = parseFloat(this.value);
+            if (!isNaN(nuevoValorUtilidad)) {
+                const productoElement = document.querySelector(`#producto-${nuevoNumeroProductoDuplicado}`);
+                if (productoElement) {
+                    const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
+                    if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
+                        actualizarTotalProducto(nuevoNumeroProductoDuplicado, nuevoValorUtilidad);
+                        actualizarResumenDeCostos(nuevoNumeroProductoDuplicado); // Actualiza el resumen de costos
+                    } else {
+                        alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
+                    }
+                }
+            }
+        }, 300);
+    });
+});
+
+// Añadir manejador de eventos para cambios en las cantidades
+nuevoProductoDuplicado.querySelectorAll('.cantidad').forEach(input => {
+    input.addEventListener('change', function() {
+        actualizarTotalProducto(nuevoNumeroProductoDuplicado);
+        actualizarResumenDeCostos(nuevoNumeroProductoDuplicado); // Actualiza el resumen de costos
+    });
+});
+
+
+function guardarCambios(productoId) {
+    const producto = document.getElementById(`producto-${productoId}`);
+    
+    // Obtener valores editados
+    const descripcion = producto.querySelector('h4').textContent.replace('Descripción: ', '').trim();
+    const alto = producto.querySelector('h4:nth-of-type(2)').textContent.split('Alto (Cm): ')[1].split(' || ')[0].trim();
+    const ancho = producto.querySelector('h4:nth-of-type(2)').textContent.split('Ancho (Cm): ')[1].split(' || ')[0].trim();
+    const fondo = producto.querySelector('h4:nth-of-type(2)').textContent.split('Fondo (Cm): ')[1].trim();
+    
+    // Actualizar los datos del producto en el DOM si es necesario
+    producto.querySelector('h4').textContent = `Descripción: ${descripcion}`;
+    producto.querySelector('h4:nth-of-type(2)').textContent = `Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |`;
+
+    // Puedes agregar lógica adicional si necesitas actualizar el backend o hacer otras operaciones
+
+    alert('Cambios guardados.');
+}
+
+
+        // Modificación para manejar eventos en el producto duplicado
+        nuevoProductoDuplicado.querySelectorAll('.confirmar-producto-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${nuevoNumeroProductoDuplicado}`);
+                seleccionItemsContainer.style.display = 'none';
+            });
         });
 
+        nuevoProductoDuplicado.querySelectorAll('.editar-producto-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${nuevoNumeroProductoDuplicado}`);
+                seleccionItemsContainer.style.display = 'block';
+            });
+        });
+
+        nuevoProductoDuplicado.querySelectorAll('.eliminar-producto-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const producto = document.getElementById(`producto-${nuevoNumeroProductoDuplicado}`);
+                numerosEliminados.push(parseInt(nuevoNumeroProductoDuplicado, 10)); // Añadir el número del producto eliminado al array
+                producto.remove();
+                actualizarNumeroProducto(); // Actualizar el número de producto visible
+                actualizarResumenesDeCostos(); // Actualizar los resúmenes de costos
+            });
+        });
+
+        // Botón para Agregar Ítems
+        const btnAgregarItemTemporal = nuevoProductoDuplicado.querySelector(`#btnAgregarItemTemporal-${nuevoNumeroProductoDuplicado}`);
+        if (btnAgregarItemTemporal) {
+            btnAgregarItemTemporal.addEventListener('click', function() {
+                agregarItemTemporal(nuevoNumeroProductoDuplicado);
+            });
+        }
+
+        const agregarItemsSeleccionadosBtn = nuevoProductoDuplicado.querySelector(`button[onclick^="agregarItemsSeleccionados"]`);
+        if (agregarItemsSeleccionadosBtn) {
+            agregarItemsSeleccionadosBtn.setAttribute('onclick', `agregarItemsSeleccionados(${nuevoNumeroProductoDuplicado})`);
+        }
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    actualizarNumeroProducto();
+});
+
+function actualizarResumenesDeCostos() {
+    document.querySelectorAll('.producto').forEach(producto => {
+        const productoId = producto.id.split('-')[1];
+        actualizarTotalProducto(productoId);
+    });
+}
+
+function editarProducto(productoId) {
+    const productoDiv = document.getElementById(`producto-${productoId}`);
+    
+    // Convertir el h4 de descripción a un textarea editable
+    const descripcionElement = productoDiv.querySelector('h4:nth-child(2)');
+    const descripcionTexto = descripcionElement.textContent.replace("Descripción: ", "");
+    descripcionElement.innerHTML = `<textarea>${descripcionTexto}</textarea>`;
+    
+    // Convertir los campos de medidas a inputs
+    const medidasElement = productoDiv.querySelector('h4:nth-child(3)');
+    const [alto, ancho, fondo] = medidasElement.textContent.split(' || ').map(texto => texto.split(': ')[1]);
+    medidasElement.innerHTML = `
+        <label>Alto (Cm):</label><input type="number" value="${alto}">
+        <label>Ancho (Cm):</label><input type="number" value="${ancho}">
+        <label>Fondo (Cm):</label><input type="number" value="${fondo}">
+    `;
+    
+    // Si deseas editar la cantidad, puedes hacer algo similar
+
+}
+
+
+
+function toggleFormulario(numeroProducto) {
+    const formulario = document.getElementById(`formAgregarItem-${numeroProducto}`);
+    if (formulario.style.display === 'none' || formulario.style.display === '') {
+        formulario.style.display = 'block';
+    } else {
+        formulario.style.display = 'none';
+    }
+}
+
+
+            // Función para agregar ítems temporales
+            function agregarItemTemporal(productoId) {
+                const descripcion = document.getElementById(`nuevo-item-descripcion-${productoId}`).value.trim();
+                const precioInput = document.getElementById(`nuevo-item-precio-${productoId}`).value.trim();
+                
+                // Convertir el precio a formato numérico
+                const precio = parseFloat(precioInput.replace(/\./g, '').replace(/,/g, '.'));
             
-        
-        function toggleFormulario(numeroProducto) {
-            const contenedorFormulario = document.getElementById(`formAgregarItem-${numeroProducto}`);
-            const botonFormulario = document.getElementById(`toggleFormularioBtn-${numeroProducto}`);
-            if (contenedorFormulario.style.display === 'none' || contenedorFormulario.style.display === '') {
-                contenedorFormulario.style.display = 'block';
-                botonFormulario.textContent = 'Ocultar Formulario';
+                if (isNaN(precio)) {
+                    alert("El precio ingresado no es válido. Asegúrese de usar el formato correcto.");
+                    return;
+                }
+            
+                const cantidad = parseInt(document.getElementById(`nuevo-item-cantidad-${productoId}`).value.trim(), 10);
+            
+                if (!descripcion || isNaN(precio) || isNaN(cantidad) || cantidad <= 0 || !productoId) {
+                    alert("Por favor, ingrese una descripción, precio, cantidad y seleccione un producto.");
+                    return;
+                }
+            
+                fetch('/agregar_item_temporal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        descripcion: descripcion,
+                        precio: precio,
+                        aprobado: false,
+                        producto_id: productoId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Agregar el ítem al contenedor del producto
+                        const contenedor = document.getElementById(`itemsseleccionados-${productoId}`);
+                        const itemId = data.item_id;
+                        
+                        // Generar las celdas de cantidad y total dinámicamente
+                        const cantidadCeldas = valoresCantidad.map((valor, i) => 
+                            `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${productoId})"></td>`
+                        ).join('');
+            
+                        const totalCeldas = valoresCantidad.map(() => 
+                            `<td class="total">0</td>`
+                        ).join('');
+                        
+                        const nuevaFila = document.createElement('tr');
+                        nuevaFila.innerHTML = `
+                            <td>${itemId}</td>
+                            <td>Temporales</td>
+                            <td>${descripcion}</td>
+                            <td>Unidad</td>
+                            <td>${formatearNumero(precio)}</td>
+                            ${cantidadCeldas} <!-- Aquí se generan los td de cantidad -->
+                            ${totalCeldas}    <!-- Aquí se generan los td de total -->
+                            <td class="oculto">Temporal</td>
+                            <td><button onclick="eliminarItemTemporal(this, ${itemId}, ${productoId})">Eliminar</button></td>
+                        `;
+                        contenedor.appendChild(nuevaFila);
+            
+                        limpiarFormularioTemporal(productoId);
+                        // Actualizar total del producto
+                        actualizarTotalProducto(productoId);
+                    } else {
+                        alert('Error al agregar el ítem temporal: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+            
+            
+            function limpiarFormularioTemporal(productoId) {
+                document.getElementById(`nuevo-item-descripcion-${productoId}`).value = '';
+                document.getElementById(`nuevo-item-precio-${productoId}`).value = '';
+                document.getElementById(`nuevo-item-cantidad-${productoId}`).value = '1';
+            }
+            
+            
+            
+
+// Función para agregar ítems seleccionados y temporales al producto
+function agregarItemAlProducto(item, itemNumber) {
+    const itemsSeleccionadosContainer = document.getElementById(`itemsseleccionados-${itemNumber}`);
+    const materiaPrimaContainer = document.getElementById(`materiaprima-${itemNumber}`);
+    const consumiblesContainer = document.getElementById(`consumibles-${itemNumber}`);
+    const serviciosContainer = document.getElementById(`servicios-${itemNumber}`);
+    const manoDeObraContainer = document.getElementById(`manodeobra-${itemNumber}`);
+    const transporteContainer = document.getElementById(`transporte-${itemNumber}`);
+    
+    const idsSeleccionados = new Set();
+    document.querySelectorAll(`#itemsseleccionados-${itemNumber} tr`).forEach(fila => {
+        const itemId = fila.querySelector('td:first-child').textContent;
+        idsSeleccionados.add(itemId);
+    });
+
+    const itemId = item.id;
+    if (idsSeleccionados.has(itemId)) {
+        mostrarNotificacion(`El ítem con ID ${itemId} ya ha sido agregado.`, 'warning');
+        return;
+    }
+    
+    const itemGrupo = item.tipo;
+    const itemDescripcion = item.descripcion;
+    const itemUnidad = "Unidad"; // Puedes ajustar esto según sea necesario
+    const preciosEscalonados = item.precios_escalonados; // Obtener precios escalonados del item
+
+    // Crear las celdas de cantidad y total dinámicamente basadas en valoresCantidad
+    const cantidadCeldas = valoresCantidad.map((valor, i) => 
+        `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${itemNumber})"></td>`
+    ).join('');
+    
+    const totalCeldas = valoresCantidad.map(() => 
+        `<td class="total">0</td>`
+    ).join('');
+    
+    const nuevaFila = document.createElement('tr');
+    nuevaFila.innerHTML = `
+        <td>${itemId}</td>
+        <td>${itemGrupo}</td>
+        <td>${itemDescripcion}</td>
+        <td>${itemUnidad}</td>
+        <td id="precio-${itemId}">${item.precio || 'SIN PRECIO'}</td>
+        ${cantidadCeldas}
+        ${totalCeldas}
+        <td class="oculto">${itemGrupo}</td>
+        <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+    `;
+    
+    // Guardar precios escalonados en un atributo data
+    nuevaFila.setAttribute('data-precios-escalonados', JSON.stringify(preciosEscalonados));
+    
+    let container;
+    switch (itemGrupo) {
+        case 'Materia Prima':
+            container = materiaPrimaContainer;
+            break;
+        case 'Consumibles':
+            container = consumiblesContainer;
+            break;
+        case 'Servicios':
+            container = serviciosContainer;
+            break;
+        case 'Mano de Obra e Instalacion':
+            container = manoDeObraContainer;
+            break;
+        case 'Transportes':
+            container = transporteContainer;
+            break;
+        default:
+            container = itemsSeleccionadosContainer;
+            break;
+    }
+    
+    if (container && !container.querySelector('.tipo-header')) {
+        const headerRow = document.createElement('tr');
+        headerRow.innerHTML = `<td colspan="${5 + valoresCantidad.length * 2}" class="tipo-header"><strong>${itemGrupo}</strong></td>`;
+        container.appendChild(headerRow);
+    }
+    
+    container.appendChild(nuevaFila);
+    idsSeleccionados.add(itemId);
+    
+    mostrarNotificacion('Ítem agregado correctamente.', 'success');
+}
+
+
+
+    
+    function actualizarNumeroProducto() {
+        const itemNumberDiv = document.getElementById('itemNumber');
+        if (itemNumberDiv) {
+            if (numerosEliminados.length > 0) {
+                itemNumberDiv.textContent = Math.min(...numerosEliminados).toString();
             } else {
-                contenedorFormulario.style.display = 'none';
-                botonFormulario.textContent = 'Agregar Nuevo Ítem';
+                itemNumberDiv.textContent = (itemNumber + 1).toString();
             }
         }
+    }
+
+    function cargarItemsProducto(productoId, itemNumber, pagina, busqueda) {
+        fetch(`/items_por_producto/${productoId}?pagina=${pagina}&busqueda=${busqueda}`)
+            .then(response => response.json())
+            .then(data => {
+                const items = data.items;
+                const totalPaginas = data.totalPaginas;
+                const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
+                const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
+    
+                seleccionItemsContainer.innerHTML = '';
+    
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Seleccionar</th>
+                            <th>Grupo</th>
+                            <th>Descripción</th>
+                            <th>Unidad</th>
+                            <th>Precio</th>
+                            <th class="oculto">Tipo</th> 
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
+                            <tr>
+                                <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
+                                <td>${item.categoria}</td>
+                                <td>${item.descripcion}</td>
+                                <td>${item.unidad}</td>
+                                <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
+                                <td class="oculto">${item.tipo}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                seleccionItemsContainer.appendChild(table);
+    
+                paginacionContainer.innerHTML = '';
+                const maxPagesToShow = 5;
+                const half = Math.floor(maxPagesToShow / 2);
+                let startPage = Math.max(1, pagina - half);
+                let endPage = Math.min(totalPaginas, pagina + half);
+    
+                if (pagina - half < 1) {
+                    endPage = Math.min(totalPaginas, endPage + (half - pagina + 1));
+                }
+                if (pagina + half > totalPaginas) {
+                    startPage = Math.max(1, startPage - (pagina + half - totalPaginas));
+                }
+    
+                if (pagina > 1) {
+                    const firstButton = document.createElement('button');
+                    firstButton.textContent = '<<';
+                    firstButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, 1, busqueda));
+                    paginacionContainer.appendChild(firstButton);
+    
+                    const prevButton = document.createElement('button');
+                    prevButton.textContent = '<';
+                    prevButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, pagina - 1, busqueda));
+                    paginacionContainer.appendChild(prevButton);
+                }
+    
+                for (let i = startPage; i <= endPage; i++) {
+                    const button = document.createElement('button');
+                    button.textContent = i;
+                    button.disabled = i === pagina;
+                    button.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, i, busqueda));
+                    paginacionContainer.appendChild(button);
+                }
+    
+                if (pagina < totalPaginas) {
+                    const nextButton = document.createElement('button');
+                    nextButton.textContent = '>';
+                    nextButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, pagina + 1, busqueda));
+                    paginacionContainer.appendChild(nextButton);
+    
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = '>>';
+                    lastButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, totalPaginas, busqueda));
+                    paginacionContainer.appendChild(lastButton);
+                }
+    
+                const buscador = document.getElementById(`buscar-item-${itemNumber}`);
+                buscador.addEventListener('input', debounce(() => {
+                    const busqueda = buscador.value;
+                    cargarItemsProducto(productoId, itemNumber, 1, busqueda);
+                }, 300));
+            });
+    }
+    
+    
+
+    function agregarItemsSeleccionados(itemNumber) {
+        const itemsSeleccionados = document.querySelectorAll(`#seleccion-items-${itemNumber} input[type="checkbox"]:checked`);
+        const materiaPrimaContainer = document.getElementById(`materiaprima-${itemNumber}`);
+        const consumiblesContainer = document.getElementById(`consumibles-${itemNumber}`);
+        const serviciosContainer = document.getElementById(`servicios-${itemNumber}`);
+        const manoDeObraContainer = document.getElementById(`manodeobra-${itemNumber}`);
+        const transporteContainer = document.getElementById(`transporte-${itemNumber}`);
         
-        function agregarItemTemporal(numeroProducto) {
-            const descripcionItem = document.getElementById(`nuevo-item-descripcion-${numeroProducto}`).value.trim();
-            const precioItem = parseFloat(document.getElementById(`nuevo-item-precio-${numeroProducto}`).value.trim());
-            const cantidadItem = parseInt(document.getElementById(`nuevo-item-cantidad-${numeroProducto}`).value.trim(), 10);
-        
-            if (descripcionItem === "" || isNaN(precioItem) || isNaN(cantidadItem) || precioItem <= 0 || cantidadItem <= 0) {
-                alert("Por favor, ingrese una descripción válida, un precio positivo y una cantidad positiva.");
+        const idsSeleccionados = new Set();
+        document.querySelectorAll(`#itemsseleccionados-${itemNumber} tr`).forEach(fila => {
+            const itemId = fila.querySelector('td:first-child').textContent;
+            idsSeleccionados.add(itemId);
+        });
+    
+        itemsSeleccionados.forEach(itemCheckbox => {
+            const itemId = itemCheckbox.value;
+            if (idsSeleccionados.has(itemId)) {
+                mostrarNotificacion(`El ítem con ID ${itemId} ya ha sido agregado.`, 'warning');
                 return;
             }
-        
-            const itemTemporal = document.createElement('tr');
-            itemTemporal.innerHTML = `
-                <td>Nuevo</td>
-                <td>Manual</td>
-                <td>${descripcionItem}</td>
-                <td>Unidad</td>
-                <td>${precioItem.toFixed(2)}</td>
-                <td>${cantidadItem}</td>
-                <td>${(precioItem * cantidadItem).toFixed(2)}</td>
-                <td><button onclick="eliminarItem(this)">Eliminar</button></td>
+    
+            const itemGrupo = itemCheckbox.closest('tr').querySelector('td:nth-child(2)').textContent;
+            const itemDescripcion = itemCheckbox.closest('tr').querySelector('td:nth-child(3)').textContent;
+            const itemUnidad = itemCheckbox.closest('tr').querySelector('td:nth-child(4)').textContent;
+            const itemPrecio = itemCheckbox.closest('tr').querySelector('td:nth-child(5)').textContent;
+            const itemTipo = itemCheckbox.closest('tr').querySelector('td:nth-child(6)').textContent;
+    
+            // Crear las celdas de cantidad y total dinámicamente basadas en valoresCantidad
+            const cantidadCeldas = valoresCantidad.map((valor, i) => 
+                `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${itemNumber})"></td>`
+            ).join('');
+            
+            const totalCeldas = valoresCantidad.map(() => 
+                `<td class="total">0</td>`
+            ).join('');
+    
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td>${itemId}</td>
+                <td>${itemGrupo}</td>
+                <td>${itemDescripcion}</td>
+                <td>${itemUnidad}</td>
+                <td>${itemPrecio}</td>
+                ${cantidadCeldas} <!-- Aquí se generan los td de cantidad -->
+                ${totalCeldas}    <!-- Aquí se generan los td de total -->
+                <td class="oculto">${itemTipo}</td>
+                <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
             `;
-        
-            document.querySelector(`#itemsseleccionados-${numeroProducto}`).appendChild(itemTemporal);
-        
-            // Limpiar los campos del formulario después de agregar el ítem
-            document.getElementById(`nuevo-item-descripcion-${numeroProducto}`).value = '';
-            document.getElementById(`nuevo-item-precio-${numeroProducto}`).value = '';
-            document.getElementById(`nuevo-item-cantidad-${numeroProducto}`).value = '1';
+    
+            let container;
+            switch (itemTipo) {
+                case 'Materia Prima':
+                    container = materiaPrimaContainer;
+                    break;
+                case 'Consumibles':
+                    container = consumiblesContainer;
+                    break;
+                case 'Servicios':
+                    container = serviciosContainer;
+                    break;
+                case 'Mano de Obra e Instalacion':
+                    container = manoDeObraContainer;
+                    break;
+                case 'Transportes':
+                    container = transporteContainer;
+                    break;
+                default:
+                    console.error('Tipo de ítem desconocido:', itemTipo);
+                    return;
+            }
+    
+            // Añadir encabezado si aún no existe
+            if (container && !container.querySelector('.tipo-header')) {
+                const headerRow = document.createElement('tr');
+                headerRow.innerHTML = `<td colspan="${5 + valoresCantidad.length * 2}" class="tipo-header"><strong>${itemTipo}</strong></td>`;
+                container.appendChild(headerRow);
+            }
+    
+            container.appendChild(nuevaFila);
+            idsSeleccionados.add(itemId);
+            actualizarTotalProducto(itemNumber);
+        });
+    
+        mostrarNotificacion('Ítems agregados correctamente.', 'success');
+    }
+    
+    
+    
+    function calcularPrecioUnitario(preciosEscalonados, cantidad) {
+        // Encuentra el precio unitario adecuado basado en la cantidad
+        for (const escalonado of preciosEscalonados) {
+            if (cantidad >= escalonado.min_cantidad && (escalonado.max_cantidad === 0 || cantidad <= escalonado.max_cantidad)) {
+                return parseFloat(escalonado.precio_unitario.replace(/\./g, '').replace(/,/g, '.'));
+            }
+        }
+        return 0; // Precio por defecto si no se encuentra el rango adecuado
+    }
+    
+    function actualizarTotalProducto(itemNumber) {
+        const contenedores = [
+            document.getElementById(`materiaprima-${itemNumber}`),
+            document.getElementById(`consumibles-${itemNumber}`),
+            document.getElementById(`servicios-${itemNumber}`),
+            document.getElementById(`manodeobra-${itemNumber}`),
+            document.getElementById(`transporte-${itemNumber}`),
+            document.getElementById(`itemsseleccionados-${itemNumber}`)
+        ];
+    
+        // Mantenemos el total por cada cantidad
+        const subtotalPorCantidad = Array(valoresCantidad.length).fill(0);
+    
+        contenedores.forEach(container => {
+            if (container) {
+                const filas = container.querySelectorAll('tr');
+                filas.forEach(fila => {
+                    const precioElement = fila.querySelector('td:nth-child(5)');
+                    const cantidadInputs = fila.querySelectorAll('input.cantidad');
+                    const preciosEscalonados = JSON.parse(fila.getAttribute('data-precios-escalonados') || '[]');
+    
+                    if (precioElement && cantidadInputs.length > 0) {
+                        let precio = parseFloat(precioElement.textContent.trim().replace(/\./g, '').replace(/,/g, '.'));
+    
+                        // Si hay precios escalonados, calcular el precio basado en la cantidad
+                        if (preciosEscalonados.length > 0) {
+                            cantidadInputs.forEach((input, index) => {
+                                const cantidad = parseFloat(input.value.trim()) || 0;
+                                const precioEscalonado = preciosEscalonados.find(pe => cantidad >= pe.min_cantidad && (cantidad <= pe.max_cantidad || pe.max_cantidad === 0));
+    
+                                if (precioEscalonado) {
+                                    precio = parseFloat(precioEscalonado.precio_unitario);
+                                }
+    
+                                const subtotal = precio * cantidad;
+                                const totalElement = fila.querySelectorAll('.total')[index];
+                                if (totalElement) {
+                                    totalElement.textContent = formatearNumero(subtotal);
+                                }
+                                subtotalPorCantidad[index] += subtotal;
+                            });
+                        } else {
+                            // Si no hay precios escalonados, usar el precio fijo
+                            cantidadInputs.forEach((input, index) => {
+                                const cantidad = parseFloat(input.value.trim()) || 0;
+                                const subtotal = precio * cantidad;
+                                const totalElement = fila.querySelectorAll('.total')[index];
+                                if (totalElement) {
+                                    totalElement.textContent = formatearNumero(subtotal);
+                                }
+                                subtotalPorCantidad[index] += subtotal;
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    
+        // Obtener la cantidad de unidades del producto
+        const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
+        cantidadInputs.forEach((input, index) => {
+            const cantidadUnidades = parseFloat(input.value) || 1;
+            const nuevoValorUtilidad = parseFloat(document.getElementById(`utilidadSeleccionada-${itemNumber}-${index}`).value) || null;
+            actualizarTotalesExtras(itemNumber, subtotalPorCantidad[index], nuevoValorUtilidad, cantidadUnidades, index);
+        });
+    }
+    
+    // Llamada para actualizar todos los resúmenes de costos cuando se modifiquen los items
+    function actualizarResumenDeCostos(productoId) {
+        const productoElement = document.getElementById(`producto-${productoId}`);
+        if (productoElement) {
+            // Obtén los datos necesarios para el cálculo
+            const costoDirecto = calcularCostoDirecto(productoId);
+            const costoUnitario = calcularCostoUnitario(productoId);
+            const administracion = calcularAdministracion(productoId);
+            const imprevistos = calcularImprevistos(productoId);
+            const utilidad = calcularUtilidad(productoId);
+            const ofertaAntesIVA = calcularOfertaAntesIVA(productoId);
+            const iva = calcularIVA(productoId);
+            const valorOferta = calcularValorOferta(productoId);
+    
+            // Actualiza el resumen de costos
+            const resumenCostos = document.querySelector(`#resumen-costos-${productoId}`);
+            if (resumenCostos) {
+                resumenCostos.querySelector(`#costo-directo-${productoId}`).textContent = `Costo Directo: ${costoDirecto}`;
+                resumenCostos.querySelector(`#costo-unitario-${productoId}`).textContent = `Costo Directo Unitario: ${costoUnitario}`;
+                resumenCostos.querySelector(`#administracion-${productoId}`).textContent = `Administración: ${administracion}`;
+                resumenCostos.querySelector(`#imprevistos-${productoId}`).textContent = `Imprevistos: ${imprevistos}`;
+                resumenCostos.querySelector(`#utilidad-${productoId}`).textContent = `Utilidad: ${utilidad}`;
+                resumenCostos.querySelector(`#oferta-antes-iva-${productoId}`).textContent = `Oferta Antes De IVA: ${ofertaAntesIVA}`;
+                resumenCostos.querySelector(`#iva-${productoId}`).textContent = `IVA: ${iva}`;
+                resumenCostos.querySelector(`#valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOferta}`;
+            }
+        }
+    }
+    
+    
+           
+        function calcularPorcentaje(valor, porcentaje) {
+            return (valor * porcentaje) / 100;
         }
         
-        function eliminarItemSeleccionado(button) {
-            const fila = button.closest('tr');
-            const itemNumber = fila.closest('tbody').id.split('-')[1];
+        function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null, cantidadUnidades, index) {
+            const productoElement = document.querySelector(`#producto-${itemNumber}`);
+            if (productoElement) {
+                const administracionPorcentaje = parseFloat(productoElement.dataset.administracion);
+                const imprevistosPorcentaje = parseFloat(productoElement.dataset.imprevistos);
+                const utilidadPorcentaje = nuevoValorUtilidad !== null ? nuevoValorUtilidad : parseFloat(productoElement.dataset.utilidad);
+            
+                const administracion = calcularPorcentaje(costoDirecto, administracionPorcentaje);
+                const imprevistos = calcularPorcentaje(costoDirecto, imprevistosPorcentaje);
+                const utilidad = calcularPorcentaje(costoDirecto, utilidadPorcentaje);
+            
+                const ofertaAntesIva = costoDirecto + administracion + imprevistos + utilidad;
+                const iva = calcularPorcentaje(ofertaAntesIva, 19);
+                const valorOferta = ofertaAntesIva + iva;
+                const costoUnitario = costoDirecto / cantidadUnidades;
+            
+                // Actualiza el título del resumen de costos
+                const resumenTitulo = document.getElementById(`titulo-resumen-${itemNumber}-${index}`);
+                if (resumenTitulo) {
+                    resumenTitulo.textContent = `Resumen de costos (${cantidadUnidades})`;
+                } 
+            
+                document.getElementById(`costo-directo-${itemNumber}-${index}`).textContent = `Costo Directo: ${formatearNumero(costoDirecto)}`;
+                document.getElementById(`costo-unitario-${itemNumber}-${index}`).textContent = `Costo Directo Unitario: ${formatearNumero(costoUnitario)}`;
+                document.getElementById(`administracion-${itemNumber}-${index}`).innerHTML = `Administración: ${formatearNumero(administracion)} <span id="porcentaje-administracion-${itemNumber}-${index}">(${administracionPorcentaje}%)</span>`;
+                document.getElementById(`imprevistos-${itemNumber}-${index}`).innerHTML = `Imprevistos: ${formatearNumero(imprevistos)} <span id="porcentaje-imprevistos-${itemNumber}-${index}">(${imprevistosPorcentaje}%)</span>`;
+                document.getElementById(`utilidad-${itemNumber}-${index}`).innerHTML = `Utilidad: ${formatearNumero(utilidad)} <span id="porcentaje-utilidad-${itemNumber}-${index}">(${utilidadPorcentaje}%)</span>`;
+                document.getElementById(`oferta-antes-iva-${itemNumber}-${index}`).textContent = `Oferta Antes De IVA: ${formatearNumero(ofertaAntesIva)}`;
+                document.getElementById(`iva-${itemNumber}-${index}`).textContent = `IVA: ${formatearNumero(iva)}`;
+                document.getElementById(`valor-oferta-${itemNumber}-${index}`).textContent = `Valor Oferta Impuestos Incluidos: ${formatearNumero(valorOferta)}`;
+            } else {
+                console.error('Error: Elemento del producto no encontrado');
+            }
+        }
+        
+        
+        function formatearNumero(numero) {
+            return numero.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+
+        
+    function mostrarNotificacion(mensaje, tipo) {
+        const notificacion = document.createElement('div');
+        notificacion.className = `notificacion ${tipo}`;
+        notificacion.textContent = mensaje;
+        document.body.appendChild(notificacion);
+        setTimeout(() => {
+            notificacion.remove();
+        }, 3000);
+    }
+    
+    
+
+    function eliminarItemSeleccionado(button) {
+        const fila = button.closest('tr');
+        const itemNumber = fila.closest('tbody').id.split('-')[1];
+        fila.remove();
+        actualizarTotalProducto(itemNumber); // Actualizar el total del producto después de eliminar el ítem
+    }
+
+    function eliminarItemTemporal(button, itemId, itemNumber) {
+        // Encuentra la fila del ítem temporal que se va a eliminar
+        const fila = button.closest('tr');
+        if (fila) {
+            // Elimina la fila del contenedor de ítems temporales
             fila.remove();
-            actualizarTotalProducto(itemNumber); // Actualizar el total del producto después de eliminar el ítem
+            // Actualiza el total del producto después de eliminar el ítem
+            actualizarTotalProducto(itemNumber);
+        } else {
+            console.error('Error: Fila no encontrada');
         }
+    }
+    
+    
 
-        function generarCabeceras(valoresCantidad) {
-            const cantidadHeader = valoresCantidad.map(valor => `<th>Cantidad (${valor})</th>`).join('');
-            const totalHeader = valoresCantidad.map(valor => `<th>Total (${valor})</th>`).join('');
-            return { cantidadHeader, totalHeader };
-        }
-        
-        function generarFilasItems(items, valoresCantidad) {
-            return items.map(item => {
-                // Verifica que item.precio_unitario tenga el valor esperado
-                console.log('Item:', item); // Debugging
-        
-                const celdasCantidad = valoresCantidad.map(valor => `<td>${item.cantidad || 0}</td>`).join('');
-                const celdasTotal = valoresCantidad.map(valor => `<td>${(item.cantidad * item.precio_unitario || 0).toFixed(2)}</td>`).join('');
-        
-                return `
-                    <tr>
-                        <td>${item.id}</td>
-                        <td>${item.grupo || 'N/A'}</td>
-                        <td>${item.descripcion || 'N/A'}</td>
-                        <td>${item.unidad || 'N/A'}</td>
-                        <td>${item.precio_unitario ? item.precio_unitario.toFixed(2) : '0.00'}</td>
-                        ${celdasCantidad}
-                        ${celdasTotal}
-                        <td class="oculto">${item.tipo || 'N/A'}</td>
-                        <td>
-                            <button onclick="editarItem(${item.id})">Editar</button>
-                            <button onclick="eliminarItem(${item.id})">Eliminar</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-        
-        function mostrarItems(productoId, items, valoresCantidad) {
-            const tbody = document.getElementById(`itemsseleccionados-${productoId}`);
-            tbody.innerHTML = generarFilasItems(items, valoresCantidad);
-        }
-        
+    let isLoading = false;
 
+    function verTodosItems(itemNumber, pagina, busqueda) {
+        if (isLoading) return; // Evitar que se realicen búsquedas adicionales mientras se está cargando
         
-        // Llama a esta función cuando cargues los datos
-        mostrarItems(productoId, items_cotizados, valoresCantidad);
+        isLoading = true;
+        
+        const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
+        const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
+        const buscador = document.getElementById(`buscar-item-${itemNumber}`);
+        
+        // Mostrar animación de carga
+        seleccionItemsContainer.innerHTML = '<div class="loading">Cargando...</div>';
+        seleccionItemsContainer.classList.add('loading-active'); // Añadir clase de carga
+        
+        fetch(`/todos_los_items?pagina=${pagina}&busqueda=${busqueda}`)
+            .then(response => response.json())
+            .then(data => {
+                const items = data.items;
+                const totalPaginas = data.totalPaginas;
+        
+                // Usar setTimeout para retraso artificial
+                setTimeout(() => {
+                    // Limpiar animación de carga
+                    seleccionItemsContainer.innerHTML = '';
+                    seleccionItemsContainer.classList.remove('loading-active'); // Quitar clase de carga
+                    
+                    // Mostrar resultados
+                    const table = document.createElement('table');
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>Seleccionar</th>
+                                <th>Grupo</th>
+                                <th>Descripción</th>
+                                <th>Unidad</th>
+                                <th>Precio</th>
+                                <th class="oculto">Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(item => `
+                                <tr>
+                                    <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
+                                    <td>${item.categoria}</td>
+                                    <td>${item.descripcion}</td>
+                                    <td>${item.unidad}</td>
+                                    <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
+                                    <td class="oculto">${item.tipo}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    `;
+                    seleccionItemsContainer.appendChild(table);
+        
+                    // Actualizar paginación
+                    paginacionContainer.innerHTML = '';
+                    const maxPagesToShow = 5;
+                    const half = Math.floor(maxPagesToShow / 2);
+                    let startPage = Math.max(1, pagina - half);
+                    let endPage = Math.min(totalPaginas, pagina + half);
+        
+                    if (pagina - half < 1) {
+                        endPage = Math.min(totalPaginas, endPage + (half - pagina + 1));
+                    }
+                    if (pagina + half > totalPaginas) {
+                        startPage = Math.max(1, startPage - (pagina + half - totalPaginas));
+                    }
+        
+                    if (pagina > 1) {
+                        const firstButton = document.createElement('button');
+                        firstButton.textContent = '<<';
+                        firstButton.addEventListener('click', () => verTodosItems(itemNumber, 1, busqueda));
+                        paginacionContainer.appendChild(firstButton);
+        
+                        const prevButton = document.createElement('button');
+                        prevButton.textContent = '<';
+                        prevButton.addEventListener('click', () => verTodosItems(itemNumber, pagina - 1, busqueda));
+                        paginacionContainer.appendChild(prevButton);
+                    }
+        
+                    for (let i = startPage; i <= endPage; i++) {
+                        const button = document.createElement('button');
+                        button.textContent = i;
+                        button.disabled = i === pagina;
+                        button.addEventListener('click', () => verTodosItems(itemNumber, i, busqueda));
+                        paginacionContainer.appendChild(button);
+                    }
+        
+                    if (pagina < totalPaginas) {
+                        const nextButton = document.createElement('button');
+                        nextButton.textContent = '>';
+                        nextButton.addEventListener('click', () => verTodosItems(itemNumber, pagina + 1, busqueda));
+                        paginacionContainer.appendChild(nextButton);
+        
+                        const lastButton = document.createElement('button');
+                        lastButton.textContent = '>>';
+                        lastButton.addEventListener('click', () => verTodosItems(itemNumber, totalPaginas, busqueda));
+                        paginacionContainer.appendChild(lastButton);
+                    }
+        
+                    // Configurar el evento de búsqueda
+                    buscador.addEventListener('input', debounce(() => {
+                        const busqueda = buscador.value;
+                        verTodosItems(itemNumber, 1, busqueda);
+                    }, 300));
+        
+                    isLoading = false; // Rehabilitar búsqueda
+                }, 1500); // Retraso de 2 segundos
+            });
+    }
 
-    </script>
-</body>
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('guardarCotizacionBtn').addEventListener('click', function() {
+            // Capturar datos generales de la cotización
+            const fecha = new Date();
+            const fechaCotizacion = new Date().toISOString(); // Fecha y hora en formato ISO 8601
+    
+            // Captura otros datos
+            const clienteCotizacion = document.getElementById('cliente_cotizacion').value.trim();
+            const contactoCotizacion = document.getElementById('contacto_cotizacion').value.trim();
+            const proyectoCotizacion = document.getElementById('proyecto_cotizacion').value.trim();
+            const vendedorCotizacion = document.getElementById('vendedor_cotizacion').value.trim();
+            const negociacion = document.getElementById('negociacion').value.trim();
+            const formaPago = document.getElementById('forma_pago').value.trim();
+            const validezCotizacion = document.getElementById('validez_cotizacion').value.trim();
+            const descuentoCotizacion = document.getElementById('descuento_cotizacion').value.trim();
+            const recibeCotizacion = document.getElementById('recibe_cotizacion').value.trim();
+            const numeroContacto = document.getElementById('numero_contacto').value.trim();
+            const direccionCotizacion = document.getElementById('direccion_cotizacion').value.trim();
+            const ivaSeleccionado = document.getElementById('iva-select').value.trim();
+    
+            // Validar campos esenciales
+            if (!clienteCotizacion || !contactoCotizacion || !proyectoCotizacion || !vendedorCotizacion || !negociacion) {
+                alert("Por favor, complete todos los campos obligatorios: Cliente, Contacto, Proyecto, Vendedor y Negociación.");
+                return;
+            }
+    
+
+            
+
+            // Capturar productos en la cotización
+            const productos = [];
+            const productoIdsCapturados = new Set();
+    
+            document.querySelectorAll('.producto').forEach(function(productoDiv) {
+                const productoId = productoDiv.id.split('-')[1];
+                if (productoIdsCapturados.has(productoId)) return;
+                productoIdsCapturados.add(productoId);
+    
+                const productoSeleccionadoId = productoDiv.querySelector('input[name="producto_seleccionado_id"]').value;
+                const descripcion = productoDiv.querySelector('h4').innerText;
+                const medidasText = productoDiv.querySelector('h4:nth-of-type(2)').innerText;
+                const medidasMatch = medidasText.match(/Alto \(Cm\): (\d+) \|\| Ancho \(Cm\): (\d+) \|\| Fondo \(Cm\): (\d+)/);
+                const alto = medidasMatch ? parseFloat(medidasMatch[1]) : null;
+                const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
+                const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
+    
+                const cantidadesSeleccionadas = [];
+                productoDiv.querySelectorAll('h4').forEach(function(cantidadH4) {
+                    const cantidadText = cantidadH4.innerText;
+                    const cantidadMatch = cantidadText.match(/Cantidad seleccionada \(\d+\): (\d+) unidades/);
+                    if (cantidadMatch) {
+                        cantidadesSeleccionadas.push(parseInt(cantidadMatch[1]));
+                    }
+                });
+    
+                const items = [];
+                document.querySelectorAll('tbody tr').forEach(function(itemRow) {
+                    const cantidadInput = itemRow.querySelector('input[type="number"]');
+                    if (cantidadInput) {
+                        const itemId = itemRow.querySelector('td:nth-child(1)').innerText.trim();
+                        const itemCantidad = cantidadInput.value;
+                        const itemTotalText = itemRow.querySelector('td.total').innerText.trim();
+                
+                        // Reemplazar separadores de miles y cambiar coma por punto decimal
+                        const itemTotal = parseFloat(itemTotalText.replace(/\./g, '').replace(',', '.'));
+                
+                        items.push({
+                            itemId: parseInt(itemId),
+                            itemCantidad: parseInt(itemCantidad),
+                            itemTotal: itemTotal
+                        });
+                    }
+                });
+    
+                const resúmenesCostos = [];
+                productoDiv.querySelectorAll('.resumen-costos-individual').forEach(function(resumenDiv, index) {
+                    const costoDirectoElement = resumenDiv.querySelector(`#costo-directo-${productoId}-${index}`);
+                    const administracionElement = resumenDiv.querySelector(`#administracion-${productoId}-${index}`);
+                    const imprevistosElement = resumenDiv.querySelector(`#imprevistos-${productoId}-${index}`);
+                    const utilidadElement = resumenDiv.querySelector(`#utilidad-${productoId}-${index}`);
+                    const ofertaAntesIvaElement = resumenDiv.querySelector(`#oferta-antes-iva-${productoId}-${index}`);
+                    const ivaElement = resumenDiv.querySelector(`#iva-${productoId}-${index}`);
+                    const valorOfertaElement = resumenDiv.querySelector(`#valor-oferta-${productoId}-${index}`);
+    
+                    if (costoDirectoElement && administracionElement && imprevistosElement && utilidadElement &&
+                        ofertaAntesIvaElement && ivaElement && valorOfertaElement) {
+    
+                        const costoDirecto = parseFloat(costoDirectoElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const administracion = parseFloat(administracionElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const imprevistos = parseFloat(imprevistosElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const utilidad = parseFloat(utilidadElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const ofertaAntesIva = parseFloat(ofertaAntesIvaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const iva = parseFloat(ivaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const valorOferta = parseFloat(valorOfertaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+    
+                        resúmenesCostos.push({
+                            costoDirecto: costoDirecto,
+                            administracion: administracion,
+                            imprevistos: imprevistos,
+                            utilidad: utilidad,
+                            ofertaAntesIva: ofertaAntesIva,
+                            iva: iva,
+                            valorOferta: valorOferta
+                        });
+                    } else {
+                        console.error(`Algunos elementos de resumen no se encontraron para el producto ${productoId} y resumen ${index}.`);
+                    }
+                });
+    
+                productos.push({
+                    productoId: parseInt(productoId),
+                    productoSeleccionadoId: parseInt(productoSeleccionadoId),
+                    descripcion: descripcion.trim(),
+                    alto: alto,
+                    ancho: ancho,
+                    fondo: fondo,
+                    cantidadesSeleccionadas: cantidadesSeleccionadas,
+                    items: items,
+                    resúmenesCostos: resúmenesCostos
+                });
+            });
+    
+            const cotizacionData = {
+                fechaCotizacion: fechaCotizacion,
+                clienteCotizacion: clienteCotizacion,
+                contactoCotizacion: contactoCotizacion,
+                proyectoCotizacion: proyectoCotizacion,
+                vendedorCotizacion: vendedorCotizacion,
+                negociacion: negociacion,
+                formaPago: formaPago,
+                validezCotizacion: validezCotizacion,
+                descuentoCotizacion: parseFloat(descuentoCotizacion),
+                recibeCotizacion: recibeCotizacion,
+                numeroContacto: numeroContacto,
+                direccionCotizacion: direccionCotizacion,
+                ivaSeleccionado: ivaSeleccionado,
+                productos: productos
+            };
+    
+            console.log('Datos a enviar:', cotizacionData);
+    
+            fetch('/guardar-cotizacion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(cotizacionData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Cotización guardada exitosamente:', data);
+                if (data.success) {
+                    alert('Cotización guardada con éxito.');
+                } else {
+                    alert('Error al guardar la cotización.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al guardar la cotización:', error);
+            });
+        });
+    });
+    
+    
+
+    
+
+    
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+</script>
 </html>

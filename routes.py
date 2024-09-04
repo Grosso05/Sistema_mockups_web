@@ -391,9 +391,12 @@ def listar_cotizaciones():
 def editar_cotizacion(cotizacion_id):
     # Consulta la cotización por ID
     cotizacion = Cotizacion.query.filter_by(id_cotizacion=cotizacion_id).first()
-
+    
     if not cotizacion:
         return "Cotización no encontrada", 404
+
+    # Formatea la fecha en el formato correcto
+    cotizacion_fecha = cotizacion.fecha_cotizacion.strftime('%Y-%m-%d') if cotizacion.fecha_cotizacion else None
 
     # Consulta los productos cotizados asociados a la cotización
     productos_cotizados = ProductoCotizado.query.filter_by(cotizacion_id=cotizacion_id).all()
@@ -452,14 +455,19 @@ def editar_cotizacion(cotizacion_id):
     cantidadHeader = ''.join([f'<th>Cantidad ({valor})</th>' for valor in valoresCantidad])
     totalHeader = ''.join([f'<th>Total ({valor})</th>' for valor in valoresCantidad])
 
+    # Consulta la lista de vendedores con user_rol 1 o 2
+    vendedores = Users.query.filter(Users.user_rol.in_([1, 2])).all()
+
     return render_template(
         'editar_cotizacion.html',
         cotizacion=cotizacion.to_dict(),
+        fecha_cotizacion=cotizacion_fecha,
         productos_cotizados=[p.to_dict() for p in productos_cotizados],
         items_cotizados=items_cotizados,
         resumen_costos=resumen_costos,
         cantidadHeader=cantidadHeader,
-        totalHeader=totalHeader
+        totalHeader=totalHeader,
+        vendedores=vendedores  # Añadir esta línea
     )
 
 

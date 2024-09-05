@@ -474,89 +474,114 @@
  console.log(resumenCostos);
  
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Asignar los datos a variables globales
-        const productosCotizados = {{ productos_cotizados | tojson }};
-        const itemsCotizados = {{ items_cotizados | tojson }};
-        const resumenCostos = {{ resumen_costos | tojson }};
-        
-        // Llamar a la función para actualizar el contenedor al cargar la página
-        productosCotizados.forEach(producto => agregarProducto(producto, itemsCotizados, resumenCostos));
-    });
+ document.addEventListener('DOMContentLoaded', function() {
+    // Asignar los datos a variables globales
+    const productosCotizados = {{ productos_cotizados | tojson }};
+    const itemsCotizados = {{ items_cotizados | tojson }};
+    const resumenCostos = {{ resumen_costos | tojson }};
     
-    // Función para añadir un producto al DOM de forma organizada
-    function agregarProducto(producto, items, resumenCostos) {
-        console.log('Producto:', producto); // Verifica que los productos se estén procesando
-        console.log('Items:', items); // Verifica que los ítems se estén filtrando correctamente
-        console.log('Resumen Costos:', resumenCostos); // Verifica que el resumen se esté filtrando correctamente
+    // Llamar a la función para actualizar el contenedor al cargar la página
+    productosCotizados.forEach(producto => agregarProducto(producto, itemsCotizados, resumenCostos));
+});
 
-        console.log('Producto ID:', producto.producto_id);
-        console.log('IDs de los ítems:', items.map(item => item.producto_id));
-        console.log('IDs de los resúmenes:', resumenCostos.map(resumen => resumen.producto_id));
+// Función para añadir un producto al DOM de forma organizada
+function agregarProducto(producto, items, resumenCostos) {
+    console.log('Producto:', producto); // Verifica que los productos se estén procesando
+    console.log('Items:', items); // Verifica que los ítems se estén filtrando correctamente
+    console.log('Resumen Costos:', resumenCostos); // Verifica que el resumen se esté filtrando correctamente
 
-        
-
-        // Crear nuevo div para el producto
-        const nuevoProducto = document.createElement('div');
-        nuevoProducto.className = 'producto';
-        
-        // Crear HTML dinámico para el producto
-        nuevoProducto.innerHTML = `
-            <h3 contenteditable="true" style="color: #00b04f;">Producto: ${producto.producto_nombre}</h3> 
-            <h4 contenteditable="true">Descripción: ${producto.descripcion}</h4>
-            <h4>Dimensiones: Alto: ${producto.alto}cm, Ancho: ${producto.ancho}cm, Fondo: ${producto.fondo}cm</h4>
-        `;
-        
-        // Contenedor para los ítems del producto
-        const itemsContainer = document.createElement('div');
-        itemsContainer.className = 'items-seleccionados';
-        itemsContainer.innerHTML = '<h4>Items Seleccionados</h4>';
-        
-        // Filtrar y agregar ítems correspondientes a este producto
-        const itemsProducto = itemsCotizados.filter(item => Number(item.producto_cotizado_id) === Number(producto.id));
-        console.log('Items del producto filtrado:', itemsProducto);
-        itemsProducto.forEach(item => {
-            const itemHTML = `
-                <div class="item">
-                    <p>Descripción: ${item.descripcion}</p>
-                    <p>Grupo: ${item.grupo}</p>
-                    <p>Cantidad: ${item.cantidad}</p>
-                    <p>Precio Unitario: ${item.precio_unitario}</p>
-                </div>
-            `;
-            itemsContainer.innerHTML += itemHTML;
-        });
-        
-        // Contenedor para el resumen de costos
-        const resumenContainer = document.createElement('div');
-        resumenContainer.className = 'resumen-costos';
-        resumenContainer.innerHTML = '<h4>Resumen de Costos</h4>';
-        
-        // Filtrar y agregar el resumen de costos correspondiente a este producto
-        const resumenProducto = resumenCostos.filter(resumen => Number(resumen.producto_id) === Number(producto.id));
-        console.log('Resumen del producto:', resumenProducto);
-        resumenProducto.forEach(resumen => {
-            const resumenHTML = `
+    // Crear nuevo div para el producto
+    const nuevoProducto = document.createElement('div');
+    nuevoProducto.className = 'producto';
+    
+    // Crear HTML dinámico para el producto
+    nuevoProducto.innerHTML = `
+        <h3 contenteditable="true" style="color: #00b04f;">Producto: ${producto.producto_nombre}</h3> 
+        <h4 contenteditable="true">Descripción: ${producto.descripcion}</h4>
+        <h4>Dimensiones: Alto: ${producto.alto}cm, Ancho: ${producto.ancho}cm, Fondo: ${producto.fondo}cm</h4>
+    `;
+    
+    // Contenedor para los ítems del producto
+    const itemsContainer = document.createElement('div');
+    itemsContainer.className = 'items-seleccionados';
+    itemsContainer.innerHTML = `
+        <h4>Items Seleccionados</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th>Grupo</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="itemsseleccionados-${producto.id}">
+                ${items
+                    .filter(item => Number(item.producto_cotizado_id) === Number(producto.id))
+                    .map(item => `
+                        <tr>
+                            <td>${item.id}</td>
+                            <td>${item.descripcion}</td>
+                            <td>${item.grupo}</td>
+                            <td>${item.cantidad}</td>
+                            <td>${item.precio_unitario}</td>
+                            <td>${item.total_item}</td>
+                        </tr>
+                    `).join('')
+                }
+            </tbody>
+        </table>
+    `;
+    
+    // Contenedor para el resumen de costos
+    const resumenContainer = document.createElement('div');
+    resumenContainer.className = 'resumen-costos';
+    resumenContainer.innerHTML = `
+        <h4>Resumen de Costos</h4>
+        ${resumenCostos
+            .filter(resumen => Number(resumen.producto_id) === Number(producto.id))
+            .map(resumen => `
                 <div class="resumen">
-                    <p>Costo Directo: ${resumen.costo_directo}</p>
-                    <p>Administración: ${resumen.administracion} (${resumen.porcentaje_administracion}%)</p>
-                    <p>Imprevistos: ${resumen.imprevistos} (${resumen.porcentaje_imprevistos}%)</p>
-                    <p>IVA: ${resumen.iva}</p>
-                    <p>Valor Oferta: ${resumen.valor_oferta}</p>
+                    <h5>Resumen de Costos (${resumen.id})</h5>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>Costo Directo:</td>
+                                <td>${resumen.costo_directo}</td>
+                            </tr>
+                            <tr>
+                                <td>Administración:</td>
+                                <td>${resumen.administracion}</td>
+                            </tr>
+                            <tr>
+                                <td>Imprevistos:</td>
+                                <td>${resumen.imprevistos}</td>
+                            </tr>
+                            <tr>
+                                <td>IVA:</td>
+                                <td>${resumen.iva}</td>
+                            </tr>
+                            <tr>
+                                <td>Valor Oferta:</td>
+                                <td>${resumen.valor_oferta}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-            `;
-            resumenContainer.innerHTML += resumenHTML;
-        });
-        
-        // Agregar los contenedores de ítems y resumen al producto
-        nuevoProducto.appendChild(itemsContainer);
-        nuevoProducto.appendChild(resumenContainer);
-        
-        // Agregar el nuevo producto al contenedor principal
-        const productosContainer = document.getElementById('productos-container');
-        console.log(productosContainer); // Verifica si el contenedor es el correcto
-        productosContainer.appendChild(nuevoProducto);
-    }
+            `).join('')
+        }
+    `;
+    
+    // Agregar los contenedores de ítems y resumen al producto
+    nuevoProducto.appendChild(itemsContainer);
+    nuevoProducto.appendChild(resumenContainer);
+    
+    // Agregar el nuevo producto al contenedor principal
+    const productosContainer = document.getElementById('productos-container');
+    productosContainer.appendChild(nuevoProducto);
+}
     
         // Agregar productos nuevos
         document.getElementById('btnCrear').addEventListener('click', function() {

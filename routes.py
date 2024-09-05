@@ -423,7 +423,7 @@ def editar_cotizacion(cotizacion_id):
         if related_item:
             item['grupo'] = related_item.categoria.CATEGORIA_NOMBRE if related_item.categoria else 'N/A'
             item['descripcion'] = related_item.nombre
-            item['unidad'] = related_item.unidad
+            item['unidad'] = related_item.unidad  # Agregamos el campo 'unidad'
             item['tipo'] = related_item.tipo  # Asegurarnos de enviar el campo 'tipo' desde el backend
 
             # Consultar el precio desde la tabla ItemProveedores
@@ -435,7 +435,7 @@ def editar_cotizacion(cotizacion_id):
         else:
             item['grupo'] = 'N/A'
             item['descripcion'] = 'N/A'
-            item['unidad'] = 'N/A'
+            item['unidad'] = 'N/A'  # Agregamos 'N/A' para los casos sin unidad
             item['tipo'] = 'N/A'  # Si no hay tipo disponible, asignamos 'N/A'
             item['precio_unitario'] = '0.00'
 

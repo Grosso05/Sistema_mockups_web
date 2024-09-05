@@ -513,10 +513,11 @@ function agregarProducto(producto, items, resumenCostos) {
                     <th>ID</th>
                     <th>Grupo</th>
                     <th>Descripción</th>
+                    <th>Unidad</th>
                     <th>Precio Unitario</th>
                     <th>Cantidad</th>
                     <th>Total</th>
-                    <th>Acciones</th> <!-- Columna para el botón de eliminar -->
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="itemsseleccionados-${producto.id}">
@@ -529,44 +530,39 @@ function agregarProducto(producto, items, resumenCostos) {
     const resumenContainer = document.createElement('div');
     resumenContainer.className = 'resumen-costos';
     resumenContainer.innerHTML = `
-        <h4>Resumen de Costos</h4>
         ${resumenCostos
             .filter(resumen => Number(resumen.producto_id) === Number(producto.id))
-            .map(resumen => `
-                <div class="resumen">
-                    <h5>Resumen de Costos (${resumen.id})</h5>
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td>Costo Directo:</td>
-                                <td>${resumen.costo_directo}</td>
-                            </tr>
-                            <tr>
-                                <td>Administración:</td>
-                                <td>${resumen.administracion}</td>
-                            </tr>
-                            <tr>
-                                <td>Imprevistos:</td>
-                                <td>${resumen.imprevistos}</td>
-                            </tr>
-                            <tr>
-                                <td>IVA:</td>
-                                <td>${resumen.iva}</td>
-                            </tr>
-                            <tr>
-                                <td>Valor Oferta:</td>
-                                <td>${resumen.valor_oferta}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            .map((resumen, index) => `
+                <div class="resumen-costos-individual" id="resumen-costos-${producto.producto_id}-${index}">
+                    <h4>Resumen de Costos (${resumen.id})</h4>
+                    <p id="costo-directo-${producto.producto_id}-${index}">Costo Directo: ${resumen.costo_directo}</p>
+                    <p id="costo-unitario-${producto.producto_id}-${index}">Costo Directo Unitario: ${resumen.costo_unitario}</p>
+                    <p id="administracion-${producto.producto_id}-${index}">Administración: ${resumen.administracion} <span id="porcentaje-administracion-${producto.producto_id}-${index}">(${resumen.porcentaje_administracion}%)</span></p>
+                    <p id="imprevistos-${producto.producto_id}-${index}">Imprevistos: ${resumen.imprevistos} <span id="porcentaje-imprevistos-${producto.producto_id}-${index}">(${resumen.porcentaje_imprevistos}%)</span></p>
+                    <p id="utilidad-${producto.producto_id}-${index}">Utilidad: ${resumen.utilidad} <span id="porcentaje-utilidad-${producto.producto_id}-${index}">(${resumen.porcentaje_utilidad}%)</span></p>
+                    <input type="number" id="utilidadSeleccionada-${producto.producto_id}-${index}" placeholder="El porcentaje mínimo es: ${resumen.porcentaje_utilidad}" onchange="actualizarTotalProducto(${producto.producto_id})">
+                    <p id="oferta-antes-iva-${producto.producto_id}-${index}">Oferta Antes De IVA: ${resumen.oferta_antes_iva}</p>
+                    <p id="iva-${producto.producto_id}-${index}">IVA: ${resumen.iva}</p>
+                    <p style="color: #00b04f;" id="valor-oferta-${producto.producto_id}-${index}">Valor Oferta Impuestos Incluidos: ${resumen.valor_oferta}</p>
                 </div>
             `).join('')
         }
     `;
-    
-    // Agregar los contenedores de ítems y resumen al producto
+
+    // Contenedor para los botones de acción
+    const accionesContainer = document.createElement('div');
+    accionesContainer.className = 'acciones';
+    accionesContainer.innerHTML = `
+        <button class="confirmar-producto-btn" data-producto-id="${producto.producto_id}">Confirmar Producto</button>
+        <button class="editar-producto-btn" data-producto-id="${producto.producto_id}">Editar Producto</button>
+        <button class="eliminar-producto-btn" data-producto-id="${producto.producto_id}">Eliminar Producto</button>
+        <button class="duplicar-producto-btn" data-producto-id="${producto.producto_id}">Duplicar Producto</button>
+    `;
+
+    // Agregar los contenedores de ítems, resumen y botones al producto
     nuevoProducto.appendChild(itemsContainer);
     nuevoProducto.appendChild(resumenContainer);
+    nuevoProducto.appendChild(accionesContainer);
     
     // Agregar el nuevo producto al contenedor principal
     const productosContainer = document.getElementById('productos-container');
@@ -592,13 +588,14 @@ function organizarItemsPorTipo(items, productoId) {
     tipos.forEach(tipo => {
         const itemsDelTipo = items.filter(item => item.tipo === tipo && Number(item.producto_cotizado_id) === Number(productoId));
         if (itemsDelTipo.length > 0) {
-            html += `<tr><td colspan="7" class="tipo-header"><strong>${tipo}</strong></td></tr>`;
+            html += `<tr><td colspan="8" class="tipo-header"><strong>${tipo}</strong></td></tr>`;
             itemsDelTipo.forEach(item => {
                 html += `
                     <tr>
                         <td>${item.id}</td>
                         <td>${item.grupo}</td>
                         <td>${item.descripcion}</td>
+                        <td>${item.unidad}</td>
                         <td>${item.precio_unitario}</td>
                         <td><input type="number" class="cantidad-item" data-precio="${item.precio_unitario}" value="${item.cantidad}" min="0"></td>
                         <td class="total-item">${item.total_item}</td>
@@ -610,7 +607,7 @@ function organizarItemsPorTipo(items, productoId) {
     });
 
     if (html === '') {
-        html += `<tr><td colspan="7">No hay ítems disponibles para este producto.</td></tr>`;
+        html += `<tr><td colspan="8">No hay ítems disponibles para este producto.</td></tr>`;
     }
 
     return html;

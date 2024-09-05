@@ -398,7 +398,6 @@ def editar_cotizacion(cotizacion_id):
 
     # Formatea la fecha en el formato correcto
     cotizacion_fecha = cotizacion.fecha_cotizacion.strftime('%Y-%m-%d') if cotizacion.fecha_cotizacion else None
-    print(f"Fecha de la cotización: {cotizacion_fecha}")
 
     # Consulta los productos cotizados asociados a la cotización
     productos_cotizados = ProductoCotizado.query.filter_by(cotizacion_id=cotizacion_id).all()
@@ -413,8 +412,6 @@ def editar_cotizacion(cotizacion_id):
         
         productos_data.append(producto_data)
 
-    print(f"Productos cotizados: {[p for p in productos_data]}")
-
     # Consulta los ítems cotizados asociados a cada producto cotizado y completa la información desde la tabla Items
     items_cotizados = []
     for item_cotizado in ItemCotizado.query.join(ProductoCotizado).filter(ProductoCotizado.cotizacion_id == cotizacion_id).all():
@@ -427,7 +424,7 @@ def editar_cotizacion(cotizacion_id):
             item['grupo'] = related_item.categoria.CATEGORIA_NOMBRE if related_item.categoria else 'N/A'
             item['descripcion'] = related_item.nombre
             item['unidad'] = related_item.unidad
-            item['tipo'] = related_item.tipo
+            item['tipo'] = related_item.tipo  # Asegurarnos de enviar el campo 'tipo' desde el backend
 
             # Consultar el precio desde la tabla ItemProveedores
             precio_proveedor = ItemProveedores.query.filter_by(item_id=item_cotizado.item_id, tipo_proveedor=1).first()
@@ -439,16 +436,15 @@ def editar_cotizacion(cotizacion_id):
             item['grupo'] = 'N/A'
             item['descripcion'] = 'N/A'
             item['unidad'] = 'N/A'
-            item['tipo'] = 'N/A'
+            item['tipo'] = 'N/A'  # Si no hay tipo disponible, asignamos 'N/A'
             item['precio_unitario'] = '0.00'
 
         # Formatear el total del ítem
         item['total_item'] = format(float(item['total_item']), ',.0f')
         
+        # Agregamos este ítem a la lista de ítems cotizados
         items_cotizados.append(item)
     
-    print(f"Ítems cotizados: {items_cotizados}")
-
     # Consulta los resúmenes de costos asociados a los productos cotizados
     resumen_costos = []
     for producto in productos_cotizados:
@@ -465,33 +461,18 @@ def editar_cotizacion(cotizacion_id):
             resumen_dict['valor_oferta'] = format(resumen.valor_oferta, ',.0f')
             resumen_costos.append(resumen_dict)
 
-    print(f"Resumen de costos: {resumen_costos}")
-
-    # Generar cabeceras para cantidad y total, basado en valores reales
-    valoresCantidad = ['Cantidad1']  # Aquí debes poner tus valores reales, ajustado a la cantidad que deseas mostrar
-
-    cantidadHeader = ''.join([f'<th>Cantidad ({valor})</th>' for valor in valoresCantidad])
-    totalHeader = ''.join([f'<th>Total ({valor})</th>' for valor in valoresCantidad])
-    
-    print(f"Cantidad Header: {cantidadHeader}")
-    print(f"Total Header: {totalHeader}")
-
     # Consulta la lista de vendedores con user_rol 1 o 2
     vendedores = Users.query.filter(Users.user_rol.in_([1, 2])).all()
-    print(f"Vendedores: {[vendedor.to_dict() for vendedor in vendedores]}")
 
     return render_template(
         'editar_cotizacion.html',
         cotizacion=cotizacion.to_dict(),
         fecha_cotizacion=cotizacion_fecha,
         productos_cotizados=productos_data,
-        items_cotizados=items_cotizados,
+        items_cotizados=items_cotizados,  # Ahora los ítems tienen el campo 'tipo'
         resumen_costos=resumen_costos,
-        cantidadHeader=cantidadHeader,
-        totalHeader=totalHeader,
         vendedores=vendedores,
         user_rol=user_rol
-
     )
 
 

@@ -516,22 +516,11 @@ function agregarProducto(producto, items, resumenCostos) {
                     <th>Precio Unitario</th>
                     <th>Cantidad</th>
                     <th>Total</th>
+                    <th>Acciones</th> <!-- Columna para el botón de eliminar -->
                 </tr>
             </thead>
             <tbody id="itemsseleccionados-${producto.id}">
-                ${items
-                    .filter(item => Number(item.producto_cotizado_id) === Number(producto.id))
-                    .map(item => `
-                        <tr>
-                            <td>${item.id}</td>
-                            <td>${item.grupo}</td>
-                            <td>${item.descripcion}</td>
-                            <td>${item.precio_unitario}</td>
-                            <td><input type="number" class="cantidad-item" data-precio="${item.precio_unitario}" value="${item.cantidad}" min="0"></td>
-                            <td class="total-item">${item.total_item}</td>
-                        </tr>
-                    `).join('')
-                }
+                ${organizarItemsPorTipo(items, producto.id)}
             </tbody>
         </table>
     `;
@@ -593,6 +582,38 @@ function agregarProducto(producto, items, resumenCostos) {
             this.closest('tr').querySelector('.total-item').textContent = total;
         });
     });
+}
+
+// Función para organizar los ítems por tipo
+function organizarItemsPorTipo(items, productoId) {
+    const tipos = ['Materia Prima', 'Servicios', 'Mano de Obra e Instalación', 'Transportes', 'Consumibles'];
+    let html = '';
+
+    tipos.forEach(tipo => {
+        const itemsDelTipo = items.filter(item => item.tipo === tipo && Number(item.producto_cotizado_id) === Number(productoId));
+        if (itemsDelTipo.length > 0) {
+            html += `<tr><td colspan="7" class="tipo-header"><strong>${tipo}</strong></td></tr>`;
+            itemsDelTipo.forEach(item => {
+                html += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.grupo}</td>
+                        <td>${item.descripcion}</td>
+                        <td>${item.precio_unitario}</td>
+                        <td><input type="number" class="cantidad-item" data-precio="${item.precio_unitario}" value="${item.cantidad}" min="0"></td>
+                        <td class="total-item">${item.total_item}</td>
+                        <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+                    </tr>
+                `;
+            });
+        }
+    });
+
+    if (html === '') {
+        html += `<tr><td colspan="7">No hay ítems disponibles para este producto.</td></tr>`;
+    }
+
+    return html;
 }
     
         // Agregar productos nuevos

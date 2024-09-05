@@ -397,9 +397,11 @@ def editar_cotizacion(cotizacion_id):
 
     # Formatea la fecha en el formato correcto
     cotizacion_fecha = cotizacion.fecha_cotizacion.strftime('%Y-%m-%d') if cotizacion.fecha_cotizacion else None
+    print(f"Fecha de la cotización: {cotizacion_fecha}")
 
     # Consulta los productos cotizados asociados a la cotización
     productos_cotizados = ProductoCotizado.query.filter_by(cotizacion_id=cotizacion_id).all()
+    print(f"Productos cotizados: {[p.to_dict() for p in productos_cotizados]}")
 
     # Consulta los ítems cotizados asociados a cada producto cotizado y completa la información desde la tabla Items
     items_cotizados = []
@@ -432,6 +434,8 @@ def editar_cotizacion(cotizacion_id):
         item['total_item'] = format(float(item['total_item']), ',.0f')
         
         items_cotizados.append(item)
+    
+    print(f"Ítems cotizados: {items_cotizados}")
 
     # Consulta los resúmenes de costos asociados a los productos cotizados
     resumen_costos = []
@@ -449,14 +453,20 @@ def editar_cotizacion(cotizacion_id):
             resumen_dict['valor_oferta'] = format(resumen.valor_oferta, ',.0f')
             resumen_costos.append(resumen_dict)
 
+    print(f"Resumen de costos: {resumen_costos}")
+
     # Generar cabeceras para cantidad y total, basado en valores reales
     valoresCantidad = ['Cantidad1']  # Aquí debes poner tus valores reales, ajustado a la cantidad que deseas mostrar
 
     cantidadHeader = ''.join([f'<th>Cantidad ({valor})</th>' for valor in valoresCantidad])
     totalHeader = ''.join([f'<th>Total ({valor})</th>' for valor in valoresCantidad])
+    
+    print(f"Cantidad Header: {cantidadHeader}")
+    print(f"Total Header: {totalHeader}")
 
     # Consulta la lista de vendedores con user_rol 1 o 2
     vendedores = Users.query.filter(Users.user_rol.in_([1, 2])).all()
+    print(f"Vendedores: {[vendedor.to_dict() for vendedor in vendedores]}")
 
     return render_template(
         'editar_cotizacion.html',
@@ -467,7 +477,7 @@ def editar_cotizacion(cotizacion_id):
         resumen_costos=resumen_costos,
         cantidadHeader=cantidadHeader,
         totalHeader=totalHeader,
-        vendedores=vendedores  # Añadir esta línea
+        vendedores=vendedores
     )
 
 

@@ -12,7 +12,7 @@ class UsersRol(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     descripcion = db.Column(db.String(20), nullable=False)
 
-class Users(db.Model,UserMixin):
+class Users(db.Model, UserMixin):
     user_id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.String(30), nullable=False)
     user_last_name = db.Column(db.String(30), nullable=False)
@@ -25,6 +25,17 @@ class Users(db.Model,UserMixin):
 
     def get_id(self):
         return str(self.user_id)
+    
+    def to_dict(self):
+        return {
+            'user_id': self.user_id,
+            'user_name': self.user_name,
+            'user_last_name': self.user_last_name,
+            'user_email': self.user_email,
+            'user_rol': self.user_rol,
+            'user_link': self.user_link,
+            # Puedes agregar otros campos si los necesitas
+        }
 
 class UnidadesNegocio(db.Model):
     """

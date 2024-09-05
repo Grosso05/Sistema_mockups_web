@@ -406,6 +406,362 @@
 </main>
 
 <script>
+/*
+    document.addEventListener('DOMContentLoaded', function() {
+        // Asignar los datos a variables globales si es necesario
+        const productosCotizados = {{ productos_cotizados | tojson }};
+        const itemsCotizados = {{ items_cotizados | tojson }};
+        const resumenCostos = {{ resumen_costos | tojson }};
+    
+        // Llamar a una función para actualizar el contenedor
+        actualizarContenedor(productosCotizados, itemsCotizados, resumenCostos);
+    });
+    
+    function actualizarContenedor(productos, items, resumen) {
+        // Obtener el contenedor donde se van a mostrar los datos
+        const contenedor = document.getElementById('productos-container');
+    
+        // Generar el HTML para los productos cotizados
+        let productosHtml = productos.map(producto => `
+            <div class="producto">
+                <p>Descripción: ${producto.descripcion}</p>
+                <p>Altura: ${producto.alto}</p>
+                <p>Ancho: ${producto.ancho}</p>
+                <p>Cantidad: ${producto.cantidades}</p>
+                <!-- Añadir más campos si es necesario -->
+            </div>
+        `).join('');
+    
+        // Generar el HTML para los ítems cotizados
+        let itemsHtml = items.map(item => `
+            <div class="item">
+                <p>Descripción: ${item.descripcion}</p>
+                <p>Cantidad: ${item.cantidad}</p>
+                <p>Grupo: ${item.grupo}</p>
+                <p>Precio Unitario: ${item.precio_unitario}</p>
+                <!-- Añadir más campos si es necesario -->
+            </div>
+        `).join('');
+    
+        // Generar el HTML para el resumen de costos
+        let resumenHtml = resumen.map(costos => `
+            <div class="resumen">
+                <p>Administración: ${costos.administracion}</p>
+                <p>Costo Directo: ${costos.costo_directo}</p>
+                <p>Imprevistos: ${costos.imprevistos}</p>
+                <p>IVA: ${costos.iva}</p>
+                <!-- Añadir más campos si es necesario -->
+            </div>
+        `).join('');
+    
+        // Insertar el HTML generado en el contenedor
+        contenedor.innerHTML = `
+            <h2>Productos Cotizados</h2>
+            ${productosHtml}
+            <h2>Ítems Cotizados</h2>
+            ${itemsHtml}
+            <h2>Resumen de Costos</h2>
+            ${resumenHtml}
+        `;
+    }
+ */
+
+ const productosCotizados = {{ productos_cotizados | tojson }};
+ const itemsCotizados = {{ items_cotizados | tojson }};
+ const resumenCostos = {{ resumen_costos | tojson }};
+ console.log(productosCotizados);
+ console.log(itemsCotizados);
+ console.log(resumenCostos);
+ 
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Asignar los datos a variables globales
+        const productosCotizados = {{ productos_cotizados | tojson }};
+        const itemsCotizados = {{ items_cotizados | tojson }};
+        const resumenCostos = {{ resumen_costos | tojson }};
+        
+        // Llamar a la función para actualizar el contenedor al cargar la página
+        productosCotizados.forEach(producto => agregarProducto(producto, itemsCotizados, resumenCostos));
+    });
+    
+    // Función para añadir un producto al DOM de forma organizada
+    function agregarProducto(producto, items, resumenCostos) {
+        console.log('Producto:', producto); // Verifica que los productos se estén procesando
+        console.log('Items:', items); // Verifica que los ítems se estén filtrando correctamente
+        console.log('Resumen Costos:', resumenCostos); // Verifica que el resumen se esté filtrando correctamente
+
+        console.log('Producto ID:', producto.producto_id);
+        console.log('IDs de los ítems:', items.map(item => item.producto_id));
+        console.log('IDs de los resúmenes:', resumenCostos.map(resumen => resumen.producto_id));
+
+        
+
+        // Crear nuevo div para el producto
+        const nuevoProducto = document.createElement('div');
+        nuevoProducto.className = 'producto';
+        
+        // Crear HTML dinámico para el producto
+        nuevoProducto.innerHTML = `
+            <h3 contenteditable="true" style="color: #00b04f;">Producto: ${producto.producto_nombre}</h3> 
+            <h4 contenteditable="true">Descripción: ${producto.descripcion}</h4>
+            <h4>Dimensiones: Alto: ${producto.alto}cm, Ancho: ${producto.ancho}cm, Fondo: ${producto.fondo}cm</h4>
+        `;
+        
+        // Contenedor para los ítems del producto
+        const itemsContainer = document.createElement('div');
+        itemsContainer.className = 'items-seleccionados';
+        itemsContainer.innerHTML = '<h4>Items Seleccionados</h4>';
+        
+        // Filtrar y agregar ítems correspondientes a este producto
+        const itemsProducto = itemsCotizados.filter(item => Number(item.producto_cotizado_id) === Number(producto.id));
+        console.log('Items del producto filtrado:', itemsProducto);
+        itemsProducto.forEach(item => {
+            const itemHTML = `
+                <div class="item">
+                    <p>Descripción: ${item.descripcion}</p>
+                    <p>Grupo: ${item.grupo}</p>
+                    <p>Cantidad: ${item.cantidad}</p>
+                    <p>Precio Unitario: ${item.precio_unitario}</p>
+                </div>
+            `;
+            itemsContainer.innerHTML += itemHTML;
+        });
+        
+        // Contenedor para el resumen de costos
+        const resumenContainer = document.createElement('div');
+        resumenContainer.className = 'resumen-costos';
+        resumenContainer.innerHTML = '<h4>Resumen de Costos</h4>';
+        
+        // Filtrar y agregar el resumen de costos correspondiente a este producto
+        const resumenProducto = resumenCostos.filter(resumen => Number(resumen.producto_id) === Number(producto.id));
+        console.log('Resumen del producto:', resumenProducto);
+        resumenProducto.forEach(resumen => {
+            const resumenHTML = `
+                <div class="resumen">
+                    <p>Costo Directo: ${resumen.costo_directo}</p>
+                    <p>Administración: ${resumen.administracion} (${resumen.porcentaje_administracion}%)</p>
+                    <p>Imprevistos: ${resumen.imprevistos} (${resumen.porcentaje_imprevistos}%)</p>
+                    <p>IVA: ${resumen.iva}</p>
+                    <p>Valor Oferta: ${resumen.valor_oferta}</p>
+                </div>
+            `;
+            resumenContainer.innerHTML += resumenHTML;
+        });
+        
+        // Agregar los contenedores de ítems y resumen al producto
+        nuevoProducto.appendChild(itemsContainer);
+        nuevoProducto.appendChild(resumenContainer);
+        
+        // Agregar el nuevo producto al contenedor principal
+        const productosContainer = document.getElementById('productos-container');
+        console.log(productosContainer); // Verifica si el contenedor es el correcto
+        productosContainer.appendChild(nuevoProducto);
+    }
+    
+        // Agregar productos nuevos
+        document.getElementById('btnCrear').addEventListener('click', function() {
+            const descripcionInput = document.getElementById('descripcion');
+            const altoInput = document.querySelector('.alto-input');
+            const anchoInput = document.querySelector('.ancho-input');
+            const fondoInput = document.querySelector('.fondo-input');        
+            const productoSelect = document.getElementById('seleccionarProducto');
+            const cantidadInput = document.querySelector('.cantidad-input');
+            
+            const descripcion = descripcionInput.value.trim();
+            const productoId = productoSelect.value;  // ID del producto seleccionado desde el select
+            const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
+            
+            const alto = altoInput.value.trim();
+            const ancho = anchoInput.value.trim();
+            const fondo = fondoInput.value.trim();
+            
+            const cantidad = parseInt(cantidadInput.value.trim(), 10);
+            
+            if (descripcion === "" || productoId === "" || cantidad <= 0) {
+                alert("Por favor, ingrese una descripción, seleccione un producto y asegúrese de que la cantidad sea mayor a 0.");
+                return;
+            }
+        
+            let nuevoNumeroProducto;
+        
+            if (numerosEliminados.length > 0) {
+                nuevoNumeroProducto = numerosEliminados.shift(); // Reutilizar el número más bajo disponible
+            } else {
+                nuevoNumeroProducto = ++itemNumber; // Incrementar el número de producto
+            }
+        
+            // Crear el nuevo producto
+            const nuevoProducto = document.createElement('div');
+            nuevoProducto.className = 'producto';
+            nuevoProducto.id = `producto-${nuevoNumeroProducto}`;
+        
+            // Generar las cabeceras dinámicas usando el arreglo valoresCantidad
+            const { cantidadHeader, totalHeader } = generarCabeceras();
+        
+            // Crear el h4 que muestra las cantidades seleccionadas
+            const cantidadesSeleccionadasHTML = valoresCantidad.map((valor, index) => 
+                `<h4>Cantidad seleccionada (${index + 1}): ${valor} unidades</h4>`
+            ).join('');
+        
+            // Cargar porcentajes desde el backend y almacenarlos en los atributos de data del elemento
+            fetch(`/porcentajes/${productoId}`)
+                .then(response => response.json())
+                .then(porcentajes => {
+                    nuevoProducto.dataset.administracion = porcentajes.administracion;
+                    nuevoProducto.dataset.imprevistos = porcentajes.imprevistos;
+                    nuevoProducto.dataset.utilidad = porcentajes.utilidad;
+        
+                    // Crear el contenido del nuevo producto
+                    nuevoProducto.innerHTML = `
+                <div class="producto" id="producto-${nuevoNumeroProducto}">
+                    <h3 contenteditable="true" style="color: #00b04f;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
+                    <h4 contenteditable="true">Descripción: ${descripcion}</h4>
+                    <h4 contenteditable="true">Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
+        
+                        <!-- Añadimos el productoId con un nombre diferente -->
+                        <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
+    
+                </div>
+        
+                        ${cantidadesSeleccionadasHTML}
+                        <div class="itemsseleccionados">
+                            <h4>Items Seleccionados</h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Grupo</th>
+                                        <th>Descripción</th>
+                                        <th>Unidad</th>
+                                        <th>Precio</th>
+                                        ${cantidadHeader}
+                                        ${totalHeader}
+                                        <th class="oculto">Tipo</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
+                                    <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
+                                    <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
+                                    <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
+                                    <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
+                                    <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
+                            <div>
+                                <h4>Seleccionar Ítems</h4>
+                                <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
+        
+                                <div id="seleccion-items-${nuevoNumeroProducto}"></div>
+                                <div id="paginacion-items-${nuevoNumeroProducto}"></div>
+                                <div class="botones-container">
+                                    <button onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Ítems Seleccionados</button>
+                                    <button onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Ítems</button>
+                                </div>
+                            </div>
+                        </div>
+        
+                        <!-- Botón para mostrar el formulario -->
+                        <button id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Nuevo Ítem</button>
+        
+                        <!-- Formulario para agregar ítems temporales -->
+                        <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
+                            <h4>Agregar Nuevo Ítem</h4>
+                            <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
+                            <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
+                            <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
+                            <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
+                        </div>
+        
+                        <div class="resumen-costos">
+                            ${valoresCantidad.map((valor, index) => `
+                                <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+                                    <h4>Resumen de Costos (${valor})</h4>
+                                    <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
+                                    <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
+                                    <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                    <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                    <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                    <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
+                                    <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+                                    <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
+                                    <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+                                </div>
+                            `).join('')}
+                        </div>
+        
+                        <div class="acciones">
+                            <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
+                            <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
+                            <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
+                            <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
+                        </div>
+                    `;
+        
+                    productosContainer.appendChild(nuevoProducto);
+        
+                    // Limpiar los campos de entrada después de agregar el producto
+                    descripcionInput.value = '';
+                    productoSelect.value = '';
+                    
+                    // Insertar el nuevo producto en la posición correcta
+                    let insertado = false;
+                    productosContainer.querySelectorAll('.producto').forEach(producto => {
+                        const numeroProducto = parseInt(producto.id.split('-')[1], 10);
+                        if (nuevoNumeroProducto < numeroProducto) {
+                            productosContainer.insertBefore(nuevoProducto, producto);
+                            insertado = true;
+                            return false; // Rompe el bucle forEach
+                        }
+                    });
+                    if (!insertado) {
+                        productosContainer.appendChild(nuevoProducto); // Si no se insertó, agregar al final
+                    }
+        
+                    // Actualizar el número de producto dentro del div itemNumber
+                    actualizarNumeroProducto();
+        
+                    cargarItemsProducto(productoId, nuevoNumeroProducto, 1, '');
+        
+                // Añadir manejadores de eventos para la utilidad
+                let timeout;
+                valoresCantidad.forEach((valor, index) => {
+                    const utilidadInput = document.getElementById(`utilidadSeleccionada-${nuevoNumeroProducto}-${index}`);
+                    if (utilidadInput) {
+                        utilidadInput.addEventListener('input', function() {
+                            clearTimeout(timeout);
+                            timeout = setTimeout(() => {
+                                const nuevoValorUtilidad = parseFloat(this.value);
+                                if (!isNaN(nuevoValorUtilidad)) {
+                                    const productoElement = document.querySelector(`#producto-${nuevoNumeroProducto}`);
+                                    if (productoElement) {
+                                        const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
+                                        if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
+                                            // Solo realiza el cálculo y actualización si el valor es válido
+                                            actualizarTotalProducto(nuevoNumeroProducto, nuevoValorUtilidad);
+                                        } else {
+                                            alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
+                                            this.value = ''; // Limpiar el campo para forzar un valor válido
+                                        }
+                                    }
+                                }
+                            }, 300); 
+                        });
+                    } else {
+                        console.error(`Elemento con ID utilidadSeleccionada-${nuevoNumeroProducto}-${index} no encontrado.`);
+                    }
+                });
+    
+                // Actualizar los totales al agregar un nuevo producto
+                actualizarTotalesExtras(nuevoNumeroProducto, 0); // Inicia con costo directo 0
+            })
+            .catch(error => {
+                console.error('Error al cargar los porcentajes:', error);
+            });
+    });
+
 
     function toggleSidebar() {
         const sidebar = document.querySelector('.sidebar');
@@ -647,208 +1003,7 @@
         return { cantidadHeader, totalHeader };
     }
 
-    document.getElementById('btnCrear').addEventListener('click', function() {
-        const descripcionInput = document.getElementById('descripcion');
-        const altoInput = document.querySelector('.alto-input');
-        const anchoInput = document.querySelector('.ancho-input');
-        const fondoInput = document.querySelector('.fondo-input');        
-        const productoSelect = document.getElementById('seleccionarProducto');
-        const cantidadInput = document.querySelector('.cantidad-input');
-        
-        const descripcion = descripcionInput.value.trim();
-        const productoId = productoSelect.value;  // ID del producto seleccionado desde el select
-        const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
-        
-        const alto = altoInput.value.trim();
-        const ancho = anchoInput.value.trim();
-        const fondo = fondoInput.value.trim();
-        
-        const cantidad = parseInt(cantidadInput.value.trim(), 10);
-        
-        if (descripcion === "" || productoId === "" || cantidad <= 0) {
-            alert("Por favor, ingrese una descripción, seleccione un producto y asegúrese de que la cantidad sea mayor a 0.");
-            return;
-        }
-    
-        let nuevoNumeroProducto;
-    
-        if (numerosEliminados.length > 0) {
-            nuevoNumeroProducto = numerosEliminados.shift(); // Reutilizar el número más bajo disponible
-        } else {
-            nuevoNumeroProducto = ++itemNumber; // Incrementar el número de producto
-        }
-    
-        // Crear el nuevo producto
-        const nuevoProducto = document.createElement('div');
-        nuevoProducto.className = 'producto';
-        nuevoProducto.id = `producto-${nuevoNumeroProducto}`;
-    
-        // Generar las cabeceras dinámicas usando el arreglo valoresCantidad
-        const { cantidadHeader, totalHeader } = generarCabeceras();
-    
-        // Crear el h4 que muestra las cantidades seleccionadas
-        const cantidadesSeleccionadasHTML = valoresCantidad.map((valor, index) => 
-            `<h4>Cantidad seleccionada (${index + 1}): ${valor} unidades</h4>`
-        ).join('');
-    
-        // Cargar porcentajes desde el backend y almacenarlos en los atributos de data del elemento
-        fetch(`/porcentajes/${productoId}`)
-            .then(response => response.json())
-            .then(porcentajes => {
-                nuevoProducto.dataset.administracion = porcentajes.administracion;
-                nuevoProducto.dataset.imprevistos = porcentajes.imprevistos;
-                nuevoProducto.dataset.utilidad = porcentajes.utilidad;
-    
-                // Crear el contenido del nuevo producto
-                nuevoProducto.innerHTML = `
-            <div class="producto" id="producto-${nuevoNumeroProducto}">
-                <h3 contenteditable="true" style="color: #00b04f;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
-                <h4 contenteditable="true">Descripción: ${descripcion}</h4>
-                <h4 contenteditable="true">Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
-    
-                    <!-- Añadimos el productoId con un nombre diferente -->
-                    <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
 
-            </div>
-    
-                    ${cantidadesSeleccionadasHTML}
-                    <div class="itemsseleccionados">
-                        <h4>Items Seleccionados</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Grupo</th>
-                                    <th>Descripción</th>
-                                    <th>Unidad</th>
-                                    <th>Precio</th>
-                                    ${cantidadHeader}
-                                    ${totalHeader}
-                                    <th class="oculto">Tipo</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
-                                <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
-                                <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
-                                <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
-                                <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
-                                <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
-                        <div>
-                            <h4>Seleccionar Ítems</h4>
-                            <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
-    
-                            <div id="seleccion-items-${nuevoNumeroProducto}"></div>
-                            <div id="paginacion-items-${nuevoNumeroProducto}"></div>
-                            <div class="botones-container">
-                                <button onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Ítems Seleccionados</button>
-                                <button onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Ítems</button>
-                            </div>
-                        </div>
-                    </div>
-    
-                    <!-- Botón para mostrar el formulario -->
-                    <button id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Nuevo Ítem</button>
-    
-                    <!-- Formulario para agregar ítems temporales -->
-                    <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
-                        <h4>Agregar Nuevo Ítem</h4>
-                        <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
-                        <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
-                        <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
-                        <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Ítem Temporal</button>
-                    </div>
-    
-                    <div class="resumen-costos">
-                        ${valoresCantidad.map((valor, index) => `
-                            <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
-                                <h4>Resumen de Costos (${valor})</h4>
-                                <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
-                                <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
-                                <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
-                                <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
-                                <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
-                                <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
-                            </div>
-                        `).join('')}
-                    </div>
-    
-                    <div class="acciones">
-                        <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
-                        <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
-                        <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
-                        <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
-                    </div>
-                `;
-    
-                productosContainer.appendChild(nuevoProducto);
-    
-                // Limpiar los campos de entrada después de agregar el producto
-                descripcionInput.value = '';
-                productoSelect.value = '';
-                
-                // Insertar el nuevo producto en la posición correcta
-                let insertado = false;
-                productosContainer.querySelectorAll('.producto').forEach(producto => {
-                    const numeroProducto = parseInt(producto.id.split('-')[1], 10);
-                    if (nuevoNumeroProducto < numeroProducto) {
-                        productosContainer.insertBefore(nuevoProducto, producto);
-                        insertado = true;
-                        return false; // Rompe el bucle forEach
-                    }
-                });
-                if (!insertado) {
-                    productosContainer.appendChild(nuevoProducto); // Si no se insertó, agregar al final
-                }
-    
-                // Actualizar el número de producto dentro del div itemNumber
-                actualizarNumeroProducto();
-    
-                cargarItemsProducto(productoId, nuevoNumeroProducto, 1, '');
-    
-            // Añadir manejadores de eventos para la utilidad
-            let timeout;
-            valoresCantidad.forEach((valor, index) => {
-                const utilidadInput = document.getElementById(`utilidadSeleccionada-${nuevoNumeroProducto}-${index}`);
-                if (utilidadInput) {
-                    utilidadInput.addEventListener('input', function() {
-                        clearTimeout(timeout);
-                        timeout = setTimeout(() => {
-                            const nuevoValorUtilidad = parseFloat(this.value);
-                            if (!isNaN(nuevoValorUtilidad)) {
-                                const productoElement = document.querySelector(`#producto-${nuevoNumeroProducto}`);
-                                if (productoElement) {
-                                    const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
-                                    if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
-                                        // Solo realiza el cálculo y actualización si el valor es válido
-                                        actualizarTotalProducto(nuevoNumeroProducto, nuevoValorUtilidad);
-                                    } else {
-                                        alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
-                                        this.value = ''; // Limpiar el campo para forzar un valor válido
-                                    }
-                                }
-                            }
-                        }, 300); 
-                    });
-                } else {
-                    console.error(`Elemento con ID utilidadSeleccionada-${nuevoNumeroProducto}-${index} no encontrado.`);
-                }
-            });
-
-            // Actualizar los totales al agregar un nuevo producto
-            actualizarTotalesExtras(nuevoNumeroProducto, 0); // Inicia con costo directo 0
-        })
-        .catch(error => {
-            console.error('Error al cargar los porcentajes:', error);
-        });
-});
     
  // Delegación de eventos para los botones de productos
  document.addEventListener('click', function(event) {

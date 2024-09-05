@@ -389,6 +389,7 @@ def listar_cotizaciones():
 
 @routes_blueprint.route('/editar_cotizacion/<int:cotizacion_id>', methods=['GET'])
 def editar_cotizacion(cotizacion_id):
+    user_rol = current_user.user_rol if current_user.is_authenticated else None
     # Consulta la cotización por ID
     cotizacion = Cotizacion.query.filter_by(id_cotizacion=cotizacion_id).first()
     
@@ -401,7 +402,18 @@ def editar_cotizacion(cotizacion_id):
 
     # Consulta los productos cotizados asociados a la cotización
     productos_cotizados = ProductoCotizado.query.filter_by(cotizacion_id=cotizacion_id).all()
-    print(f"Productos cotizados: {[p.to_dict() for p in productos_cotizados]}")
+    
+    productos_data = []
+    for producto_cotizado in productos_cotizados:
+        producto_data = producto_cotizado.to_dict()
+        
+        # Consulta el nombre del producto usando producto_seleccionado_id
+        producto = Productos.query.get(producto_cotizado.producto_seleccionado_id)
+        producto_data['producto_nombre'] = producto.nombre if producto else 'Nombre no disponible'
+        
+        productos_data.append(producto_data)
+
+    print(f"Productos cotizados: {[p for p in productos_data]}")
 
     # Consulta los ítems cotizados asociados a cada producto cotizado y completa la información desde la tabla Items
     items_cotizados = []
@@ -472,12 +484,14 @@ def editar_cotizacion(cotizacion_id):
         'editar_cotizacion.html',
         cotizacion=cotizacion.to_dict(),
         fecha_cotizacion=cotizacion_fecha,
-        productos_cotizados=[p.to_dict() for p in productos_cotizados],
+        productos_cotizados=productos_data,
         items_cotizados=items_cotizados,
         resumen_costos=resumen_costos,
         cantidadHeader=cantidadHeader,
         totalHeader=totalHeader,
-        vendedores=vendedores
+        vendedores=vendedores,
+        user_rol=user_rol
+
     )
 
 

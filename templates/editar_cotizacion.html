@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Cotizacio</title>
+    <title>Editar Cotizacion</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_cotizador.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -486,19 +486,20 @@
 
 // Función para añadir un producto al DOM de forma organizada
 function agregarProducto(producto, items, resumenCostos) {
-    console.log('Producto:', producto); // Verifica que los productos se estén procesando
-    console.log('Items:', items); // Verifica que los ítems se estén filtrando correctamente
-    console.log('Resumen Costos:', resumenCostos); // Verifica que el resumen se esté filtrando correctamente
+    console.log('Estructura del producto:', producto);
 
     // Crear nuevo div para el producto
     const nuevoProducto = document.createElement('div');
     nuevoProducto.className = 'producto';
-    
+
+    // Verificar si `producto.producto_nombre` está disponible
+    const nombreProducto = producto.producto_nombre ? producto.producto_nombre : 'Nombre no disponible';
+
     // Crear HTML dinámico para el producto
     nuevoProducto.innerHTML = `
-        <h3 contenteditable="true" style="color: #00b04f;">Producto: ${producto.producto_nombre}</h3> 
+        <h3 contenteditable="true" style="color: #00b04f;">Producto ${producto.producto_id}: ${nombreProducto}</h3> 
         <h4 contenteditable="true">Descripción: ${producto.descripcion}</h4>
-        <h4>Dimensiones: Alto: ${producto.alto}cm, Ancho: ${producto.ancho}cm, Fondo: ${producto.fondo}cm</h4>
+        <h4 contenteditable="true">Dimensiones: Alto: ${producto.alto}cm, Ancho: ${producto.ancho}cm, Fondo: ${producto.fondo}cm</h4>
     `;
     
     // Contenedor para los ítems del producto
@@ -510,10 +511,10 @@ function agregarProducto(producto, items, resumenCostos) {
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Descripción</th>
                     <th>Grupo</th>
-                    <th>Cantidad</th>
+                    <th>Descripción</th>
                     <th>Precio Unitario</th>
+                    <th>Cantidad</th>
                     <th>Total</th>
                 </tr>
             </thead>
@@ -523,11 +524,11 @@ function agregarProducto(producto, items, resumenCostos) {
                     .map(item => `
                         <tr>
                             <td>${item.id}</td>
-                            <td>${item.descripcion}</td>
                             <td>${item.grupo}</td>
-                            <td>${item.cantidad}</td>
+                            <td>${item.descripcion}</td>
                             <td>${item.precio_unitario}</td>
-                            <td>${item.total_item}</td>
+                            <td><input type="number" class="cantidad-item" data-precio="${item.precio_unitario}" value="${item.cantidad}" min="0"></td>
+                            <td class="total-item">${item.total_item}</td>
                         </tr>
                     `).join('')
                 }
@@ -581,6 +582,17 @@ function agregarProducto(producto, items, resumenCostos) {
     // Agregar el nuevo producto al contenedor principal
     const productosContainer = document.getElementById('productos-container');
     productosContainer.appendChild(nuevoProducto);
+
+    // Agregar evento para recalcular el total cuando la cantidad cambie
+    const cantidadInputs = nuevoProducto.querySelectorAll('.cantidad-item');
+    cantidadInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const precioUnitario = parseFloat(this.getAttribute('data-precio'));
+            const cantidad = parseFloat(this.value);
+            const total = (precioUnitario * cantidad).toFixed(2);
+            this.closest('tr').querySelector('.total-item').textContent = total;
+        });
+    });
 }
     
         // Agregar productos nuevos
@@ -787,6 +799,7 @@ function agregarProducto(producto, items, resumenCostos) {
             });
     });
 
+    
 
     function toggleSidebar() {
         const sidebar = document.querySelector('.sidebar');

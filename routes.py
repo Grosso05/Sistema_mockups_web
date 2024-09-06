@@ -490,15 +490,12 @@ locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
 
 @routes_blueprint.route('/generar-reporte/<int:cotizacion_id>', methods=['GET'])
 def generar_reporte(cotizacion_id):
-    # Configuración regional para el formato de moneda
     locale.setlocale(locale.LC_ALL, '')
 
-    # Buscar la cotización por ID
     cotizacion = Cotizacion.query.get(cotizacion_id)
     if not cotizacion:
         return "Cotización no encontrada", 404
 
-    # Formateo de fecha
     if isinstance(cotizacion.fecha_cotizacion, datetime):
         fecha_cotizacion = cotizacion.fecha_cotizacion.strftime('%Y-%m-%d')
     else:
@@ -532,7 +529,6 @@ def generar_reporte(cotizacion_id):
         wordWrap='CJK'
     )
 
-    # Título encerrado en una forma
     title_background = colors.HexColor("#4CAF50")
     title = Table(
         [[Paragraph(f"Negociación: {cotizacion.negociacion}", heading_style)]],
@@ -546,7 +542,6 @@ def generar_reporte(cotizacion_id):
         ]
     )
 
-    # Datos de la cotización
     data = [
         ["Fecha", fecha_cotizacion, "Cliente", Paragraph(cotizacion.cliente_cotizacion, normal_style)],
         ["Proyecto", Paragraph(cotizacion.proyecto_cotizacion, normal_style), "Contacto", Paragraph(cotizacion.contacto_cotizacion, normal_style)]
@@ -561,7 +556,6 @@ def generar_reporte(cotizacion_id):
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
     ]))
 
-    # Disposición horizontal de la tabla y el título
     table_and_title = Table([[table, title]], colWidths=[7.8*inch, 2.5*inch])
     elements.append(table_and_title)
     elements.append(Spacer(1, 12))
@@ -589,9 +583,10 @@ def generar_reporte(cotizacion_id):
 
     descuento_porcentaje = cotizacion.descuento_cotizacion / 100 if cotizacion.descuento_cotizacion else 0
 
+    summary_data = []
+
     for producto_cotizado in cotizacion.productos_cotizados:
         producto = Productos.query.get(producto_cotizado.producto_seleccionado_id)
-
         cantidades = producto_cotizado.cantidades.split(',')
         resúmenes_costos = ResumenDeCostos.query.filter_by(producto_id=producto_cotizado.id).all()
 
@@ -702,7 +697,10 @@ def generar_reporte(cotizacion_id):
                     ["Total", total_formateado]
                 ]
 
-    # Crear párrafo de condiciones comerciales
+    # Asegúrate de que summary_data tenga datos
+    if not summary_data:
+        summary_data = [["Resumen", "No disponible"]]
+
     condiciones_comerciales = Paragraph(
         f"<b>Condiciones Comerciales:</b><br/><br/>"
         f"<b>Forma de Pago:</b> {cotizacion.forma_de_pago_cotizacion}<br/><br/>"
@@ -710,7 +708,6 @@ def generar_reporte(cotizacion_id):
         normal_style
     )
 
-    # Crear tabla de resumen ya existente
     summary_table = Table(summary_data, colWidths=[2.5*inch, 2.5*inch])
     summary_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), colors.white),
@@ -723,41 +720,28 @@ def generar_reporte(cotizacion_id):
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
     ]))
 
-    # Colocar las condiciones comerciales y la tabla de resumen lado a lado
     summary_and_conditions = Table([[condiciones_comerciales, summary_table]], colWidths=[4*inch, 4*inch])
     elements.append(summary_and_conditions)
 
-    # Crear una línea separadora
     separator_line = HRFlowable(width="110%", thickness=1, lineCap='round', color=colors.black, spaceBefore=10, spaceAfter=10)
 
-    # Texto de agradecimiento
     agradecimiento = Paragraph(
         "Gracias por la confianza depositada en nuestra empresa, quedamos a la espera de sus comentarios. Cordialmente",
         normal_style
     )
 
-
-
-    # Ruta de la imagen de la firma del vendedor
     firma_path = "static/images/FIRMA_FELDMAN_RODRIGUEZ.jpg"
-
-    # Imagen de la firma del vendedor
     firma_vendedor = Image(firma_path, width=6*inch, height=1*inch)
 
-    # Añadir todos los elementos al documento
     elements.append(separator_line)
-    elements.append(Spacer(1, 12))  # Añadir un pequeño espacio después de la línea
+    elements.append(Spacer(1, 12))
     elements.append(agradecimiento)
-    elements.append(Spacer(1, 12))  # Añadir un pequeño espacio antes de la firma
+    elements.append(Spacer(1, 12))
     elements.append(firma_vendedor)
 
-    # Construir PDF
-        # Añadir imagen de encabezado y pie de página
     def add_header_footer(canvas, doc):
         canvas.saveState()
-        # Ajustar la imagen del encabezado
         canvas.drawImage("static/images/encabezado_cotizacion.png", 10, height - encabezado_height - 10, width=encabezado_width, height=encabezado_height, mask='auto')
-        # Ajustar la imagen del pie de página
         canvas.drawImage("static/images/footer_cotizacion.png", 20, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()
 

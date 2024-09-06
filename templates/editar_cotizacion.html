@@ -491,6 +491,7 @@ function agregarProducto(producto, items, resumenCostos) {
     // Crear nuevo div para el producto
     const nuevoProducto = document.createElement('div');
     nuevoProducto.className = 'producto';
+    nuevoProducto.id = `producto-${producto.producto_id}`; // Agregar esta línea
 
     // Verificar si `producto.producto_nombre` está disponible
     const nombreProducto = producto.producto_nombre ? producto.producto_nombre : 'Nombre no disponible';
@@ -531,7 +532,7 @@ function agregarProducto(producto, items, resumenCostos) {
     resumenContainer.className = 'resumen-costos';
     resumenContainer.innerHTML = `
         ${resumenCostos
-            .filter(resumen => Number(resumen.producto_id) === Number(producto.id))
+            .filter(resumen => Number(resumen.producto_id) === Number(producto.producto_id))
             .map((resumen, index) => `
                 <div class="resumen-costos-individual" id="resumen-costos-${producto.producto_id}-${index}">
                     <h4>Resumen de Costos (${resumen.id})</h4>
@@ -574,7 +575,7 @@ function agregarProducto(producto, items, resumenCostos) {
         input.addEventListener('input', function() {
             const precioUnitario = parseFloat(this.getAttribute('data-precio'));
             const cantidad = parseFloat(this.value);
-            const total = (precioUnitario * cantidad).toFixed(2);
+            const total = (precioUnitario * cantidad).toFixed(3); // Cambia a 3 decimales
             this.closest('tr').querySelector('.total-item').textContent = total;
         });
     });
@@ -817,7 +818,148 @@ function organizarItemsPorTipo(items, productoId) {
             });
     });
 
+    // ------------------------------------------- botones producto del back
+    document.addEventListener('click', function(event) {
+        const target = event.target;
+        console.log('Elemento clickeado:', target);
     
+        if (target.matches('.confirmar-producto-btn')) {
+            const productoId = target.dataset.productoId;
+            console.log(`Confirmar Producto ID: ${productoId}`);
+            const seleccionItemsContainer = document.querySelector(`#itemsseleccionados-${productoId}`);
+            if (seleccionItemsContainer) {
+                seleccionItemsContainer.style.display = 'none';
+            } else {
+                console.error(`Contenedor de ítems con ID itemsseleccionados-${productoId} no encontrado.`);
+            }
+    
+        } else if (target.matches('.editar-producto-btn')) {
+            const productoId = target.dataset.productoId;
+            console.log(`Editar Producto ID: ${productoId}`);
+            const seleccionItemsContainer = document.querySelector(`#itemsseleccionados-${productoId}`);
+            if (seleccionItemsContainer) {
+                seleccionItemsContainer.style.display = 'block';
+            } else {
+                console.error(`Contenedor de ítems con ID itemsseleccionados-${productoId} no encontrado.`);
+            }
+    
+        } else if (target.matches('.eliminar-producto-btn')) {
+            const productoId = target.dataset.productoId;
+            console.log(`Eliminar Producto ID: ${productoId}`);
+            const producto = document.querySelector(`#producto-${productoId}`);
+            console.log(`Elemento encontrado para eliminar:`, producto);
+            if (producto) {
+                producto.remove();
+                actualizarNumeroProducto(); // Asegúrate de que esta función esté definida
+                actualizarResumenesDeCostos(); // Asegúrate de que esta función esté definida
+            } else {
+                console.error(`Producto con ID producto-${productoId} no encontrado.`);
+            }
+    
+        } else if (target.matches('.duplicar-producto-btn')) {
+            const productoId = target.dataset.productoId;
+            console.log(`Duplicar Producto ID: ${productoId}`);
+            const productoOriginal = document.querySelector(`#producto-${productoId}`);
+            console.log(`Elemento original para duplicar:`, productoOriginal);
+            if (productoOriginal) {
+                let nuevoNumeroProductoDuplicado;
+                if (numerosEliminados.length > 0) {
+                    nuevoNumeroProductoDuplicado = numerosEliminados.shift();
+                } else {
+                    nuevoNumeroProductoDuplicado = ++itemNumber;
+                }
+    
+                const nuevoProductoDuplicado = productoOriginal.cloneNode(true);
+                nuevoProductoDuplicado.id = `producto-${nuevoNumeroProductoDuplicado}`;
+                
+                actualizarIdsYEventos(nuevoProductoDuplicado, nuevoNumeroProductoDuplicado);
+    
+                const productosContainer = document.getElementById('productos-container');
+                if (productosContainer) {
+                    productosContainer.appendChild(nuevoProductoDuplicado);
+                } else {
+                    console.error('Contenedor principal de productos no encontrado.');
+                }
+    
+            } else {
+                console.error(`Producto con ID producto-${productoId} no encontrado.`);
+            }
+        }
+    });
+    
+    function actualizarIdsYEventos(element, nuevoId) {
+        console.log(`Actualizando IDs y eventos para el nuevo ID: ${nuevoId}`);
+        
+        element.querySelectorAll('[id]').forEach(child => {
+            const partesId = child.id.split('-');
+            partesId[partesId.length - 1] = nuevoId;
+            child.id = partesId.join('-');
+        });
+        element.querySelectorAll('[for]').forEach(child => {
+            const partesFor = child.getAttribute('for').split('-');
+            partesFor[partesFor.length - 1] = nuevoId;
+            child.setAttribute('for', partesFor.join('-'));
+        });
+        element.querySelectorAll('[name]').forEach(child => {
+            const partesName = child.name.split('-');
+            partesName[partesName.length - 1] = nuevoId;
+            child.name = partesName.join('-');
+        });
+        element.querySelectorAll('[data-producto-id]').forEach(child => {
+            child.setAttribute('data-producto-id', nuevoId);
+        });
+    
+        // Actualizar los eventos `onclick` de los botones
+        element.querySelectorAll('button').forEach(button => {
+            const originalOnClick = button.getAttribute('onclick');
+            if (originalOnClick) {
+                button.setAttribute('onclick', originalOnClick.replace(/\d+/, nuevoId));
+            }
+        });
+    
+        // Asegurarse de que los eventos de cambio de cantidad y utilidad están configurados
+        element.querySelectorAll('.cantidad-item').forEach(input => {
+            input.addEventListener('input', function() {
+                const precioUnitario = parseFloat(this.getAttribute('data-precio').replace(/,/g, ''));
+                const cantidad = parseFloat(this.value);
+                const total = (precioUnitario * cantidad).toFixed(3);
+                this.closest('tr').querySelector('.total-item').textContent = total.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            });
+        });
+    
+
+        element.querySelectorAll('.cantidad-item').forEach(input =>{
+            input.addEventListener('input', function(){
+                const precioUnitario = parseFloat(this.getAttribute('data-precio').replace(/,/g, ''));
+                const cantidad = parseFloat(this.value);
+                const total = (precioUnitario * cantidad).toFixed(3);
+                this.closest('tr').querySelector('.total-item').textContent = total.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+            });
+        });
+
+
+        element.querySelectorAll('.utilidadSeleccionada').forEach(input => {
+            input.addEventListener('input', function() {
+                let timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    const nuevoValorUtilidad = parseFloat(this.value);
+                    if (!isNaN(nuevoValorUtilidad)) {
+                        const productoElement = document.querySelector(`#producto-${nuevoId}`);
+                        if (productoElement) {
+                            const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
+                            if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
+                                actualizarTotalProducto(nuevoId, nuevoValorUtilidad);
+                                actualizarResumenDeCostos(nuevoId); // Actualiza el resumen de costos
+                            } else {
+                                alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
+                            }
+                        }
+                    }
+                }, 300);
+            });
+        });
+    }
 
     function toggleSidebar() {
         const sidebar = document.querySelector('.sidebar');

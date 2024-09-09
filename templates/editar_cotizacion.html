@@ -509,15 +509,20 @@ function mostrarItems(items) {
         if (itemsDelTipo.length > 0) {
             html += `<tr><td colspan="8" class="tipo-header"><strong>${tipo}</strong></td></tr>`;
             itemsDelTipo.forEach(item => {
+                // Reemplazar la coma por un punto para convertir a número flotante
+                const precioUnitario = parseFloat(item.precio_unitario.replace(',', '.'));
+                const cantidad = parseFloat(item.cantidad);
+                const total = (precioUnitario * cantidad).toFixed(3);
+
                 html += `
                     <tr>
                         <td>${item.id}</td>
                         <td>${item.grupo}</td>
                         <td>${item.descripcion}</td>
                         <td>${item.unidad}</td>
-                        <td>${item.precio_unitario}</td>
-                        <td><input type="number" class="cantidad-item" data-precio="${item.precio_unitario}" value="${item.cantidad}" min="0"></td>
-                        <td class="total-item">${(item.precio_unitario * item.cantidad).toFixed(3)}</td>
+                        <td>${precioUnitario.toFixed(3)}</td>
+                        <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="0"></td>
+                        <td class="total-item">${total}</td>
                         <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
                     </tr>
                 `;

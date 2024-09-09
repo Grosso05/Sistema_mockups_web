@@ -259,47 +259,6 @@
 
     <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
     <section class="flex">
-        <div class="seccion-izquierda flex-item">
-            <h2> Productos </h2>
-            <div class="item-descripcion-container">
-                <div class="item-number" id="itemNumber"></div>
-                <textarea id="descripcion" name="descripcion" rows="2" class="descripcion-input" placeholder="Ingrese la descripción del producto" required></textarea>
-            </div>
-            <div class="grupo">
-                <label for="seleccionarLinea">Línea:</label>
-                <select id="seleccionarLinea" name="seleccionarLinea">
-                    <option value="">Seleccionar</option>
-                    {% for linea in lineas %}
-                        <option value="{{ linea.linea_id }}">{{ linea.nombre }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="grupo">
-                <label for="seleccionarProducto">Producto:</label>
-                <select id="seleccionarProducto" name="seleccionarProducto" onchange="cargarPorcentajesProducto()">
-                    <option value="">Seleccionar</option>
-
-                </select>
-
-                <label for="alto-1">Alto: (Cm):</label>
-                <input type="number" class="alto-input" name="alto" />
-                <label for="ancho-1">Ancho: (Cm):</label>
-                <input type="number" class="ancho-input" name="ancho" />
-                <label for="fondo-1">Fondo: (Cm):</label>
-                <input type="number" class="fondo-input" name="fondo" /> 
-            </div>
-            <div id="cantidad-container">
-                <label for="cantidadUnidades">Cantidad de Unidades:</label>
-                <div id="cantidadUnidades">
-                    <input type="number" class="cantidad-input" name="cantidadUnidades" min="1" value="0" />
-                    <button id="btnAgregarCantidad">+</button>
-                    <button id="btnEliminarCantidad">-</button>
-                </div>
-            </div>
-            <div class="grupo botones">
-                <button id="btnCrear">Añadir</button>
-            </div>
-        </div>
         <div class="seccion-derecha flex-item flex-grow">
             <div class="header-cotizacion">
                 <h2>Datos de Cotización</h2>
@@ -394,6 +353,48 @@
             </div>
 
         </div>
+        <div class="seccion-izquierda flex-item">
+            <h2> Productos </h2>
+            <div class="item-descripcion-container">
+                <div class="item-number" id="itemNumber"></div>
+                <textarea id="descripcion" name="descripcion" rows="2" class="descripcion-input" placeholder="Ingrese la descripción del producto" required></textarea>
+            </div>
+            <div class="grupo">
+                <label for="seleccionarLinea">Línea:</label>
+                <select id="seleccionarLinea" name="seleccionarLinea">
+                    <option value="">Seleccionar</option>
+                    {% for linea in lineas %}
+                        <option value="{{ linea.linea_id }}">{{ linea.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grupo">
+                <label for="seleccionarProducto">Producto:</label>
+                <select id="seleccionarProducto" name="seleccionarProducto" onchange="cargarPorcentajesProducto()">
+                    <option value="">Seleccionar</option>
+
+                </select>
+
+                <label for="alto-1">Alto: (Cm):</label>
+                <input type="number" class="alto-input" name="alto" />
+                <label for="ancho-1">Ancho: (Cm):</label>
+                <input type="number" class="ancho-input" name="ancho" />
+                <label for="fondo-1">Fondo: (Cm):</label>
+                <input type="number" class="fondo-input" name="fondo" /> 
+            </div>
+            <div id="cantidad-container">
+                <label for="cantidadUnidades">Cantidad de Unidades:</label>
+                <div id="cantidadUnidades">
+                    <input type="number" class="cantidad-input" name="cantidadUnidades" min="1" value="0" />
+                    <button id="btnAgregarCantidad">+</button>
+                    <button id="btnEliminarCantidad">-</button>
+                </div>
+            </div>
+            <div class="grupo botones">
+                <button id="btnCrear">Añadir</button>
+            </div>
+        </div>
+
     </section>
     <div id="productos-cotizacion" class="productos-cotizacion">
         <h2 style="text-align: center;">Productos de la Cotización</h2>
@@ -485,6 +486,53 @@
 });
 
 // Función para añadir un producto al DOM de forma organizada
+// Función para agrupar ítems por tipo
+function agruparItemsPorTipo(items) {
+    const tipos = ['Materia Prima', 'Servicios', 'Mano de Obra e Instalación', 'Transportes', 'Consumibles'];
+    const itemsPorTipo = {};
+
+    tipos.forEach(tipo => {
+        itemsPorTipo[tipo] = items.filter(item => item.tipo === tipo);
+    });
+
+    return itemsPorTipo;
+}
+
+// Función para mostrar los ítems organizados por tipo
+function mostrarItems(items) {
+    const itemsPorTipo = agruparItemsPorTipo(items);
+    let html = '';
+
+    Object.keys(itemsPorTipo).forEach(tipo => {
+        const itemsDelTipo = itemsPorTipo[tipo];
+
+        if (itemsDelTipo.length > 0) {
+            html += `<tr><td colspan="8" class="tipo-header"><strong>${tipo}</strong></td></tr>`;
+            itemsDelTipo.forEach(item => {
+                html += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.grupo}</td>
+                        <td>${item.descripcion}</td>
+                        <td>${item.unidad}</td>
+                        <td>${item.precio_unitario}</td>
+                        <td><input type="number" class="cantidad-item" data-precio="${item.precio_unitario}" value="${item.cantidad}" min="0"></td>
+                        <td class="total-item">${(item.precio_unitario * item.cantidad).toFixed(3)}</td>
+                        <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+                    </tr>
+                `;
+            });
+        }
+    });
+
+    if (html === '') {
+        html += `<tr><td colspan="8">No hay ítems disponibles para este producto.</td></tr>`;
+    }
+
+    return html;
+}
+
+// Función para agregar un producto al DOM de forma organizada
 function agregarProducto(producto, items, resumenCostos) {
     console.log('Estructura del producto:', producto);
 
@@ -523,7 +571,7 @@ function agregarProducto(producto, items, resumenCostos) {
             </thead>
             <tbody id="itemsseleccionados-${producto.producto_id}">
                 ${items && items.length > 0 
-                    ? mostrarItems(items) // Mostrar todos los ítems sin organizar por tipo
+                    ? mostrarItems(items) // Mostrar los ítems organizados por tipo
                     : '<tr><td colspan="8">No hay ítems disponibles para este producto.</td></tr>'}
             </tbody>
         </table>
@@ -598,22 +646,16 @@ function agregarProducto(producto, items, resumenCostos) {
             this.closest('tr').querySelector('.total-item').textContent = total;
         });
     });
-}
 
-// Función para mostrar los ítems sin organización por tipo
-function mostrarItems(items) {
-    return items.map(item => `
-        <tr>
-            <td>${item.id}</td>
-            <td>${item.grupo}</td>
-            <td>${item.descripcion}</td>
-            <td>${item.unidad}</td>
-            <td>${item.precio_unitario}</td>
-            <td><input type="number" class="cantidad-item" data-precio="${item.precio_unitario}" value="${item.cantidad}" min="0"></td>
-            <td class="total-item">${(item.precio_unitario * item.cantidad).toFixed(3)}</td>
-            <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
-        </tr>
-    `).join('');
+    // Forzar una actualización de los totales después de renderizar
+    const totalItems = nuevoProducto.querySelectorAll('.total-item');
+    totalItems.forEach(item => {
+        const inputCantidad = item.closest('tr').querySelector('.cantidad-item');
+        const precioUnitario = parseFloat(inputCantidad.getAttribute('data-precio'));
+        const cantidad = parseFloat(inputCantidad.value);
+        const total = (precioUnitario * cantidad).toFixed(3);
+        item.textContent = total;
+    });
 }
     
         // Agregar productos nuevos

@@ -16,7 +16,6 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from flask_login import current_user
 
 
-
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8') 
     
@@ -63,8 +62,6 @@ def generar_catalogouser():
     return render_template('generarcatalogouserregistrado.html')
 
 # <------------------------------------------------------------------ SISTEMA COTIZADOR --------------------------------------------------------------------------------->
-
-
 
 
 @routes_blueprint.route('/generar_cotizacion')
@@ -474,7 +471,6 @@ def editar_cotizacion(cotizacion_id):
         vendedores=vendedores,
         user_rol=user_rol
     )
-
 
 
 

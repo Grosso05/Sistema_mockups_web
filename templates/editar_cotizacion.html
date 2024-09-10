@@ -467,6 +467,23 @@
     }
  */
 
+ function obtenerMayorProductoId() {
+    const productos = document.querySelectorAll('.producto');
+    let maxId = 0;
+
+    productos.forEach(producto => {
+        // Obtener el ID del producto actual y extraer el número
+        const id = producto.id.replace('producto-', '');
+        const numeroId = parseInt(id, 10);
+        
+        if (numeroId > maxId) {
+            maxId = numeroId;
+        }
+    });
+
+    return maxId;
+}
+
  const productosCotizados = {{ productos_cotizados | tojson }};
  const itemsCotizados = {{ items_cotizados | tojson }};
  const resumenCostos = {{ resumen_costos | tojson }};
@@ -668,20 +685,19 @@ function agregarProducto(producto, items, resumenCostos) {
             const descripcionInput = document.getElementById('descripcion');
             const altoInput = document.querySelector('.alto-input');
             const anchoInput = document.querySelector('.ancho-input');
-            const fondoInput = document.querySelector('.fondo-input');        
+            const fondoInput = document.querySelector('.fondo-input');
             const productoSelect = document.getElementById('seleccionarProducto');
             const cantidadInput = document.querySelector('.cantidad-input');
-            
+        
             const descripcion = descripcionInput.value.trim();
             const productoId = productoSelect.value;  // ID del producto seleccionado desde el select
             const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
-            
+        
             const alto = altoInput.value.trim();
             const ancho = anchoInput.value.trim();
             const fondo = fondoInput.value.trim();
-            
             const cantidad = parseInt(cantidadInput.value.trim(), 10);
-            
+        
             if (descripcion === "" || productoId === "" || cantidad <= 0) {
                 alert("Por favor, ingrese una descripción, seleccione un producto y asegúrese de que la cantidad sea mayor a 0.");
                 return;
@@ -692,7 +708,11 @@ function agregarProducto(producto, items, resumenCostos) {
             if (numerosEliminados.length > 0) {
                 nuevoNumeroProducto = numerosEliminados.shift(); // Reutilizar el número más bajo disponible
             } else {
-                nuevoNumeroProducto = ++itemNumber; // Incrementar el número de producto
+                // Obtener el mayor ID de los productos existentes en el DOM
+                const mayorIdActual = obtenerMayorProductoId();
+        
+                // Asignar nuevoNumeroProducto como el mayorIdActual + 1
+                nuevoNumeroProducto = mayorIdActual + 1;
             }
         
             // Crear el nuevo producto

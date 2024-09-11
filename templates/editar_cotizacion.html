@@ -642,7 +642,7 @@ function agregarProducto(producto, items, resumenCostos) {
             <div id="seleccion-items-${producto.producto_id}"></div>
             <div id="paginacion-items-${producto.producto_id}"></div>
             <div class="botones-container">
-                <button onclick="agregarItemsSeleccionados(${producto.producto_id})">Agregar Ítems Seleccionados</button>
+                <button onclick="agregarItemsSeleccionadosNuevos(${producto.producto_id})">Agregar Ítems Seleccionados</button>
                 <button onclick="verTodosItems(${producto.producto_id}, 1, '')">Ver Todos los Ítems</button>
             </div>
         </div>
@@ -1743,6 +1743,90 @@ function agregarItemAlProducto(item, itemNumber) {
     }
     
     
+    function agregarItemsSeleccionadosNuevos(productoId) {
+    // Obtener el contenedor donde se agregarán los ítems seleccionados
+    const itemsSeleccionadosContainer = document.getElementById(`itemsseleccionados-${productoId}`);
+
+    // Verificar si el contenedor existe
+    if (!itemsSeleccionadosContainer) {
+        console.error(`Contenedor itemsseleccionados-${productoId} no encontrado. Verifica el ID en el HTML.`);
+        return;  // Salir de la función si no existe el contenedor
+    }
+
+    // Obtener los checkboxes seleccionados
+    const checkboxes = document.querySelectorAll(`#seleccion-items-${productoId} input[type="checkbox"]:checked`);
+
+    if (checkboxes.length === 0) {
+        alert('No has seleccionado ningún ítem.');
+        return;
+    }
+
+    // Iterar sobre los checkboxes seleccionados y agregar cada uno al contenedor
+    checkboxes.forEach(checkbox => {
+        const fila = checkbox.closest('tr');  // Obtener la fila que contiene el checkbox seleccionado
+        const id = checkbox.value;  // Obtener el valor del checkbox (id del ítem)
+        const tipo = fila.querySelector('td:nth-child(6)').innerText;  // Obtener el tipo del ítem
+        
+        // Crear una nueva fila para agregar al tbody
+        const newRow = document.createElement('tr');
+
+        // Crear las celdas necesarias basadas en los datos de la fila seleccionada
+        newRow.innerHTML = `
+            <td>${id}</td>
+            <td>${fila.querySelector('td:nth-child(2)').innerText}</td> <!-- Grupo -->
+            <td>${fila.querySelector('td:nth-child(3)').innerText}</td> <!-- Descripción -->
+            <td>${fila.querySelector('td:nth-child(4)').innerText}</td> <!-- Unidad -->
+            <td>${fila.querySelector('td:nth-child(5)').innerText}</td> <!-- Precio -->
+            <td><input type="number" class="cantidad-item" data-precio="${fila.querySelector('td:nth-child(5)').innerText.replace(',', '')}" value="1" min="1"></td> <!-- Cantidad -->
+            <td class="total-item">${fila.querySelector('td:nth-child(5)').innerText}</td> <!-- Total -->
+            <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+        `;
+
+        // Determinar el contenedor correcto según el tipo
+        let tipoHeader;
+        switch (tipo) {
+            case 'Materia Prima':
+                tipoHeader = 'Materia Prima';
+                break;
+            case 'Consumibles':
+                tipoHeader = 'Consumibles';
+                break;
+            case 'Servicios':
+                tipoHeader = 'Servicios';
+                break;
+            case 'Mano de Obra e Instalacion':
+                tipoHeader = 'Mano de Obra e Instalacion';
+                break;
+            case 'Transportes':
+                tipoHeader = 'Transportes';
+                break;
+            default:
+                console.error('Tipo de ítem desconocido:', tipo);
+                return;
+        }
+
+        // Buscar el contenedor para el tipo
+        const tipoContainer = Array.from(itemsSeleccionadosContainer.children).find(tr => {
+            return tr.classList.contains('tipo-header') && tr.querySelector('strong').innerText === tipoHeader;
+        });
+
+        // Si no se encuentra el encabezado, crear uno nuevo
+        if (!tipoContainer) {
+            const headerRow = document.createElement('tr');
+            headerRow.classList.add('tipo-header');
+            headerRow.innerHTML = `<td colspan="8" class="tipo-header"><strong>${tipoHeader}</strong></td>`;
+            itemsSeleccionadosContainer.appendChild(headerRow);
+        }
+
+        // Agregar la nueva fila al contenedor adecuado
+        itemsSeleccionadosContainer.appendChild(newRow);
+
+        // Limpiar el checkbox después de agregar
+        checkbox.checked = false;
+    });
+}
+
+    // <---------------------- FUNCION PARA AGREGAR ITEMS A LOS PRODUCTOS NO TRAIDOS DE BD--------------->
 
     function agregarItemsSeleccionados(itemNumber) {
         const itemsSeleccionados = document.querySelectorAll(`#seleccion-items-${itemNumber} input[type="checkbox"]:checked`);

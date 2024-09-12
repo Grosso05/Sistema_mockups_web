@@ -75,7 +75,7 @@ class Items(db.Model):
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.CATEGORIA_ID'))
     unidad = db.Column(db.String(255))
     tipo = db.Column(db.String(255))
-    tiene_precios_escalonados = db.Column(db.Boolean, default=False)  # Corrección aquí
+    tiene_precios_escalonados = db.Column(db.Boolean, default=False)  
 
     categoria = db.relationship("Categoria", backref="items")
 
@@ -90,7 +90,7 @@ class Items(db.Model):
 class ItemTemporal(db.Model):
     __tablename__ = 'itemtemporal'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    descripcion = db.Column(db.String(255), nullable=False)  # Actualizado a 'descripcion'
+    descripcion = db.Column(db.String(255), nullable=False)  
     precio = db.Column(db.Float, nullable=False)
     creado_por = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     aprobado = db.Column(db.Boolean, default=False)
@@ -164,7 +164,7 @@ class Lineas(db.Model):
   unidad_idFK = Column(Integer, ForeignKey('unidades_negocio.unidad_id'), nullable=False)
   nombre = Column(String(100), nullable=False)
 
-  unidad_negocio = relationship("UnidadesNegocio", backref="lineas")  # Relationship definition
+  unidad_negocio = relationship("UnidadesNegocio", backref="lineas")  
 
   def __repr__(self):
     return f"<Lineas {self.nombre}>"

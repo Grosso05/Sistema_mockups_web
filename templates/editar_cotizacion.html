@@ -541,6 +541,7 @@ function mostrarItems(items) {
                         <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="0"></td>
                         <td class="total-item">${total}</td>
                         <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+                        <td class="oculto">${item.tipo}</td>
                     </tr>
                 `;
             });
@@ -589,6 +590,7 @@ function agregarProducto(producto, items, resumenCostos) {
                     <th>Cantidad</th>
                     <th>Total</th>
                     <th>Acciones</th>
+                    <th class="oculto">Tipo</th>
                 </tr>
             </thead>
             <tbody id="itemsseleccionados-${producto.producto_id}">
@@ -1523,8 +1525,8 @@ function toggleFormulario(numeroProducto) {
                             <td>${descripcion}</td>
                             <td>Unidad</td>
                             <td>${formatearNumero(precio)}</td>
-                            ${cantidadCeldas} <!-- Aquí se generan los td de cantidad -->
-                            ${totalCeldas}    <!-- Aquí se generan los td de total -->
+                            ${cantidadCeldas} 
+                            ${totalCeldas}    
                             <td class="oculto">Temporal</td>
                             <td><button onclick="eliminarItemTemporal(this, ${itemId}, ${productoId})">Eliminar</button></td>
                         `;
@@ -1744,87 +1746,71 @@ function agregarItemAlProducto(item, itemNumber) {
     
     
     function agregarItemsSeleccionadosNuevos(productoId) {
-    // Obtener el contenedor donde se agregarán los ítems seleccionados
-    const itemsSeleccionadosContainer = document.getElementById(`itemsseleccionados-${productoId}`);
-
-    // Verificar si el contenedor existe
-    if (!itemsSeleccionadosContainer) {
-        console.error(`Contenedor itemsseleccionados-${productoId} no encontrado. Verifica el ID en el HTML.`);
-        return;  // Salir de la función si no existe el contenedor
-    }
-
-    // Obtener los checkboxes seleccionados
-    const checkboxes = document.querySelectorAll(`#seleccion-items-${productoId} input[type="checkbox"]:checked`);
-
-    if (checkboxes.length === 0) {
-        alert('No has seleccionado ningún ítem.');
-        return;
-    }
-
-    // Iterar sobre los checkboxes seleccionados y agregar cada uno al contenedor
-    checkboxes.forEach(checkbox => {
-        const fila = checkbox.closest('tr');  // Obtener la fila que contiene el checkbox seleccionado
-        const id = checkbox.value;  // Obtener el valor del checkbox (id del ítem)
-        const tipo = fila.querySelector('td:nth-child(6)').innerText;  // Obtener el tipo del ítem
+        // Obtener el contenedor donde se agregarán los ítems seleccionados
+        const itemsSeleccionadosContainer = document.getElementById(`itemsseleccionados-${productoId}`);
         
-        // Crear una nueva fila para agregar al tbody
-        const newRow = document.createElement('tr');
-
-        // Crear las celdas necesarias basadas en los datos de la fila seleccionada
-        newRow.innerHTML = `
-            <td>${id}</td>
-            <td>${fila.querySelector('td:nth-child(2)').innerText}</td> <!-- Grupo -->
-            <td>${fila.querySelector('td:nth-child(3)').innerText}</td> <!-- Descripción -->
-            <td>${fila.querySelector('td:nth-child(4)').innerText}</td> <!-- Unidad -->
-            <td>${fila.querySelector('td:nth-child(5)').innerText}</td> <!-- Precio -->
-            <td><input type="number" class="cantidad-item" data-precio="${fila.querySelector('td:nth-child(5)').innerText.replace(',', '')}" value="1" min="1"></td> <!-- Cantidad -->
-            <td class="total-item">${fila.querySelector('td:nth-child(5)').innerText}</td> <!-- Total -->
-            <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
-        `;
-
-        // Determinar el contenedor correcto según el tipo
-        let tipoHeader;
-        switch (tipo) {
-            case 'Materia Prima':
-                tipoHeader = 'Materia Prima';
-                break;
-            case 'Consumibles':
-                tipoHeader = 'Consumibles';
-                break;
-            case 'Servicios':
-                tipoHeader = 'Servicios';
-                break;
-            case 'Mano de Obra e Instalacion':
-                tipoHeader = 'Mano de Obra e Instalacion';
-                break;
-            case 'Transportes':
-                tipoHeader = 'Transportes';
-                break;
-            default:
-                console.error('Tipo de ítem desconocido:', tipo);
-                return;
+        // Verificar si el contenedor existe
+        if (!itemsSeleccionadosContainer) {
+            console.error(`Contenedor itemsseleccionados-${productoId} no encontrado. Verifica el ID en el HTML.`);
+            return;  // Salir de la función si no existe el contenedor
         }
-
-        // Buscar el contenedor para el tipo
-        const tipoContainer = Array.from(itemsSeleccionadosContainer.children).find(tr => {
-            return tr.classList.contains('tipo-header') && tr.querySelector('strong').innerText === tipoHeader;
+        
+        // Obtener los checkboxes seleccionados
+        const checkboxes = document.querySelectorAll(`#seleccion-items-${productoId} input[type="checkbox"]:checked`);
+        
+        if (checkboxes.length === 0) {
+            alert('No has seleccionado ningún ítem.');
+            return;
+        }
+        
+        checkboxes.forEach(checkbox => {
+            const fila = checkbox.closest('tr');  // Obtener la fila que contiene el checkbox seleccionado
+            const id = checkbox.value;  // Obtener el valor del checkbox (id del ítem)
+            const tipo = fila.querySelector('td:nth-child(6)').innerText;  // Obtener el tipo del ítem
+            
+            // Crear una nueva fila para agregar al tbody
+            const newRow = document.createElement('tr');
+            
+            // Crear las celdas necesarias basadas en los datos de la fila seleccionada
+            newRow.innerHTML = `
+                <td>${id}</td>
+                <td>${tipo}</td> <!-- Tipo -->
+                <td>${fila.querySelector('td:nth-child(3)').innerText}</td> <!-- Descripción -->
+                <td>${fila.querySelector('td:nth-child(4)').innerText}</td> <!-- Unidad -->
+                <td>${fila.querySelector('td:nth-child(5)').innerText}</td> <!-- Precio -->
+                <td><input type="number" class="cantidad-item" data-precio="${fila.querySelector('td:nth-child(5)').innerText.replace(',', '')}" value="1" min="1"></td> <!-- Cantidad -->
+                <td class="total-item">${fila.querySelector('td:nth-child(5)').innerText}</td> <!-- Total -->
+                <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+            `;
+            
+            // Buscar el encabezado correspondiente
+            let tipoHeaderRow = Array.from(itemsSeleccionadosContainer.querySelectorAll('.tipo-header')).find(row => row.textContent.includes(tipo));
+            
+            // Si no existe, crearla
+            if (!tipoHeaderRow) {
+                tipoHeaderRow = document.createElement('tr');
+                tipoHeaderRow.classList.add('tipo-header');
+                tipoHeaderRow.innerHTML = `<td colspan="8"><strong>${tipo}</strong></td>`;
+                // Insertar el encabezado al final del contenedor
+                itemsSeleccionadosContainer.appendChild(tipoHeaderRow);
+            }
+            
+            // Encontrar el próximo encabezado después del encabezado actual
+            const nextHeader = tipoHeaderRow.nextElementSibling;
+    
+            // Insertar la nueva fila después del encabezado correspondiente
+            if (nextHeader && nextHeader.classList.contains('tipo-header')) {
+                // Si el siguiente elemento es otro encabezado, insertar antes de él
+                itemsSeleccionadosContainer.insertBefore(newRow, nextHeader);
+            } else {
+                // Si no hay otro encabezado después, insertar al final del contenedor
+                itemsSeleccionadosContainer.appendChild(newRow);
+            }
+            
+            // Limpiar el checkbox después de agregar
+            checkbox.checked = false;
         });
-
-        // Si no se encuentra el encabezado, crear uno nuevo
-        if (!tipoContainer) {
-            const headerRow = document.createElement('tr');
-            headerRow.classList.add('tipo-header');
-            headerRow.innerHTML = `<td colspan="8" class="tipo-header"><strong>${tipoHeader}</strong></td>`;
-            itemsSeleccionadosContainer.appendChild(headerRow);
-        }
-
-        // Agregar la nueva fila al contenedor adecuado
-        itemsSeleccionadosContainer.appendChild(newRow);
-
-        // Limpiar el checkbox después de agregar
-        checkbox.checked = false;
-    });
-}
+    }
 
     // <---------------------- FUNCION PARA AGREGAR ITEMS A LOS PRODUCTOS NO TRAIDOS DE BD--------------->
 

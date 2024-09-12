@@ -1720,16 +1720,13 @@ function agregarItemAlProducto(item, itemNumber) {
     
     
     function agregarItemsSeleccionadosNuevos(productoId) {
-        // Obtener el contenedor donde se agregarán los ítems seleccionados
         const itemsSeleccionadosContainer = document.getElementById(`itemsseleccionados-${productoId}`);
         
-        // Verificar si el contenedor existe
         if (!itemsSeleccionadosContainer) {
             console.error(`Contenedor itemsseleccionados-${productoId} no encontrado. Verifica el ID en el HTML.`);
-            return;  // Salir de la función si no existe el contenedor
+            return;
         }
         
-        // Obtener los checkboxes seleccionados
         const checkboxes = document.querySelectorAll(`#seleccion-items-${productoId} input[type="checkbox"]:checked`);
         
         if (checkboxes.length === 0) {
@@ -1738,9 +1735,18 @@ function agregarItemAlProducto(item, itemNumber) {
         }
         
         checkboxes.forEach(checkbox => {
-            const fila = checkbox.closest('tr');  // Obtener la fila que contiene el checkbox seleccionado
-            const id = checkbox.value;  // Obtener el valor del checkbox (id del ítem)
-            const tipo = fila.querySelector('td:nth-child(6)').innerText;  // Obtener el tipo del ítem
+            const fila = checkbox.closest('tr');
+            const id = checkbox.value;
+            const tipo = fila.querySelector('td:nth-child(6)').innerText;
+            
+            // Obtener el precio unitario y eliminar separadores
+            const precioUnitario = parseFloat(fila.querySelector('td:nth-child(5)').innerText.replace(/\./g, '').replace(',', '.'));
+    
+            const cantidad = 1;  // Inicializamos con 1 como valor por defecto
+            const total = precioUnitario * cantidad; // No redondeamos aquí
+    
+            // Usar Intl.NumberFormat para formatear el precio y el total correctamente
+            const formatearNumero = new Intl.NumberFormat('de-DE'); // de-DE para usar separadores de miles y coma decimal
             
             // Crear una nueva fila para agregar al tbody
             const newRow = document.createElement('tr');
@@ -1748,40 +1754,41 @@ function agregarItemAlProducto(item, itemNumber) {
             // Crear las celdas necesarias basadas en los datos de la fila seleccionada
             newRow.innerHTML = `
                 <td>${id}</td>
-                <td>${tipo}</td> <!-- Tipo -->
-                <td>${fila.querySelector('td:nth-child(3)').innerText}</td> <!-- Descripción -->
-                <td>${fila.querySelector('td:nth-child(4)').innerText}</td> <!-- Unidad -->
-                <td>${fila.querySelector('td:nth-child(5)').innerText}</td> <!-- Precio -->
-                <td><input type="number" class="cantidad-item" data-precio="${fila.querySelector('td:nth-child(5)').innerText.replace(',', '')}" value="1" min="1"></td> <!-- Cantidad -->
-                <td class="total-item">${fila.querySelector('td:nth-child(5)').innerText}</td> <!-- Total -->
+                <td>${tipo}</td>
+                <td>${fila.querySelector('td:nth-child(3)').innerText}</td>
+                <td>${fila.querySelector('td:nth-child(4)').innerText}</td>
+                <td>${formatearNumero.format(precioUnitario)}</td> <!-- Precio unitario formateado correctamente -->
+                <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="1"></td>
+                <td class="total-item">${formatearNumero.format(total)}</td> <!-- Total formateado correctamente -->
                 <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
             `;
             
-            // Buscar el encabezado correspondiente
             let tipoHeaderRow = Array.from(itemsSeleccionadosContainer.querySelectorAll('.tipo-header')).find(row => row.textContent.includes(tipo));
             
-            // Si no existe, crearla
             if (!tipoHeaderRow) {
                 tipoHeaderRow = document.createElement('tr');
                 tipoHeaderRow.classList.add('tipo-header');
                 tipoHeaderRow.innerHTML = `<td colspan="8"><strong>${tipo}</strong></td>`;
-                // Insertar el encabezado al final del contenedor
                 itemsSeleccionadosContainer.appendChild(tipoHeaderRow);
             }
             
-            // Encontrar el próximo encabezado después del encabezado actual
             const nextHeader = tipoHeaderRow.nextElementSibling;
     
-            // Insertar la nueva fila después del encabezado correspondiente
             if (nextHeader && nextHeader.classList.contains('tipo-header')) {
-                // Si el siguiente elemento es otro encabezado, insertar antes de él
                 itemsSeleccionadosContainer.insertBefore(newRow, nextHeader);
             } else {
-                // Si no hay otro encabezado después, insertar al final del contenedor
                 itemsSeleccionadosContainer.appendChild(newRow);
             }
-            
-            // Limpiar el checkbox después de agregar
+    
+            // Añadir un evento para recalcular el total cuando cambie la cantidad
+            const cantidadInput = newRow.querySelector('.cantidad-item');
+            const totalCell = newRow.querySelector('.total-item');
+            cantidadInput.addEventListener('input', function() {
+                const nuevaCantidad = parseFloat(cantidadInput.value);
+                const nuevoTotal = precioUnitario * nuevaCantidad; // Cálculo exacto
+                totalCell.innerText = formatearNumero.format(nuevoTotal); // Mostrar total con el formato correcto
+            });
+    
             checkbox.checked = false;
         });
     }

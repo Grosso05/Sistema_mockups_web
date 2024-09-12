@@ -1,16 +1,22 @@
 from flask import Blueprint, render_template, request, redirect, url_for,flash,session
 from flask_login import login_required, login_user
-from models import Users, db  # Importa las clases de modelos y la configuración de la base de datos
+from models import Users, UsersRol, db  # Importa las clases de modelos y la configuración de la base de datos
 import bcrypt
 from utils import roles_required
 users_blueprint = Blueprint('users', __name__)
 
-@users_blueprint.route('/users.listar_usuarios', methods=['DELETE','GET', 'POST'])
+@users_blueprint.route('/users.listar_usuarios', methods=['GET'])
 @login_required
 @roles_required(1)
 def listar_usuarios():
-    usuarios = Users.query.all()  # Obtener todos los usuarios de la base de datos
-    return render_template('listar_usuarios.html', usuarios=usuarios)  # Renderizar la plantilla HTML con la lista de usuarios
+    usuarios = Users.query.join(UsersRol).add_columns(
+        Users.user_id,
+        Users.user_name,
+        Users.user_last_name,
+        Users.user_email,
+        UsersRol.descripcion  # Incluye el nombre del rol
+    ).all()
+    return render_template('listar_usuarios.html', usuarios=usuarios)
 
 
 #ruta del formulario para crear usuarios

@@ -186,8 +186,7 @@
                 </a>
             </li>
             <div class="sidebar-header">
-                <h6> Apartado de Gestiones </h6>
-            </div>
+
     
             {% if user_rol == 1 %}
             <li class="dropdown">
@@ -215,9 +214,7 @@
                     <i class="fas fa-handshake"></i> Gestión de Clientes
                 </a>
             </li>
-            <div class="sidebar-header">
-                <h6> Apartado Principal </h6>
-            </div>
+
             <li>
                 <a href="{{ url_for('routes.generar_catalogo') }}">
                     <i class="fas fa-brush"></i> Generar Catalogo
@@ -710,8 +707,8 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Grupo</th>
+                                    <th class ="oculto">ID</th>
+                                    <th class ="oculto">Grupo</th>
                                     <th>Descripción</th>
                                     <th>Unidad</th>
                                     <th>Precio</th>
@@ -1221,8 +1218,8 @@ function agregarItemAlProducto(item, itemNumber) {
     
     const nuevaFila = document.createElement('tr');
     nuevaFila.innerHTML = `
-        <td>${itemId}</td>
-        <td>${itemGrupo}</td>
+        <td class="oculto">${itemId}</td>
+        <td class="oculto">${itemGrupo}</td>
         <td>${itemDescripcion}</td>
         <td>${itemUnidad}</td>
         <td id="precio-${itemId}">${item.precio || 'SIN PRECIO'}</td>
@@ -1414,8 +1411,8 @@ function agregarItemAlProducto(item, itemNumber) {
     
             const nuevaFila = document.createElement('tr');
             nuevaFila.innerHTML = `
-                <td>${itemId}</td>
-                <td>${itemGrupo}</td>
+                <td class="oculto">${itemId}</td>
+                <td class="oculto">${itemGrupo}</td>
                 <td>${itemDescripcion}</td>
                 <td>${itemUnidad}</td>
                 <td>${itemPrecio}</td>

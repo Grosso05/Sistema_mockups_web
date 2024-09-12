@@ -56,14 +56,15 @@
 {% endwith %}
 
 
-            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
-                <h1>Lista de Usuarios</h1>
+<main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+    <h1>Lista de Usuarios</h1>
     <table>
         <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Apellido</th>
             <th>Email</th>
+            <th>Rol</th> <!-- Nueva columna para el rol -->
             <th>Acciones</th>
         </tr>
         {% for usuario in usuarios %}
@@ -72,14 +73,15 @@
             <td>{{ usuario.user_name }}</td>
             <td>{{ usuario.user_last_name }}</td>
             <td>{{ usuario.user_email }}</td>
+            <td>{{ usuario.descripcion }}</td> <!-- Mostrar el nombre del rol -->
             <td>
-                <button onclick="editarUsuario('{{ usuario.user_id }} ')">Editar</button>
+                <button onclick="editarUsuario('{{ usuario.user_id }}')">Editar</button>
                 <button onclick="eliminarUsuario('{{ usuario.user_id }}')">Eliminar</button>
             </td>
         </tr>
         {% endfor %}
     </table>
-            </main>
+</main>
         </div>
     </div>
 

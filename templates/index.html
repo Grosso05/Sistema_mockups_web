@@ -57,9 +57,9 @@
         </section>
 
         <form id="catalogoForm" action="/add_watermark" method="post" enctype="multipart/form-data">
-            <label for="image_file">Paso 1: Inserte o Arrastre el Logotipo Aquí:
-            </label>
+            <label for="image_file">Paso 1: Inserte o arrastre el logotipo aquí. Para mejores resultados, asegúrese de que el archivo sea un PNG con fondo transparente.</label>
             <input type="file" name="image_file" id="image_file" accept=".png" required><br>
+            <span id="error-message" style="color: red; display: none;">Por favor, seleccione un archivo PNG válido.</span>
 
 
             <label for="customer_email">Paso 2: Ingrese su correo aqui:</label>
@@ -76,6 +76,19 @@
     </div>
 </body>
 <script>
+
+    document.getElementById('image_file').addEventListener('change', function() {
+        const file = this.files[0];
+        const errorMessage = document.getElementById('error-message');
+
+        if (file && file.type !== 'image/png') {
+            errorMessage.style.display = 'block';
+            this.value = ''; // Clear the input
+        } else {
+            errorMessage.style.display = 'none';
+        }
+    });
+
     document.getElementById('catalogoForm').addEventListener('submit', function(event) {
         // Evitar el envío del formulario por defecto
         event.preventDefault();

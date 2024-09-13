@@ -1755,6 +1755,43 @@ function agregarItemAlProducto(item, itemNumber) {
             });
     }
     
+    function formatearNumeroOriginal(numero) {
+        // Si el número es un entero, no mostrar decimales
+        const partes = numero.split(',');
+        if (partes.length === 1 || partes[1] === '00') {
+            return partes[0];
+        } else {
+            return numero;
+        }
+    }
+    
+    function convertirAFormatoOriginal(precioUnitario, cantidad) {
+        // Convertir el precio unitario al formato numérico
+        const precio = parseFloat(precioUnitario.replace(/\./g, '').replace(',', '.'));
+        const total = precio * cantidad;
+        
+        // Convertir el total de vuelta al formato original
+        let totalFormateado = total.toLocaleString('de-DE', {
+            minimumFractionDigits: 2, // Mantener dos decimales
+            maximumFractionDigits: 2
+        }).replace('.', ',');
+        
+        return formatearNumeroOriginal(totalFormateado);
+    }
+    
+    function actualizarCostoDirecto(productoId) {
+        const itemsSeleccionados = document.querySelectorAll(`#itemsseleccionados-${productoId} .total-item`);
+        let costoDirecto = 0;
+    
+        itemsSeleccionados.forEach(item => {
+            const total = item.textContent.replace('.', '').replace(',', '.');
+            costoDirecto += parseFloat(total);
+        });
+    
+        // Actualizar el costo directo en el resumen
+        const costoDirectoElement = document.querySelector(`#costo-directo-${productoId}`);
+        costoDirectoElement.textContent = `Costo Directo: ${convertirAFormatoOriginal(costoDirectoElement.textContent, 1)}`;
+    }
     
     function agregarItemsSeleccionadosNuevos(productoId) {
         const itemsSeleccionadosContainer = document.getElementById(`itemsseleccionados-${productoId}`);
@@ -1778,8 +1815,10 @@ function agregarItemAlProducto(item, itemNumber) {
             
             const precioUnitario = fila.querySelector('td:nth-child(5)').innerText; // Mantener formato original
             const cantidad = 1;  // Inicializamos con 1 como valor por defecto
-            const total = convertirAFormatoOriginal(precioUnitario, cantidad);
-            
+            const valorTexto = precioUnitario.replace(/\./g, '').replace(',', '.');
+            const precio = parseFloat(valorTexto);
+            const total = precio * cantidad;
+    
             // Crear una nueva fila para agregar al tbody
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
@@ -1789,7 +1828,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 <td>${fila.querySelector('td:nth-child(4)').innerText}</td>
                 <td>${precioUnitario}</td>
                 <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="1"></td>
-                <td class="total-item">${total}</td>
+                <td class="total-item">${total.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
             `;
             
@@ -1814,7 +1853,7 @@ function agregarItemAlProducto(item, itemNumber) {
             const totalCell = newRow.querySelector('.total-item');
             cantidadInput.addEventListener('input', function() {
                 const nuevaCantidad = parseFloat(cantidadInput.value);
-                const nuevoTotal = convertirAFormatoOriginal(precioUnitario, nuevaCantidad);
+                const nuevoTotal = (parseFloat(cantidadInput.getAttribute('data-precio').replace(/\./g, '').replace(',', '.')) * nuevaCantidad).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 totalCell.innerText = nuevoTotal;
                 actualizarCostoDirecto(productoId); // Asegurarse de que se actualice el costo directo
             });
@@ -1824,21 +1863,12 @@ function agregarItemAlProducto(item, itemNumber) {
     
         // Llamar a actualizarCostoDirecto después de agregar ítems
         actualizarCostoDirecto(productoId);
+        verificarValoresIndividuales(productoId);
+        verificarSumaTotal(productoId);
+        actualizarCostoDirecto(productoId);
     }
     
-    function convertirAFormatoOriginal(precioUnitario, cantidad) {
-        // Convertir el formato original a un formato numérico para cálculos y luego volver a formatear
-        const precio = parseFloat(precioUnitario.replace(/\./g, '').replace(',', '.'));
-        const total = precio * cantidad;
-        
-        // Formatear el total de vuelta al formato original
-        const totalFormateado = total.toLocaleString('de-DE', {
-            minimumFractionDigits: 2, // Mantener dos decimales
-            maximumFractionDigits: 2
-        }).replace('.', ',');
-        
-        return totalFormateado;
-    }
+
     
 
     // <---------------------- FUNCION PARA AGREGAR ITEMS A LOS PRODUCTOS NO TRAIDOS DE BD--------------->
@@ -2010,27 +2040,77 @@ function agregarItemAlProducto(item, itemNumber) {
     
     // <---------------------- actualizar resumen de productos agregados en edicion---------------------------->
 
-    function actualizarCostoDirecto(productoId) {
-        // Obtener el contenedor de los ítems seleccionados
+    function verificarValoresIndividuales(productoId) {
         const itemsContainer = document.getElementById(`itemsseleccionados-${productoId}`);
         
-        if (!itemsContainer) return;
+        if (!itemsContainer) {
+            console.error('Contenedor no encontrado.');
+            return;
+        }
     
-        // Obtener todos los elementos con la clase total-item dentro del contenedor
         const totalItems = itemsContainer.querySelectorAll('.total-item');
         
-        // Calcular la suma de los totales
-        let sumaTotal = 0;
         totalItems.forEach(item => {
-            sumaTotal += parseFloat(item.textContent.replace(/\./g, '').replace(',', '.'));
+            const valorTexto = item.textContent;
+            const valorConvertido = convertirValor(valorTexto);
+            console.log('Texto:', valorTexto, 'Convertido:', valorConvertido);
+        });
+    }
+    
+    // Función para verificar la suma total
+    function verificarSumaTotal(productoId) {
+        const itemsContainer = document.getElementById(`itemsseleccionados-${productoId}`);
+        
+        if (!itemsContainer) {
+            console.error('Contenedor no encontrado.');
+            return;
+        }
+    
+        const totalItems = itemsContainer.querySelectorAll('.total-item');
+        let sumaTotal = 0;
+    
+        totalItems.forEach(item => {
+            const valorTexto = item.textContent;
+            const valorNumerico = convertirValor(valorTexto);
+            sumaTotal += valorNumerico;
         });
     
-        // Actualizar el campo "Costo Directo" en el resumen de costos
-        const costoDirectoElement = document.querySelector(`#costo-directo-${productoId}`);
-        if (costoDirectoElement) {
-            costoDirectoElement.textContent = `Costo Directo: ${sumaTotal.toLocaleString('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}`;
-        }
+        console.log('Suma Total:', sumaTotal);
     }
+    
+// Función para convertir el valor de texto a número
+function convertirValor(valorTexto) {
+    // Elimina los puntos (separadores de miles) y reemplaza la coma por punto decimal
+    return parseFloat(valorTexto.replace(/\./g, '').replace(',', '.'));
+}
+
+// Función para actualizar el costo directo
+function actualizarCostoDirecto(productoId) {
+    // Obtener el contenedor de los ítems seleccionados
+    const itemsContainer = document.getElementById(`itemsseleccionados-${productoId}`);
+    
+    if (!itemsContainer) return;
+
+    // Obtener todos los elementos con la clase total-item dentro del contenedor
+    const totalItems = itemsContainer.querySelectorAll('.total-item');
+    
+    // Calcular la suma de los totales
+    let sumaTotal = 0;
+    totalItems.forEach(item => {
+        const valorTexto = item.textContent;
+        const valorNumerico = convertirValor(valorTexto);
+        console.log('Texto:', valorTexto, 'Convertido:', valorNumerico);
+        sumaTotal += valorNumerico;
+    });
+
+    console.log('Suma Total:', sumaTotal);
+
+    // Actualizar el campo "Costo Directo" en el resumen de costos
+    const costoDirectoElement = document.querySelector(`#costo-directo-${productoId}`);
+    if (costoDirectoElement) {
+        costoDirectoElement.textContent = `Costo Directo: ${sumaTotal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+}
 
     // Llamada para actualizar todos los resúmenes de costos cuando se modifiquen los items
     function actualizarResumenDeCostos(productoId) {
@@ -2421,7 +2501,11 @@ function agregarItemAlProducto(item, itemNumber) {
     });
     
     
-
+        // Función para convertir el valor de texto a número
+    function convertirValor(valorTexto) {
+        // Elimina puntos (separadores de miles) y reemplaza la coma por punto (decimal)
+        return parseFloat(valorTexto.replace(/\./g, '').replace(',', '.'));
+    }
     
 
     

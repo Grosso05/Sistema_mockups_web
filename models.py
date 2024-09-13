@@ -139,6 +139,8 @@ class ItemProveedores(db.Model):
     def __repr__(self):
         return f"<ItemProveedor item_id: {self.item_id}, id_proveedor: {self.id_proveedor}, tipo_proveedor: {self.tipo_proveedor}>"
 
+# investigaciones : 
+
 class PrecioEscalonado(db.Model):
     __tablename__ = 'precio_escalonado'
     
@@ -337,7 +339,7 @@ class ResumenDeCostos(db.Model):
             'producto_id': self.producto_id,
         }
 
-    
+
 
 def configure_db(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1/software_innova'

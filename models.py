@@ -154,7 +154,7 @@ class PrecioEscalonado(db.Model):
 
     def __repr__(self):
         return f"<PrecioEscalonado item_id: {self.item_id}, id_proveedor: {self.id_proveedor}, min_cantidad: {self.min_cantidad}, max_cantidad: {self.max_cantidad}, precio_unitario: {self.precio_unitario}>"
-
+#  
   
 class Lineas(db.Model):
   """

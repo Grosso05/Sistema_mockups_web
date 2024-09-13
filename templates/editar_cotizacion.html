@@ -9,6 +9,15 @@
 
     <style>
 
+        .resumen-costos {
+            background-color: #2b2b2b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
         .list-unstyled {
             list-style-type: none; /* Elimina los puntos o viñetas */
             padding-left: 0; /* Elimina el padding izquierdo */
@@ -521,11 +530,16 @@ function mostrarItems(items) {
         if (itemsDelTipo.length > 0) {
             html += `<tr><td colspan="8" class="tipo-header"><strong>${tipo}</strong></td></tr>`;
             itemsDelTipo.forEach(item => {
-                // Reemplazar la coma por un punto para convertir a número flotante
                 const precioUnitario = parseFloat(item.precio_unitario.replace(',', '.'));
                 const cantidad = parseFloat(item.cantidad);
-                const total = (precioUnitario * cantidad).toFixed(3);
-
+                const total = precioUnitario * cantidad;
+            
+                // Formatear el total al renderizar inicialmente
+                const totalFormateado = total.toLocaleString('de-DE', {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3,
+                });
+            
                 html += `
                     <tr>
                         <td>${item.id}</td>
@@ -534,7 +548,7 @@ function mostrarItems(items) {
                         <td>${item.unidad}</td>
                         <td>${precioUnitario.toFixed(3)}</td>
                         <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="0"></td>
-                        <td class="total-item">${total}</td>
+                        <td class="total-item">${totalFormateado}</td>
                         <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
                         <td class="oculto">${item.tipo}</td>
                     </tr>
@@ -551,7 +565,7 @@ function mostrarItems(items) {
 }
 
 // Función para agregar un producto al DOM de forma organizada
-function agregarProducto(producto, items, resumenCostos) {
+function agregarProducto(producto, items) {
     console.log('Estructura del producto:', producto);
 
     // Crear nuevo div para el producto
@@ -600,22 +614,16 @@ function agregarProducto(producto, items, resumenCostos) {
     const resumenContainer = document.createElement('div');
     resumenContainer.className = 'resumen-costos';
     resumenContainer.innerHTML = `
-        ${resumenCostos
-            .filter(resumen => Number(resumen.producto_id) === Number(producto.producto_id))
-            .map((resumen, index) => `
-                <div class="resumen-costos-individual" id="resumen-costos-${producto.producto_id}-${index}">
-                    <h4>Resumen de Costos (${resumen.id})</h4>
-                    <p id="costo-directo-${producto.producto_id}-${index}">Costo Directo: ${resumen.costo_directo}</p>
-                    <p id="costo-unitario-${producto.producto_id}-${index}">Costo Directo Unitario: ${resumen.costo_unitario}</p>
-                    <p id="administracion-${producto.producto_id}-${index}">Administración: ${resumen.administracion} <span id="porcentaje-administracion-${producto.producto_id}-${index}">(${resumen.porcentaje_administracion}%)</span></p>
-                    <p id="imprevistos-${producto.producto_id}-${index}">Imprevistos: ${resumen.imprevistos} <span id="porcentaje-imprevistos-${producto.producto_id}-${index}">(${resumen.porcentaje_imprevistos}%)</span></p>
-                    <p id="utilidad-${producto.producto_id}-${index}">Utilidad: ${resumen.utilidad} <span id="porcentaje-utilidad-${producto.producto_id}-${index}">(${resumen.porcentaje_utilidad}%)</span></p>
-                    <input type="number" id="utilidadSeleccionada-${producto.producto_id}-${index}" placeholder="El porcentaje mínimo es: ${resumen.porcentaje_utilidad}" onchange="actualizarTotalProducto(${producto.producto_id})">
-                    <p id="oferta-antes-iva-${producto.producto_id}-${index}">Oferta Antes De IVA: ${resumen.oferta_antes_iva}</p>
-                    <p id="iva-${producto.producto_id}-${index}">IVA: ${resumen.iva}</p>
-                    <p style="color: #00b04f;" id="valor-oferta-${producto.producto_id}-${index}">Valor Oferta Impuestos Incluidos: ${resumen.valor_oferta}</p>
-                </div>
-            `).join('')}
+        <h4>Resumen de Costos</h4>
+        <p id="costo-directo-${producto.producto_id}">Costo Directo: 0</p>
+        <p id="costo-unitario-${producto.producto_id}">Costo Unitario: 0</p>
+        <p id="administracion-${producto.producto_id}">Administración: 0 <span id="porcentaje-administracion-${producto.producto_id}">(0%)</span></p>
+        <p id="imprevistos-${producto.producto_id}">Imprevistos: 0 <span id="porcentaje-imprevistos-${producto.producto_id}">(0%)</span></p>
+        <p id="utilidad-${producto.producto_id}">Utilidad: 0 <span id="porcentaje-utilidad-${producto.producto_id}">(0%)</span></p>
+        <input type="number" id="utilidadSeleccionada-${producto.producto_id}" placeholder="El porcentaje mínimo es: 0" onchange="actualizarCostoDirecto(${producto.producto_id})">
+        <p id="oferta-antes-iva-${producto.producto_id}">Oferta Antes De IVA: 0</p>
+        <p id="iva-${producto.producto_id}">IVA: 0</p>
+        <p style="color: #00b04f;" id="valor-oferta-${producto.producto_id}">Valor Oferta Impuestos Incluidos: 0</p>
     `;
 
     // Contenedor para los botones de acción
@@ -655,14 +663,35 @@ function agregarProducto(producto, items, resumenCostos) {
     const productosContainer = document.getElementById('productos-container');
     productosContainer.appendChild(nuevoProducto);
 
-    // Agregar evento para recalcular el total cuando la cantidad cambie
+    // Función para actualizar el costo directo basado en los ítems
+    function actualizarCostoDirecto() {
+        const itemsSeleccionados = nuevoProducto.querySelectorAll('#itemsseleccionados-' + producto.producto_id + ' .total-item');
+        let costoDirecto = 0;
+
+        itemsSeleccionados.forEach(item => {
+            const total = parseFloat(item.textContent.replace('.', '').replace(',', '.'));
+            costoDirecto += total;
+        });
+
+        // Actualizar el costo directo en el resumen
+        const costoDirectoElement = nuevoProducto.querySelector(`#costo-directo-${producto.producto_id}`);
+        costoDirectoElement.textContent = `Costo Directo: ${costoDirecto.toLocaleString('de-DE')}`;
+    }
+
+    // Actualizar el costo directo al cambiar la cantidad o eliminar un ítem
     const cantidadInputs = nuevoProducto.querySelectorAll('.cantidad-item');
     cantidadInputs.forEach(input => {
         input.addEventListener('input', function() {
             const precioUnitario = parseFloat(this.getAttribute('data-precio'));
             const cantidad = parseFloat(this.value);
-            const total = (precioUnitario * cantidad).toFixed(3); // Cambia a 3 decimales
-            this.closest('tr').querySelector('.total-item').textContent = total;
+            const total = precioUnitario * cantidad;
+        
+            // Usar toLocaleString para formatear el total con separadores de miles y decimales
+            this.closest('tr').querySelector('.total-item').textContent = total.toLocaleString('de-DE', {
+                minimumFractionDigits: 3, // Número mínimo de decimales
+                maximumFractionDigits: 3, // Número máximo de decimales
+            });
+            actualizarCostoDirecto(); // Actualizar el costo directo
         });
     });
 
@@ -672,10 +701,21 @@ function agregarProducto(producto, items, resumenCostos) {
         const inputCantidad = item.closest('tr').querySelector('.cantidad-item');
         const precioUnitario = parseFloat(inputCantidad.getAttribute('data-precio'));
         const cantidad = parseFloat(inputCantidad.value);
-        const total = (precioUnitario * cantidad).toFixed(3);
-        item.textContent = total;
+        const total = precioUnitario * cantidad;
+    
+        // Formatear el total
+        item.textContent = total.toLocaleString('de-DE', {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3,
+        });
     });
+
+    // Llamar a la función de actualización inicial
+    actualizarCostoDirecto();
 }
+
+// 
+//
     
         // Agregar productos nuevos
         document.getElementById('btnCrear').addEventListener('click', function() {
@@ -1734,32 +1774,30 @@ function agregarItemAlProducto(item, itemNumber) {
             return;
         }
         
+        const formatearNumero = new Intl.NumberFormat('de-DE', {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3
+        });
+    
         checkboxes.forEach(checkbox => {
             const fila = checkbox.closest('tr');
             const id = checkbox.value;
             const tipo = fila.querySelector('td:nth-child(6)').innerText;
             
-            // Obtener el precio unitario y eliminar separadores
             const precioUnitario = parseFloat(fila.querySelector('td:nth-child(5)').innerText.replace(/\./g, '').replace(',', '.'));
-    
             const cantidad = 1;  // Inicializamos con 1 como valor por defecto
-            const total = precioUnitario * cantidad; // No redondeamos aquí
-    
-            // Usar Intl.NumberFormat para formatear el precio y el total correctamente
-            const formatearNumero = new Intl.NumberFormat('de-DE'); // de-DE para usar separadores de miles y coma decimal
+            const total = precioUnitario * cantidad;
             
             // Crear una nueva fila para agregar al tbody
             const newRow = document.createElement('tr');
-            
-            // Crear las celdas necesarias basadas en los datos de la fila seleccionada
             newRow.innerHTML = `
                 <td>${id}</td>
                 <td>${tipo}</td>
                 <td>${fila.querySelector('td:nth-child(3)').innerText}</td>
                 <td>${fila.querySelector('td:nth-child(4)').innerText}</td>
-                <td>${formatearNumero.format(precioUnitario)}</td> <!-- Precio unitario formateado correctamente -->
+                <td>${formatearNumero.format(precioUnitario)}</td>
                 <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="1"></td>
-                <td class="total-item">${formatearNumero.format(total)}</td> <!-- Total formateado correctamente -->
+                <td class="total-item">${formatearNumero.format(total)}</td>
                 <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
             `;
             
@@ -1773,25 +1811,29 @@ function agregarItemAlProducto(item, itemNumber) {
             }
             
             const nextHeader = tipoHeaderRow.nextElementSibling;
-    
             if (nextHeader && nextHeader.classList.contains('tipo-header')) {
                 itemsSeleccionadosContainer.insertBefore(newRow, nextHeader);
             } else {
                 itemsSeleccionadosContainer.appendChild(newRow);
             }
-    
+            
             // Añadir un evento para recalcular el total cuando cambie la cantidad
             const cantidadInput = newRow.querySelector('.cantidad-item');
             const totalCell = newRow.querySelector('.total-item');
             cantidadInput.addEventListener('input', function() {
                 const nuevaCantidad = parseFloat(cantidadInput.value);
-                const nuevoTotal = precioUnitario * nuevaCantidad; // Cálculo exacto
-                totalCell.innerText = formatearNumero.format(nuevoTotal); // Mostrar total con el formato correcto
+                const nuevoTotal = precioUnitario * nuevaCantidad;
+                totalCell.innerText = formatearNumero.format(nuevoTotal);
+                actualizarCostoDirecto(productoId); // Asegurarse de que se actualice el costo directo
             });
-    
+            
             checkbox.checked = false;
         });
+    
+        // Llamar a actualizarCostoDirecto después de agregar ítems
+        actualizarCostoDirecto(productoId);
     }
+    
 
     // <---------------------- FUNCION PARA AGREGAR ITEMS A LOS PRODUCTOS NO TRAIDOS DE BD--------------->
 
@@ -1960,6 +2002,30 @@ function agregarItemAlProducto(item, itemNumber) {
         });
     }
     
+    // <---------------------- actualizar resumen de productos agregados en edicion---------------------------->
+
+    function actualizarCostoDirecto(productoId) {
+        // Obtener el contenedor de los ítems seleccionados
+        const itemsContainer = document.getElementById(`itemsseleccionados-${productoId}`);
+        
+        if (!itemsContainer) return;
+    
+        // Obtener todos los elementos con la clase total-item dentro del contenedor
+        const totalItems = itemsContainer.querySelectorAll('.total-item');
+        
+        // Calcular la suma de los totales
+        let sumaTotal = 0;
+        totalItems.forEach(item => {
+            sumaTotal += parseFloat(item.textContent.replace(/\./g, '').replace(',', '.'));
+        });
+    
+        // Actualizar el campo "Costo Directo" en el resumen de costos
+        const costoDirectoElement = document.querySelector(`#costo-directo-${productoId}`);
+        if (costoDirectoElement) {
+            costoDirectoElement.textContent = `Costo Directo: ${sumaTotal.toLocaleString('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}`;
+        }
+    }
+
     // Llamada para actualizar todos los resúmenes de costos cuando se modifiquen los items
     function actualizarResumenDeCostos(productoId) {
         const productoElement = document.getElementById(`producto-${productoId}`);

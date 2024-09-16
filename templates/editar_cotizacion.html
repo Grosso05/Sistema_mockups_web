@@ -673,15 +673,20 @@ function agregarProducto(producto, items) {
             costoDirecto += total;
         });
     
-        // Redondear el costo directo a 3 decimales para evitar fluctuaciones
+        // Redondear el costo directo a 3 decimales
         const costoDirectoRedondeado = Math.round(costoDirecto * 1000) / 1000;
     
-        // Imprimir el valor redondeado en la consola con formato colombiano
-        console.log('Costo Directo:', costoDirectoRedondeado.toLocaleString('es-CO', { minimumFractionDigits: 3, maximumFractionDigits: 3 }));
+        // Convertir a string y aplicar manualmente el formato
+        const formatoColombiano = costoDirectoRedondeado
+            .toFixed(3) // Mantener tres decimales
+            .replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Insertar puntos como separadores de miles
     
-        // Actualizar el valor en el HTML con el formato de miles colombiano
+        // Imprimir en consola con formato colombiano
+        console.log('Costo Directo:', formatoColombiano);
+    
+        // Actualizar el valor en el HTML
         const costoDirectoElement = nuevoProducto.querySelector(`#costo-directo-${producto.producto_id}`);
-        costoDirectoElement.textContent = `Costo Directo: ${costoDirectoRedondeado.toLocaleString('es-CO', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}`;
+        costoDirectoElement.textContent = `Costo Directo: ${formatoColombiano}`;
     }
     
     
@@ -1764,6 +1769,11 @@ function agregarItemAlProducto(item, itemNumber) {
             });
     }
     
+    function corregirFormatoNuevo(valor) {
+        // Eliminar cualquier coma decimal y luego reemplazar las comas por puntos
+        const valorCorregido = valor.replace(/\./g, '').replace(/,/g, '.');
+        return parseFloat(valorCorregido);
+    }
     
     function agregarItemsSeleccionadosNuevos(productoId) {
         const itemsSeleccionadosContainer = document.getElementById(`itemsseleccionados-${productoId}`);
@@ -1785,9 +1795,19 @@ function agregarItemAlProducto(item, itemNumber) {
             const id = checkbox.value;
             const tipo = fila.querySelector('td:nth-child(6)').innerText;
             
-            const precioUnitario = fila.querySelector('td:nth-child(5)').innerText; // Mantener formato original
+            const precioUnitario = fila.querySelector('td:nth-child(5)').innerText; // Se mantiene como cadena
             const cantidad = 1;  // Inicializamos con 1 como valor por defecto
-            const total = convertirAFormatoOriginal(precioUnitario, cantidad);
+            const precioUnitarioNumero = parseFloat(precioUnitario.replace(/[^0-9.-]/g, '')); // Convierte el precio a número
+            
+            const totalSinFormato = precioUnitarioNumero * cantidad;
+            
+            // Imprimir el total sin formatear
+            console.log(`Total sin formato: ${totalSinFormato}`);
+            
+            const totalConFormato = convertirAFormatoOriginal(totalSinFormato); // Función para formatear el total
+            
+            // Imprimir el total con formato
+            console.log(`Total con formato: ${totalConFormato}`);
             
             // Crear una nueva fila para agregar al tbody
             const newRow = document.createElement('tr');
@@ -1798,7 +1818,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 <td>${fila.querySelector('td:nth-child(4)').innerText}</td>
                 <td>${precioUnitario}</td>
                 <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="1"></td>
-                <td class="total-item">${total}</td>
+                <td class="total-item">${totalConFormato}</td>
                 <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
             `;
             
@@ -1823,8 +1843,14 @@ function agregarItemAlProducto(item, itemNumber) {
             const totalCell = newRow.querySelector('.total-item');
             cantidadInput.addEventListener('input', function() {
                 const nuevaCantidad = parseFloat(cantidadInput.value);
-                const nuevoTotal = convertirAFormatoOriginal(precioUnitario, nuevaCantidad);
-                totalCell.innerText = nuevoTotal;
+                const nuevoTotalSinFormato = precioUnitarioNumero * nuevaCantidad;
+                const nuevoTotalConFormato = convertirAFormatoOriginal(nuevoTotalSinFormato);
+                
+                // Imprimir los valores antes y después del formato
+                console.log(`Nuevo total sin formato: ${nuevoTotalSinFormato}`);
+                console.log(`Nuevo total con formato: ${nuevoTotalConFormato}`);
+                
+                totalCell.innerText = nuevoTotalConFormato;
                 actualizarCostoDirecto(productoId); // Asegurarse de que se actualice el costo directo
             });
             
@@ -1835,18 +1861,18 @@ function agregarItemAlProducto(item, itemNumber) {
         actualizarCostoDirecto(productoId);
     }
     
-    function convertirAFormatoOriginal(precioUnitario, cantidad) {
-        // Convertir el formato original a un formato numérico para cálculos y luego volver a formatear
-        const precio = parseFloat(precioUnitario.replace(/\./g, '').replace(',', '.'));
-        const total = precio * cantidad;
+    // Función para convertir el total a formato original (debes definirla)
+    function convertirAFormatoOriginal(valor) {
+        // Convertir el valor a cadena con 3 decimales
+        const partes = valor.toFixed(3).split('.');
         
-        // Formatear el total de vuelta al formato original
-        const totalFormateado = total.toLocaleString('de-DE', {
-            minimumFractionDigits: 2, // Mantener dos decimales
-            maximumFractionDigits: 2
-        }).replace('.', ',');
+        // Separar los miles con punto
+        const parteEntera = partes[0];
+        const parteDecimal = partes[1];
         
-        return totalFormateado;
+        const parteEnteraConPuntos = parteEntera.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+        return `${parteEnteraConPuntos},${parteDecimal}`;
     }
     
 

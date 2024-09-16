@@ -549,7 +549,7 @@ function mostrarItems(items) {
                         <td>${precioUnitario.toFixed(3)}</td>
                         <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="0"></td>
                         <td class="total-item">${totalFormateado}</td>
-                        <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+                        <td><button onclick="eliminarItemNuevo(this)">Eliminar</button></td>
                         <td class="oculto">${item.tipo}</td>
                     </tr>
                 `;
@@ -664,7 +664,7 @@ function agregarProducto(producto, items) {
     productosContainer.appendChild(nuevoProducto);
 
     // Función para actualizar el costo directo basado en los ítems
-    function actualizarCostoDirecto() {
+    function actualizarCostoDirecto(productoId) {
         const itemsSeleccionados = nuevoProducto.querySelectorAll('#itemsseleccionados-' + producto.producto_id + ' .total-item');
         let costoDirecto = 0;
     
@@ -1819,7 +1819,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 <td>${precioUnitario}</td>
                 <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="1"></td>
                 <td class="total-item">${totalConFormato}</td>
-                <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+                <td><button onclick="eliminarItemNuevo(this)">Eliminar</button></td>
             `;
             
             let tipoHeaderRow = Array.from(itemsSeleccionadosContainer.querySelectorAll('.tipo-header')).find(row => row.textContent.includes(tipo));
@@ -1873,7 +1873,9 @@ function agregarItemAlProducto(item, itemNumber) {
         const parteEnteraConPuntos = parteEntera.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         
         return `${parteEnteraConPuntos},${parteDecimal}`;
-    }
+    } 
+
+
     
 
     // <---------------------- FUNCION PARA AGREGAR ITEMS A LOS PRODUCTOS NO TRAIDOS DE BD--------------->
@@ -2154,7 +2156,14 @@ function agregarItemAlProducto(item, itemNumber) {
         }, 3000);
     }
     
-    
+    function eliminarItemNuevo(button) {
+        const fila = button.closest('tr');
+        const tbody = fila.closest('tbody');
+        const productoId = tbody.id.split('-')[1]; // Asegúrate de que el id del tbody incluya el productoId
+        fila.remove();
+        actualizarCostoDirecto(productoId); // Llama a actualizarCostoDirecto con el productoId correcto
+    }
+
 
     function eliminarItemSeleccionado(button) {
         const fila = button.closest('tr');

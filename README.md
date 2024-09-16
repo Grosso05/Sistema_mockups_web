@@ -1,4 +1,13 @@
-## Generador de Catálogos Personalizados (Version 5.9.1) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 5.9.2) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 16 de septiembre de 2024, 4:40 pm
+
+Cambios Recientes
+v5.9.2
+
+Agregamos la funcionalidad de restar cuando eliminamos un item. funciona tanto para items antiguos como nuevos
+
+
 
 # Fecha de lanzamiento: 16 de septiembre de 2024, 1:00 pm
 

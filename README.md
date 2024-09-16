@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Version 5.9.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 5.9.0.1) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 16 de septiembre de 2024, 12:30 am
+
+Cambios Recientes
+v5.9.0.1
+
+Corregimos la version pasada que tenia unos errores y no debio subirse. en esta version los items se suman bien (nuevos o antiguos), el resumen de costos sirve siempre. ahora falta revisar que los items nuevos cuando superan su total de 1m, tienen problemas
 
 # Fecha de lanzamiento: 16 de septiembre de 2024, 11:02 am
 

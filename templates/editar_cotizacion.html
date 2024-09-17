@@ -506,7 +506,7 @@
     productosCotizados.forEach(producto => agregarProducto(producto, itemsCotizados, resumenCostos));
 });
 
-// Función para añadir un producto al DOM de forma organizada
+
 // Función para agrupar ítems por tipo
 function agruparItemsPorTipo(items) {
     const tipos = ['Materia Prima', 'Servicios', 'Mano de Obra e Instalación', 'Transportes', 'Consumibles'];
@@ -663,7 +663,41 @@ function agregarProducto(producto, items) {
     const productosContainer = document.getElementById('productos-container');
     productosContainer.appendChild(nuevoProducto);
 
-    // Función para actualizar el costo directo basado en los ítems
+    // Llamar a la función para cargar los porcentajes usando producto_seleccionado_id
+    cargarPorcentajesProducto(producto.producto_seleccionado_id);
+
+    // Función para cargar porcentajes desde la base de datos
+    function cargarPorcentajesProducto(productoSeleccionadoId) {
+        fetch(`/porcentajes/${productoSeleccionadoId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la solicitud: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(porcentajes => {
+                if (!porcentajes.error) {
+                    const productoElement = document.querySelector(`#producto-${producto.producto_id}`);
+                    if (productoElement) {
+                        productoElement.dataset.administracion = porcentajes.administracion;
+                        productoElement.dataset.imprevistos = porcentajes.imprevistos;
+                        productoElement.dataset.utilidad = porcentajes.utilidad;
+
+                        // Actualizar los porcentajes en el DOM
+                        document.getElementById(`porcentaje-administracion-${producto.producto_id}`).textContent = `(${porcentajes.administracion}%)`;
+                        document.getElementById(`porcentaje-imprevistos-${producto.producto_id}`).textContent = `(${porcentajes.imprevistos}%)`;
+                        document.getElementById(`porcentaje-utilidad-${producto.producto_id}`).textContent = `(${porcentajes.utilidad}%)`;
+
+                        const inputUtilidad = document.getElementById(`utilidadSeleccionada-${producto.producto_id}`);
+                        inputUtilidad.placeholder = `El porcentaje mínimo es: ${porcentajes.utilidad}`;
+                        inputUtilidad.min = porcentajes.utilidad;
+                    }
+                }
+            })
+            .catch(error => console.error('Error al cargar porcentajes:', error));
+    }
+
+    // Aquí puedes mantener la lógica para actualizar los costos, similar a la que ya tienes
     function actualizarCostoDirecto(productoId) {
         const itemsSeleccionados = nuevoProducto.querySelectorAll('#itemsseleccionados-' + producto.producto_id + ' .total-item');
         let costoDirecto = 0;
@@ -688,9 +722,6 @@ function agregarProducto(producto, items) {
         const costoDirectoElement = nuevoProducto.querySelector(`#costo-directo-${producto.producto_id}`);
         costoDirectoElement.textContent = `Costo Directo: ${formatoColombiano}`;
     }
-    
-    
-    
 
     // Actualizar el costo directo al cambiar la cantidad o eliminar un ítem
     const cantidadInputs = nuevoProducto.querySelectorAll('.cantidad-item');
@@ -699,28 +730,13 @@ function agregarProducto(producto, items) {
             const precioUnitario = parseFloat(this.getAttribute('data-precio'));
             const cantidad = parseFloat(this.value);
             const total = precioUnitario * cantidad;
-        
+
             // Usar toLocaleString para formatear el total con separadores de miles y decimales
             this.closest('tr').querySelector('.total-item').textContent = total.toLocaleString('de-DE', {
-                minimumFractionDigits: 3, // Número mínimo de decimales
-                maximumFractionDigits: 3, // Número máximo de decimales
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3,
             });
             actualizarCostoDirecto(); // Actualizar el costo directo
-        });
-    });
-
-    // Forzar una actualización de los totales después de renderizar
-    const totalItems = nuevoProducto.querySelectorAll('.total-item');
-    totalItems.forEach(item => {
-        const inputCantidad = item.closest('tr').querySelector('.cantidad-item');
-        const precioUnitario = parseFloat(inputCantidad.getAttribute('data-precio'));
-        const cantidad = parseFloat(inputCantidad.value);
-        const total = precioUnitario * cantidad;
-    
-        // Formatear el total
-        item.textContent = total.toLocaleString('de-DE', {
-            minimumFractionDigits: 3,
-            maximumFractionDigits: 3,
         });
     });
 

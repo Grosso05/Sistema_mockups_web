@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Version 5.9.2.2) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 5.9.2.3) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 17 de septiembre de 2024, 9:10 am
+
+Cambios Recientes
+v5.9.2.3
+
+En esta version agregamos el calculo de los porcentajes ya se calculan de manera correcta, falta calcular el input de utilidad.
 
 # Fecha de lanzamiento: 17 de septiembre de 2024, 7:55 am
 

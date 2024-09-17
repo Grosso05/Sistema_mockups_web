@@ -678,49 +678,82 @@ function agregarProducto(producto, items) {
             .then(porcentajes => {
                 if (!porcentajes.error) {
                     const productoElement = document.querySelector(`#producto-${producto.producto_id}`);
+                    
+                    // Verificar si el elemento del producto existe
                     if (productoElement) {
+                        // Asignar porcentajes a los atributos de datos
                         productoElement.dataset.administracion = porcentajes.administracion;
                         productoElement.dataset.imprevistos = porcentajes.imprevistos;
                         productoElement.dataset.utilidad = porcentajes.utilidad;
-
-                        // Actualizar los porcentajes en el DOM
-                        document.getElementById(`porcentaje-administracion-${producto.producto_id}`).textContent = `(${porcentajes.administracion}%)`;
-                        document.getElementById(`porcentaje-imprevistos-${producto.producto_id}`).textContent = `(${porcentajes.imprevistos}%)`;
-                        document.getElementById(`porcentaje-utilidad-${producto.producto_id}`).textContent = `(${porcentajes.utilidad}%)`;
-
-                        const inputUtilidad = document.getElementById(`utilidadSeleccionada-${producto.producto_id}`);
-                        inputUtilidad.placeholder = `El porcentaje mínimo es: ${porcentajes.utilidad}`;
-                        inputUtilidad.min = porcentajes.utilidad;
+    
+                        // Actualizar porcentajes en el DOM con verificación
+                        const administracionElement = document.getElementById(`porcentaje-administracion-${productoSeleccionadoId}`);
+                        const imprevistosElement = document.getElementById(`porcentaje-imprevistos-${productoSeleccionadoId}`);
+                        const utilidadElement = document.getElementById(`porcentaje-utilidad-${productoSeleccionadoId}`);
+    
+                        // Verificar que los elementos existen antes de modificar su contenido
+                        if (administracionElement) {
+                            administracionElement.textContent = `(${porcentajes.administracion}%)`;
+                        }
+                        if (imprevistosElement) {
+                            imprevistosElement.textContent = `(${porcentajes.imprevistos}%)`;
+                        }
+                        if (utilidadElement) {
+                            utilidadElement.textContent = `(${porcentajes.utilidad}%)`;
+                        }
+    
+                        // Actualizar el input de la utilidad seleccionada
+                        const inputUtilidad = document.getElementById(`utilidadSeleccionada-${productoSeleccionadoId}`);
+                        if (inputUtilidad) {
+                            inputUtilidad.placeholder = `El porcentaje mínimo es: ${porcentajes.utilidad}`;
+                            inputUtilidad.min = porcentajes.utilidad;
+                        }
+    
+                        // Actualizar el costo directo después de cargar los porcentajes
+                        actualizarCostoDirecto(productoSeleccionadoId);
                     }
                 }
             })
             .catch(error => console.error('Error al cargar porcentajes:', error));
     }
-
     // Aquí puedes mantener la lógica para actualizar los costos, similar a la que ya tienes
     function actualizarCostoDirecto(productoId) {
         const itemsSeleccionados = nuevoProducto.querySelectorAll('#itemsseleccionados-' + producto.producto_id + ' .total-item');
         let costoDirecto = 0;
-    
+
         itemsSeleccionados.forEach(item => {
             const total = parseFloat(item.textContent.replace('.', '').replace(',', '.'));
             costoDirecto += total;
         });
-    
+
         // Redondear el costo directo a 3 decimales
         const costoDirectoRedondeado = Math.round(costoDirecto * 1000) / 1000;
-    
+
         // Convertir a string y aplicar manualmente el formato
         const formatoColombiano = costoDirectoRedondeado
             .toFixed(3) // Mantener tres decimales
             .replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Insertar puntos como separadores de miles
-    
+
         // Imprimir en consola con formato colombiano
         console.log('Costo Directo:', formatoColombiano);
-    
+
         // Actualizar el valor en el HTML
         const costoDirectoElement = nuevoProducto.querySelector(`#costo-directo-${producto.producto_id}`);
         costoDirectoElement.textContent = `Costo Directo: ${formatoColombiano}`;
+
+        // Actualizar valores de administración, imprevistos y utilidad
+        const administracionPorcentaje = parseFloat(nuevoProducto.dataset.administracion || 0);
+        const imprevistosPorcentaje = parseFloat(nuevoProducto.dataset.imprevistos || 0);
+        const utilidadPorcentaje = parseFloat(nuevoProducto.dataset.utilidad || 0);
+
+        const administracionValor = (costoDirecto * administracionPorcentaje) / 100;
+        const imprevistosValor = (costoDirecto * imprevistosPorcentaje) / 100;
+        const utilidadValor = (costoDirecto * utilidadPorcentaje) / 100;
+
+        // Actualizar los valores en el DOM
+        document.getElementById(`administracion-${producto.producto_id}`).textContent = `Administración: ${administracionValor.toFixed(3)} (${administracionPorcentaje}%)`;
+        document.getElementById(`imprevistos-${producto.producto_id}`).textContent = `Imprevistos: ${imprevistosValor.toFixed(3)} (${imprevistosPorcentaje}%)`;
+        document.getElementById(`utilidad-${producto.producto_id}`).textContent = `Utilidad: ${utilidadValor.toFixed(3)} (${utilidadPorcentaje}%)`;
     }
 
     // Actualizar el costo directo al cambiar la cantidad o eliminar un ítem
@@ -736,12 +769,12 @@ function agregarProducto(producto, items) {
                 minimumFractionDigits: 3,
                 maximumFractionDigits: 3,
             });
-            actualizarCostoDirecto(); // Actualizar el costo directo
+            actualizarCostoDirecto(producto.producto_id); // Actualizar el costo directo
         });
     });
 
     // Llamar a la función de actualización inicial
-    actualizarCostoDirecto();
+    actualizarCostoDirecto(producto.producto_id);
 }
 
     

@@ -34,7 +34,7 @@ class Users(db.Model, UserMixin):
             'user_email': self.user_email,
             'user_rol': self.user_rol,
             'user_link': self.user_link,
-            # Puedes agregar otros campos si los necesitas
+
         }
 
 class UnidadesNegocio(db.Model):

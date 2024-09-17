@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Version 5.9.2) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 5.9.2.2) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 17 de septiembre de 2024, 7:55 am
+
+Cambios Recientes
+v5.9.2.2
+
+En esta version agregamos los porcentajes de los productos de bd, aunque aun no calcula el porcentaje, si lo trae
 
 # Fecha de lanzamiento: 16 de septiembre de 2024, 4:40 pm
 

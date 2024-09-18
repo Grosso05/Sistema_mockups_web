@@ -5,7 +5,7 @@
 Cambios Recientes
 v5.9.2.5
 
-En esta version, todo el resumen de costos funciona con items nuevos, o antiguos. todo se calcula correctamente.
+En esta version, todo el resumen de costos funciona con items nuevos, o antiguos. todo se calcula correctamente. unicamente falta el costo unitario y trabajar todo sobre las cantidades de productos en edicion 
 
 # Fecha de lanzamiento: 18 de septiembre de 2024, 7:30 am
 

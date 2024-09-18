@@ -176,7 +176,7 @@
         <div class="close-button" onclick="closeSidebar()">X</div> 
     
         <div class="logo">
-            <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Logo De Innova" class="logo">
+            <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Your Logo" class="logo">
         </div>
         <hr class="sidebar-divider">
         <ul class="list-unstyled components">
@@ -1769,7 +1769,7 @@ function agregarItemAlProducto(item, itemNumber) {
                     }, 300));
         
                     isLoading = false; // Rehabilitar búsqueda
-                }, 1500); // Retraso de 2 segundos
+                }, 1300); // Retraso de 2 segundos
             });
     }
 
@@ -1938,10 +1938,6 @@ function agregarItemAlProducto(item, itemNumber) {
         });
     });
     
-    
-
-    
-
     
     function debounce(func, wait) {
         let timeout;

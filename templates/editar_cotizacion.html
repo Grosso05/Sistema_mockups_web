@@ -1896,21 +1896,13 @@ function agregarItemAlProducto(item, itemNumber) {
             const id = checkbox.value;
             const tipo = fila.querySelector('td:nth-child(6)').innerText;
             
-            const precioUnitario = fila.querySelector('td:nth-child(5)').innerText; // Se mantiene como cadena
+            const precioUnitario = fila.querySelector('td:nth-child(5)').innerText;
             const cantidad = 1;  // Inicializamos con 1 como valor por defecto
             const precioUnitarioNumero = parseFloat(precioUnitario.replace(/[^0-9.-]/g, '')); // Convierte el precio a número
             
             const totalSinFormato = precioUnitarioNumero * cantidad;
-            
-            // Imprimir el total sin formatear
-            console.log(`Total sin formato: ${totalSinFormato}`);
-            
-            const totalConFormato = convertirAFormatoOriginal(totalSinFormato); // Función para formatear el total
-            
-            // Imprimir el total con formato
-            console.log(`Total con formato: ${totalConFormato}`);
-            
-            // Crear una nueva fila para agregar al tbody
+            const totalConFormato = convertirAFormatoOriginal(totalSinFormato);
+    
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
                 <td>${id}</td>
@@ -1922,7 +1914,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 <td class="total-item">${totalConFormato}</td>
                 <td><button onclick="eliminarItemNuevo(this)">Eliminar</button></td>
             `;
-            
+    
             let tipoHeaderRow = Array.from(itemsSeleccionadosContainer.querySelectorAll('.tipo-header')).find(row => row.textContent.includes(tipo));
             
             if (!tipoHeaderRow) {
@@ -1931,28 +1923,24 @@ function agregarItemAlProducto(item, itemNumber) {
                 tipoHeaderRow.innerHTML = `<td colspan="8"><strong>${tipo}</strong></td>`;
                 itemsSeleccionadosContainer.appendChild(tipoHeaderRow);
             }
-            
+    
             const nextHeader = tipoHeaderRow.nextElementSibling;
             if (nextHeader && nextHeader.classList.contains('tipo-header')) {
                 itemsSeleccionadosContainer.insertBefore(newRow, nextHeader);
             } else {
                 itemsSeleccionadosContainer.appendChild(newRow);
             }
-            
-            // Añadir un evento para recalcular el total cuando cambie la cantidad
+    
             const cantidadInput = newRow.querySelector('.cantidad-item');
             const totalCell = newRow.querySelector('.total-item');
             cantidadInput.addEventListener('input', function() {
                 const nuevaCantidad = parseFloat(cantidadInput.value);
                 const nuevoTotalSinFormato = precioUnitarioNumero * nuevaCantidad;
                 const nuevoTotalConFormato = convertirAFormatoOriginal(nuevoTotalSinFormato);
-                
-                // Imprimir los valores antes y después del formato
-                console.log(`Nuevo total sin formato: ${nuevoTotalSinFormato}`);
-                console.log(`Nuevo total con formato: ${nuevoTotalConFormato}`);
-                
                 totalCell.innerText = nuevoTotalConFormato;
-                actualizarCostoDirecto(productoId); // Asegurarse de que se actualice el costo directo
+                
+                // Actualiza el resumen de costos al cambiar la cantidad
+                actualizarCostoDirecto(productoId);
             });
             
             checkbox.checked = false;
@@ -2149,25 +2137,68 @@ function agregarItemAlProducto(item, itemNumber) {
     // <---------------------- actualizar resumen de productos agregados en edicion---------------------------->
 
     function actualizarCostoDirecto(productoId) {
-        // Obtener el contenedor de los ítems seleccionados
-        const itemsContainer = document.getElementById(`itemsseleccionados-${productoId}`);
+        const nuevoProducto = document.querySelector(`#producto-${productoId}`);
         
-        if (!itemsContainer) return;
+        // Obtener los ítems seleccionados
+        const itemsSeleccionados = nuevoProducto.querySelectorAll(`#itemsseleccionados-${productoId} .total-item`);
+        let costoDirecto = 0;
     
-        // Obtener todos los elementos con la clase total-item dentro del contenedor
-        const totalItems = itemsContainer.querySelectorAll('.total-item');
-        
-        // Calcular la suma de los totales
-        let sumaTotal = 0;
-        totalItems.forEach(item => {
-            sumaTotal += parseFloat(item.textContent.replace(/\./g, '').replace(',', '.'));
+        itemsSeleccionados.forEach(item => {
+            const total = parseFloat(item.textContent.replace('.', '').replace(',', '.'));
+            costoDirecto += total;
         });
     
-        // Actualizar el campo "Costo Directo" en el resumen de costos
-        const costoDirectoElement = document.querySelector(`#costo-directo-${productoId}`);
-        if (costoDirectoElement) {
-            costoDirectoElement.textContent = `Costo Directo: ${sumaTotal.toLocaleString('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}`;
+        // Redondear el costo directo a 3 decimales
+        const costoDirectoRedondeado = Math.round(costoDirecto * 1000) / 1000;
+    
+        // Aplicar formato colombiano
+        const formatoColombiano = costoDirectoRedondeado
+            .toFixed(3)
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    
+        // Actualizar el costo directo en el HTML
+        const costoDirectoElement = nuevoProducto.querySelector(`#costo-directo-${productoId}`);
+        costoDirectoElement.textContent = `Costo Directo: ${formatoColombiano}`;
+    
+        // Obtener el input de utilidad
+        const inputUtilidad = document.getElementById(`utilidadSeleccionada-${productoId}`);
+        const utilidadPorcentajeMinimo = parseFloat(nuevoProducto.dataset.utilidad); // Min. desde backend
+    
+        // Si el input está vacío, asignamos el valor mínimo desde el backend
+        if (!inputUtilidad.value) {
+            inputUtilidad.value = utilidadPorcentajeMinimo;
         }
+    
+        let utilidadPorcentaje = parseFloat(inputUtilidad.value);
+    
+        // Obtener los porcentajes de administración e imprevistos
+        const administracionPorcentaje = parseFloat(nuevoProducto.dataset.administracion || 0);
+        const imprevistosPorcentaje = parseFloat(nuevoProducto.dataset.imprevistos || 0);
+    
+        // Calcular los valores
+        const administracionValor = (costoDirecto * administracionPorcentaje) / 100;
+        const imprevistosValor = (costoDirecto * imprevistosPorcentaje) / 100;
+        const utilidadValor = (costoDirecto * utilidadPorcentaje) / 100;
+    
+        // Calcular la oferta antes de IVA
+        const ofertaAntesIVA = costoDirecto + administracionValor + imprevistosValor + utilidadValor;
+    
+        // Calcular el IVA (19%)
+        const iva = ofertaAntesIVA * 0.19;
+    
+        // Calcular el valor de la oferta con impuestos incluidos
+        const valorOfertaConImpuestos = ofertaAntesIVA + iva;
+    
+        // Actualizar los valores en el DOM
+        document.getElementById(`administracion-${productoId}`).textContent = `Administración: ${administracionValor.toFixed(3)} (${administracionPorcentaje}%)`;
+        document.getElementById(`imprevistos-${productoId}`).textContent = `Imprevistos: ${imprevistosValor.toFixed(3)} (${imprevistosPorcentaje}%)`;
+        document.getElementById(`utilidad-${productoId}`).textContent = `Utilidad: ${utilidadValor.toFixed(3)} (${utilidadPorcentaje}%)`;
+    
+        document.getElementById(`oferta-antes-iva-${productoId}`).textContent = `Oferta Antes De IVA: ${ofertaAntesIVA.toFixed(3)}`;
+    
+        document.getElementById(`iva-${productoId}`).textContent = `IVA: ${iva.toFixed(3)}`;
+    
+        document.getElementById(`valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOfertaConImpuestos.toFixed(3)}`;
     }
 
     // Llamada para actualizar todos los resúmenes de costos cuando se modifiquen los items

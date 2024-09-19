@@ -5,7 +5,7 @@
 Cambios Recientes
 v5.9.2.6
 
-En esta version, realizamos algunas correciones solicitadas.
+En esta version, realizamos algunas correciones solicitadas, agregamos la logica de las fotos de las firmas segun el vendedor seleccionado.
 # Fecha de lanzamiento: 18 de septiembre de 2024, 8:00 am
 
 Cambios Recientes

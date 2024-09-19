@@ -185,7 +185,7 @@
         <div class="close-button" onclick="closeSidebar()">X</div>
     
         <div class="logo">
-            <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Your Logo" class="logo">
+            <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Logo_innova" class="logo">
         </div>
         <hr class="sidebar-divider">
         <ul class="list-unstyled components">
@@ -326,18 +326,7 @@
                             <label for="descuento_cotizacion"> Porcentaje Descuento: </label>
                             <input type="number" id="descuento_cotizacion" name="descuento_cotizacion" value="{{ cotizacion.descuento_cotizacion }}" min="0" max="100" required>
                         </div>
-                        <div class="grupo">
-                            <label for="recibe_cotizacion"> Persona que Recibe: </label>
-                            <input type="text" id="recibe_cotizacion" name="recibe_cotizacion" value="{{ cotizacion.recibe_cotizacion }}" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="numero_contacto"> Número de Contacto: </label>
-                            <input type="tel" id="numero_contacto" name="numero_contacto" value="{{ cotizacion.numero_contacto_cotizacion }}" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="direccion_cotizacion"> Dirección: </label>
-                            <textarea id="direccion_cotizacion" name="direccion_cotizacion" rows="3" required>{{ cotizacion.direccion_cotizacion }}</textarea>
-                        </div>
+
                         <div class="iva-selector">
                             <label for="iva-select">IVA:</label>
                             <select id="iva-select" name="iva">
@@ -347,9 +336,6 @@
                         </div>
                     </div>
                 </div>
-
-
-
                 
             </div>
             <div class="acciones-globales">
@@ -616,7 +602,7 @@ function agregarProducto(producto, items) {
     resumenContainer.innerHTML = `
         <h4>Resumen de Costos</h4>
         <p id="costo-directo-${producto.producto_id}">Costo Directo: 0</p>
-        <p id="costo-unitario-${producto.producto_id}">Costo Unitario: 0</p>
+
         <p id="administracion-${producto.producto_id}">Administración: 0 <span id="porcentaje-administracion-${producto.producto_id}">(0%)</span></p>
         <p id="imprevistos-${producto.producto_id}">Imprevistos: 0 <span id="porcentaje-imprevistos-${producto.producto_id}">(0%)</span></p>
         <p id="utilidad-${producto.producto_id}">Utilidad: 0 <span id="porcentaje-utilidad-${producto.producto_id}">(0%)</span></p>
@@ -2438,7 +2424,7 @@ function agregarItemAlProducto(item, itemNumber) {
             // Capturar datos generales de la cotización
             const fecha = new Date();
             const fechaCotizacion = new Date().toISOString(); // Fecha y hora en formato ISO 8601
-    
+        
             // Captura otros datos
             const clienteCotizacion = document.getElementById('cliente_cotizacion').value.trim();
             const contactoCotizacion = document.getElementById('contacto_cotizacion').value.trim();
@@ -2448,9 +2434,6 @@ function agregarItemAlProducto(item, itemNumber) {
             const formaPago = document.getElementById('forma_pago').value.trim();
             const validezCotizacion = document.getElementById('validez_cotizacion').value.trim();
             const descuentoCotizacion = document.getElementById('descuento_cotizacion').value.trim();
-            const recibeCotizacion = document.getElementById('recibe_cotizacion').value.trim();
-            const numeroContacto = document.getElementById('numero_contacto').value.trim();
-            const direccionCotizacion = document.getElementById('direccion_cotizacion').value.trim();
             const ivaSeleccionado = document.getElementById('iva-select').value.trim();
     
             // Validar campos esenciales
@@ -2459,18 +2442,15 @@ function agregarItemAlProducto(item, itemNumber) {
                 return;
             }
     
-
-            
-
             // Capturar productos en la cotización
             const productos = [];
             const productoIdsCapturados = new Set();
-    
+        
             document.querySelectorAll('.producto').forEach(function(productoDiv) {
                 const productoId = productoDiv.id.split('-')[1];
                 if (productoIdsCapturados.has(productoId)) return;
                 productoIdsCapturados.add(productoId);
-    
+        
                 const productoSeleccionadoId = productoDiv.querySelector('input[name="producto_seleccionado_id"]').value;
                 const descripcion = productoDiv.querySelector('h4').innerText;
                 const medidasText = productoDiv.querySelector('h4:nth-of-type(2)').innerText;
@@ -2478,7 +2458,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 const alto = medidasMatch ? parseFloat(medidasMatch[1]) : null;
                 const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
                 const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
-    
+        
                 const cantidadesSeleccionadas = [];
                 productoDiv.querySelectorAll('h4').forEach(function(cantidadH4) {
                     const cantidadText = cantidadH4.innerText;
@@ -2487,7 +2467,7 @@ function agregarItemAlProducto(item, itemNumber) {
                         cantidadesSeleccionadas.push(parseInt(cantidadMatch[1]));
                     }
                 });
-    
+        
                 const items = [];
                 document.querySelectorAll('tbody tr').forEach(function(itemRow) {
                     const cantidadInput = itemRow.querySelector('input[type="number"]');
@@ -2495,10 +2475,10 @@ function agregarItemAlProducto(item, itemNumber) {
                         const itemId = itemRow.querySelector('td:nth-child(1)').innerText.trim();
                         const itemCantidad = cantidadInput.value;
                         const itemTotalText = itemRow.querySelector('td.total').innerText.trim();
-                
+                    
                         // Reemplazar separadores de miles y cambiar coma por punto decimal
                         const itemTotal = parseFloat(itemTotalText.replace(/\./g, '').replace(',', '.'));
-                
+                    
                         items.push({
                             itemId: parseInt(itemId),
                             itemCantidad: parseInt(itemCantidad),
@@ -2506,7 +2486,7 @@ function agregarItemAlProducto(item, itemNumber) {
                         });
                     }
                 });
-    
+        
                 const resúmenesCostos = [];
                 productoDiv.querySelectorAll('.resumen-costos-individual').forEach(function(resumenDiv, index) {
                     const costoDirectoElement = resumenDiv.querySelector(`#costo-directo-${productoId}-${index}`);
@@ -2516,10 +2496,10 @@ function agregarItemAlProducto(item, itemNumber) {
                     const ofertaAntesIvaElement = resumenDiv.querySelector(`#oferta-antes-iva-${productoId}-${index}`);
                     const ivaElement = resumenDiv.querySelector(`#iva-${productoId}-${index}`);
                     const valorOfertaElement = resumenDiv.querySelector(`#valor-oferta-${productoId}-${index}`);
-    
+        
                     if (costoDirectoElement && administracionElement && imprevistosElement && utilidadElement &&
                         ofertaAntesIvaElement && ivaElement && valorOfertaElement) {
-    
+        
                         const costoDirecto = parseFloat(costoDirectoElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
                         const administracion = parseFloat(administracionElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
                         const imprevistos = parseFloat(imprevistosElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
@@ -2527,7 +2507,7 @@ function agregarItemAlProducto(item, itemNumber) {
                         const ofertaAntesIva = parseFloat(ofertaAntesIvaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
                         const iva = parseFloat(ivaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
                         const valorOferta = parseFloat(valorOfertaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-    
+        
                         resúmenesCostos.push({
                             costoDirecto: costoDirecto,
                             administracion: administracion,
@@ -2541,7 +2521,7 @@ function agregarItemAlProducto(item, itemNumber) {
                         console.error(`Algunos elementos de resumen no se encontraron para el producto ${productoId} y resumen ${index}.`);
                     }
                 });
-    
+        
                 productos.push({
                     productoId: parseInt(productoId),
                     productoSeleccionadoId: parseInt(productoSeleccionadoId),
@@ -2554,7 +2534,7 @@ function agregarItemAlProducto(item, itemNumber) {
                     resúmenesCostos: resúmenesCostos
                 });
             });
-    
+        
             const cotizacionData = {
                 fechaCotizacion: fechaCotizacion,
                 clienteCotizacion: clienteCotizacion,
@@ -2565,16 +2545,16 @@ function agregarItemAlProducto(item, itemNumber) {
                 formaPago: formaPago,
                 validezCotizacion: validezCotizacion,
                 descuentoCotizacion: parseFloat(descuentoCotizacion),
-                recibeCotizacion: recibeCotizacion,
-                numeroContacto: numeroContacto,
-                direccionCotizacion: direccionCotizacion,
                 ivaSeleccionado: ivaSeleccionado,
                 productos: productos
             };
+        
+            // Verificar si es una cotización nueva o editada
+            const url = negociacion ? '/guardar-cotizacion-editada' : '/guardar-cotizacion';
     
             console.log('Datos a enviar:', cotizacionData);
     
-            fetch('/guardar-cotizacion', {
+            fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

@@ -290,6 +290,7 @@ def crear_cotizacion():
 #Ruta para guardar en bd la cotizacion
 
 
+
 @routes_blueprint.route('/guardar-cotizacion', methods=['POST'])
 def guardar_cotizacion():
     data = request.json
@@ -311,9 +312,6 @@ def guardar_cotizacion():
         forma_de_pago_cotizacion=data['formaPago'],
         validez_cotizacion=data['validezCotizacion'],
         descuento_cotizacion=data.get('descuentoCotizacion', 0),  # Asegurarse de que no sea None
-        recibe_cotizacion=data['recibeCotizacion'],
-        numero_contacto_cotizacion=data['numeroContacto'],
-        direccion_cotizacion=data['direccionCotizacion'],
         iva_seleccionado=data['ivaSeleccionado']
     )
     db.session.add(nueva_cotizacion)
@@ -363,22 +361,128 @@ def guardar_cotizacion():
 
     return jsonify({'success': True})
 
+def incrementar_version(ultima_version):
+    if ultima_version:
+        nueva_version = chr(ord(ultima_version) + 1)
+        return nueva_version if nueva_version <= 'z' else 'a'
+    return 'a'
 
+@routes_blueprint.route('/guardar-cotizacion-editada', methods=['POST'])
+def guardar_cotizacion_editada():
+    data = request.json
+    print(data)  # Para depuración
+
+    negociacion = data.get('negociacion') or ''  # Obtener el número de negociación
+
+    # Buscar la última cotización con la misma negociación y versión más alta
+    ultima_cotizacion = Cotizacion.query.filter_by(negociacion=negociacion).order_by(Cotizacion.version.desc()).first()
+
+    if ultima_cotizacion:
+        # Incrementar la versión si existe una cotización previa
+        nueva_version = incrementar_version(ultima_cotizacion.version)
+    else:
+        # Si no existe, comenzar con la versión 'a'
+        nueva_version = 'a'
+
+    # Crear la nueva cotización con la nueva versión
+    nueva_cotizacion = Cotizacion(
+        fecha_cotizacion=datetime.fromisoformat(data['fechaCotizacion']).astimezone(timezone.utc),
+        cliente_cotizacion=data['clienteCotizacion'],
+        contacto_cotizacion=data['contactoCotizacion'],
+        proyecto_cotizacion=data['proyectoCotizacion'],
+        vendedor_cotizacion=data['vendedorCotizacion'],
+        negociacion=negociacion,
+        forma_de_pago_cotizacion=data['formaPago'],
+        validez_cotizacion=data['validezCotizacion'],
+        descuento_cotizacion=data.get('descuentoCotizacion', 0),
+        iva_seleccionado=data['ivaSeleccionado'],
+        version=nueva_version
+    )
+    db.session.add(nueva_cotizacion)
+    db.session.flush()  # Obtener el ID de la nueva cotización
+
+    # Guardar productos cotizados
+    for producto_data in data['productos']:
+        cantidades_str = ','.join(map(str, producto_data['cantidadesSeleccionadas']))
+
+        nuevo_producto_cotizado = ProductoCotizado(
+            descripcion=producto_data['descripcion'],
+            alto=producto_data['alto'],
+            ancho=producto_data['ancho'],
+            fondo=producto_data['fondo'],
+            cantidades=cantidades_str,  # Guardar las cantidades como una cadena
+            cotizacion_id=nueva_cotizacion.id_cotizacion,
+            producto_id=producto_data['productoId'],
+            producto_seleccionado_id=producto_data.get('productoSeleccionadoId')
+        )
+        db.session.add(nuevo_producto_cotizado)
+        db.session.flush()  # Obtener el ID del producto cotizado
+
+        # Guardar los resúmenes de costos asociados a cada producto
+        for resumen in producto_data.get('resúmenesCostos', []):
+            resumen_de_costos = ResumenDeCostos(
+                costo_directo=resumen['costoDirecto'],
+                administracion=resumen['administracion'],
+                imprevistos=resumen['imprevistos'],
+                utilidad=resumen['utilidad'],
+                oferta_antes_iva=resumen['ofertaAntesIva'],
+                iva=resumen['iva'],
+                valor_oferta=resumen['valorOferta'],
+                producto_id=nuevo_producto_cotizado.id
+            )
+            db.session.add(resumen_de_costos)
+
+        # Guardar los items cotizados
+        for item_data in producto_data['items']:
+            nuevo_item_cotizado = ItemCotizado(
+                producto_cotizado_id=nuevo_producto_cotizado.id,
+                item_id=item_data['itemId'],
+                cantidad=item_data['itemCantidad'],
+                total_item=item_data['itemTotal']
+            )
+            db.session.add(nuevo_item_cotizado)
+
+    # Confirmar los cambios en la base de datos
+    db.session.commit()
+
+    return jsonify({'success': True})
 
 
 
 #Ruta para listar cotizaciones
 
 @routes_blueprint.route('/listar_cotizaciones', methods=['GET', 'POST'])
+@login_required
 def listar_cotizaciones():
     search = request.args.get('search')
-    if search:
-        # Filtrar y ordenar las cotizaciones según el término de búsqueda
-        cotizaciones = Cotizacion.query.filter(Cotizacion.negociacion.ilike(f'%{search}%')).order_by(Cotizacion.fecha_cotizacion.desc()).all()
-    else:
-        # Obtener todas las cotizaciones y ordenarlas si no se ha ingresado un término de búsqueda
-        cotizaciones = Cotizacion.query.order_by(Cotizacion.fecha_cotizacion.desc()).all()
     
+    if current_user.user_rol in [1, 3]:
+        # Rol 1 o 3: Puede ver todas las cotizaciones
+        if search:
+            cotizaciones = Cotizacion.query.filter(
+                Cotizacion.negociacion.ilike(f'%{search}%')
+            ).order_by(Cotizacion.fecha_cotizacion.desc()).all()
+        else:
+            cotizaciones = Cotizacion.query.order_by(
+                Cotizacion.fecha_cotizacion.desc()
+            ).all()
+    
+    elif current_user.user_rol == 2:
+        # Rol 2: Solo puede ver las cotizaciones asociadas a su propio usuario
+        if search:
+            cotizaciones = Cotizacion.query.filter(
+                Cotizacion.negociacion.ilike(f'%{search}%'),
+                Cotizacion.vendedor_cotizacion == current_user.user_id
+            ).order_by(Cotizacion.fecha_cotizacion.desc()).all()
+        else:
+            cotizaciones = Cotizacion.query.filter(
+                Cotizacion.vendedor_cotizacion == current_user.user_id
+            ).order_by(Cotizacion.fecha_cotizacion.desc()).all()
+    
+    else:
+        # Manejar otros roles o casos de error si es necesario
+        cotizaciones = []
+
     return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones)
 
 
@@ -726,8 +830,24 @@ def generar_reporte(cotizacion_id):
         normal_style
     )
 
-    firma_path = "static/images/FIRMA_FELDMAN_RODRIGUEZ.jpg"
-    firma_vendedor = Image(firma_path, width=6*inch, height=1*inch)
+    # Mapeo de los vendedores con sus respectivas imágenes de firma
+    firmas = {
+        130: "FIRMA_FELDMAN_RODRIGUEZ.jpg",
+        131: "FIRMA_PEDRO_ALVAREZ.jpg",
+        132: "FIRMA_ADRIANA_HUESO.jpg",
+        133: "FIRMA_LUIS_CORREA.jpg",
+        134: "FIRMA_ARMANDO_CISNEROS.jpg"
+    }
+
+    # Obtener el ID del vendedor de la cotización
+    vendedor_id = cotizacion.vendedor_cotizacion
+
+    if vendedor_id in firmas:
+        firma_path = f"static/images/{firmas[vendedor_id]}"
+        firma_vendedor = Image(firma_path, width=6*inch, height=1*inch)
+    else:
+        firma_texto = Paragraph("Firma inexistente", normal_style)
+        firma_vendedor = firma_texto
 
     elements.append(separator_line)
     elements.append(Spacer(1, 12))

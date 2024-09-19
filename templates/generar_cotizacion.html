@@ -319,18 +319,7 @@
                             <label for="descuento_cotizacion">Porcentaje Descuento:</label>
                             <input type="number" id="descuento_cotizacion" name="descuento_cotizacion" min="0" max="100" required>
                         </div>
-                        <div class="grupo">
-                            <label for="recibe_cotizacion">Persona que Recibe:</label>
-                            <input type="text" id="recibe_cotizacion" name="recibe_cotizacion" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="numero_contacto">Número de Contacto:</label>
-                            <input type="tel" id="numero_contacto" name="numero_contacto" required>
-                        </div>
-                        <div class="grupo">
-                            <label for="direccion_cotizacion">Dirección:</label>
-                            <textarea id="direccion_cotizacion" name="direccion_cotizacion" rows="3" required></textarea>
-                        </div>
+
                         <div class="iva-selector">
                             <label for="iva-select">IVA:</label>
                             <select id="iva-select" name="iva">
@@ -1790,9 +1779,6 @@ function agregarItemAlProducto(item, itemNumber) {
             const formaPago = document.getElementById('forma_pago').value.trim();
             const validezCotizacion = document.getElementById('validez_cotizacion').value.trim();
             const descuentoCotizacion = document.getElementById('descuento_cotizacion').value.trim();
-            const recibeCotizacion = document.getElementById('recibe_cotizacion').value.trim();
-            const numeroContacto = document.getElementById('numero_contacto').value.trim();
-            const direccionCotizacion = document.getElementById('direccion_cotizacion').value.trim();
             const ivaSeleccionado = document.getElementById('iva-select').value.trim();
     
             // Validar campos esenciales
@@ -1801,9 +1787,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 return;
             }
     
-
-            
-
+        
             // Capturar productos en la cotización
             const productos = [];
             const productoIdsCapturados = new Set();
@@ -1907,9 +1891,6 @@ function agregarItemAlProducto(item, itemNumber) {
                 formaPago: formaPago,
                 validezCotizacion: validezCotizacion,
                 descuentoCotizacion: parseFloat(descuentoCotizacion),
-                recibeCotizacion: recibeCotizacion,
-                numeroContacto: numeroContacto,
-                direccionCotizacion: direccionCotizacion,
                 ivaSeleccionado: ivaSeleccionado,
                 productos: productos
             };

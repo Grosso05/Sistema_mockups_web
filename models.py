@@ -219,7 +219,7 @@ class Proveedores(db.Model):
 
   def __repr__(self):
     return f"<Proveedores {self.NOMBRE_PROVEEDOR}>"
-  
+
 class Cotizacion(db.Model):
     __tablename__ = 'cotizacion'
     id_cotizacion = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -229,6 +229,7 @@ class Cotizacion(db.Model):
     proyecto_cotizacion = db.Column(db.String(255), nullable=False)
     vendedor_cotizacion = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     negociacion = db.Column(db.String(255), nullable=False)
+    version = db.Column(db.String(10), nullable=False, default='a')  # Nueva columna para la versión
     forma_de_pago_cotizacion = db.Column(db.String(255), nullable=True)
     validez_cotizacion = db.Column(db.String(255), nullable=True)
     descuento_cotizacion = db.Column(db.String(255), nullable=True)

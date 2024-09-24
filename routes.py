@@ -14,7 +14,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable, Image
 from flask_login import current_user
-
+ 
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8') 

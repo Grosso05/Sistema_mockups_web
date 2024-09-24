@@ -250,6 +250,31 @@ textarea {
     transition: background-color 0.3s ease;
 }
 
+
+  /* Botón Ver Todos los Componentes - Azul */
+  .boton-ver-todos {
+    background-color: #2196f3;
+  }
+  .boton-ver-todos:hover {
+    background-color: #0b79d0;
+  }
+
+  /* Botón Agregar Componente Temporal - Naranja */
+  .boton-agregar-temporal {
+    background-color: #ff9800;
+  }
+  .boton-agregar-temporal:hover {
+    background-color: #e68900;
+  }
+
+  /* Botón Agregar Componentes Seleccionados - Verde */
+  .boton-agregar-seleccionados {
+    background-color: #4caf50;
+  }
+  .boton-agregar-seleccionados:hover {
+    background-color: #45a049;
+  }
+
 .botones button:hover {
     background-color: #66bb6a;
 }
@@ -587,8 +612,8 @@ table {
 }
 
 th, td {
-    padding: 15px;
-    text-align: left;
+    padding: 1px;
+    text-align: center;
     border-bottom: 1px solid #444;
 }
 
@@ -697,10 +722,12 @@ button:hover {
 }
 
 .itemsseleccionados th, .itemsseleccionados td {
-    padding: 10px;
+    padding: 0.3%; /* Puedes mantener este valor o ajustarlo */
     text-align: left;
     border-bottom: 1px solid #444;
+    line-height: 1; /* Ajusta el valor según sea necesario */
 }
+
 
 .itemsseleccionados th {
     background: linear-gradient(135deg, #00b04f, #007b33);

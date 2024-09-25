@@ -606,7 +606,7 @@ function agregarProducto(producto, items) {
         <p id="administracion-${producto.producto_id}">Administración: 0 <span id="porcentaje-administracion-${producto.producto_id}">(0%)</span></p>
         <p id="imprevistos-${producto.producto_id}">Imprevistos: 0 <span id="porcentaje-imprevistos-${producto.producto_id}">(0%)</span></p>
         <p id="utilidad-${producto.producto_id}">Utilidad: 0 <span id="porcentaje-utilidad-${producto.producto_id}">(0%)</span></p>
-        <input type="number" id="utilidadSeleccionada-${producto.producto_id}" placeholder="El porcentaje mínimo es: 0" onchange="actualizarCostoDirecto(${producto.producto_id})">
+                                <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: 10" onchange="actualizarTotalProducto(${nuevoNumeroProducto})" style="width: 250px; height: 25px;">
         <p id="oferta-antes-iva-${producto.producto_id}">Oferta Antes De IVA: 0</p>
         <p id="iva-${producto.producto_id}">IVA: 0</p>
         <p style="color: #00b04f;" id="valor-oferta-${producto.producto_id}">Valor Oferta Impuestos Incluidos: 0</p>

@@ -447,28 +447,51 @@ th {
 
 /* Resumen de costos */
 .resumen-costos {
-    margin-top: 20px;
+    margin-top: 50px;
     padding: 20px;
-    background-color: #e0e0e0;
+    background-color: #2b2b2b; /* Color de fondo oscuro */
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Flexbox para organizar los resúmenes de costos en fila */
+.resumen-costos-container {
+    margin-top: 2%;
+    display: flex;
+    flex-wrap: wrap; /* Permitir que los elementos se muevan a la siguiente fila si no caben */
+    gap: 20px; /* Espacio entre los elementos */
+    justify-content: flex-start; /* Alinear los elementos al inicio */
+}
+
+/* Estilo para cada resumen individual */
+.resumen-costos-individual {
+    flex: 1 1 1%; /* Ocupan un 45% del ancho disponible */
+    min-width: 300px; /* Mínimo ancho para mantener el diseño legible */
+    max-width: 48%;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #333, #444); /* Fondo oscuro con degradado */
+    padding: 10px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra más tenue */
 }
 
 .resumen-costos h4 {
-    margin-bottom: 10px;
-    color: #4caf50;
-}
-
-.resumen-costos-individual {
-    margin-bottom: 20px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    background-color: #f7f7f7;
-    border-radius: 8px;
+    margin-bottom: 15px;
+    color: #00b04f;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Sombra en el texto */
 }
 
 .resumen-costos-individual p {
     margin: 5px 0;
+    color: #fff; /* Texto en blanco para contraste con el fondo oscuro */
+}
+
+/* Diseño responsivo para pantallas más pequeñas */
+@media (max-width: 768px) {
+    .resumen-costos-individual {
+        flex: 1 1 100%; /* En pantallas pequeñas, ocupa el 100% del ancho disponible */
+    }
 }
 
 /* Formulario de agregar ítem manual */
@@ -651,28 +674,7 @@ button:hover {
     transform: translateY(-3px);
 }
 
-/* Estilos avanzados para el resumen de costos */
-.resumen-costos {
-    background-color: #2b2b2b;
-    padding: 20px;
-    border-radius: 12px;
-    margin-top: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
 
-.resumen-costos h4 {
-    margin-bottom: 15px;
-    color: #00b04f;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.resumen-costos-individual {
-    margin-bottom: 15px;
-    background: linear-gradient(135deg, #333, #444);
-    padding: 10px;
-    border-radius: 8px;
-    color: #fff;
-}
 
 /* Estilos avanzados para las acciones */
 .acciones {

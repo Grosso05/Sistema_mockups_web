@@ -1216,6 +1216,7 @@ document.querySelectorAll('input[id^="utilidadSeleccionada"]').forEach(input => 
     // Evento para cuando se cambia la selección de línea
     lineaSelect.addEventListener('change', function() {
         const lineaId = this.value;
+        console.log(lineaId); // Verificar que se obtiene el ID correcto
         cargarProductosPorLinea(lineaId);
     });
 

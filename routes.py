@@ -491,6 +491,7 @@ def listar_cotizaciones():
 @routes_blueprint.route('/editar_cotizacion/<int:cotizacion_id>', methods=['GET'])
 def editar_cotizacion(cotizacion_id):
     user_rol = current_user.user_rol if current_user.is_authenticated else None
+    
     # Consulta la cotización por ID
     cotizacion = Cotizacion.query.filter_by(id_cotizacion=cotizacion_id).first()
     
@@ -512,6 +513,9 @@ def editar_cotizacion(cotizacion_id):
         producto_data['producto_nombre'] = producto.nombre if producto else 'Nombre no disponible'
         
         productos_data.append(producto_data)
+
+    # Consulta todas las líneas
+    lineas = Lineas.query.all()  # Carga todas las líneas
 
     # Consulta los ítems cotizados asociados a cada producto cotizado y completa la información desde la tabla Items
     items_cotizados = []
@@ -573,7 +577,8 @@ def editar_cotizacion(cotizacion_id):
         items_cotizados=items_cotizados,  # Ahora los ítems tienen el campo 'tipo'
         resumen_costos=resumen_costos,
         vendedores=vendedores,
-        user_rol=user_rol
+        user_rol=user_rol,
+        lineas=lineas
     )
 
 
@@ -831,7 +836,7 @@ def generar_reporte(cotizacion_id):
 
     # Asegúrate de que summary_data tenga datos
     if not summary_data:
-        summary_data = None  # Cambiado para que no se muestre nada si está vacío
+        summary_data = None 
 
     condiciones_comerciales = Paragraph(
         f"<b>Condiciones Comerciales:</b><br/><br/>"

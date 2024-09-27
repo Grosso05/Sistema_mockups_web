@@ -650,7 +650,7 @@ def generar_reporte(cotizacion_id):
         [Paragraph("Proyecto", normal_style), Paragraph(cotizacion.proyecto_cotizacion, normal_style), Paragraph("Contacto", normal_style), Paragraph(cotizacion.contacto_cotizacion, normal_style)]
     ]
 
-    table = Table(data, colWidths=[1.5*inch, 2*inch, 1*inch, 2*inch])
+    table = Table(data, colWidths=[1*inch, 1.2*inch, 1*inch, 3*inch])
     table.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
@@ -840,19 +840,22 @@ def generar_reporte(cotizacion_id):
         normal_style
     )
 
-    summary_table = Table(summary_data, colWidths=[2.5*inch, 2.5*inch])
+    summary_table = Table(summary_data, colWidths=[1.2*inch, 1.3*inch])
     summary_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), colors.white),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('ALIGN', (0, 10), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('BOX', (0, 0), (-1, -1), 1, colors.black),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),  # Ajuste aquí
     ]))
 
-    summary_and_conditions = Table([[condiciones_comerciales, summary_table]], colWidths=[4*inch, 4*inch])
+    summary_and_conditions = Table([[condiciones_comerciales, summary_table]], colWidths=[4.2*inch, 2.6*inch])
+    summary_and_conditions.hAlign = 'RIGHT'  # Esta propiedad mueve toda la tabla hacia la izquierda
+
     elements.append(summary_and_conditions)
 
     separator_line = HRFlowable(width="110%", thickness=1, lineCap='round', color=colors.black, spaceBefore=10, spaceAfter=10)

@@ -831,7 +831,7 @@ def generar_reporte(cotizacion_id):
 
     # Asegúrate de que summary_data tenga datos
     if not summary_data:
-        summary_data = [["Resumen", "No disponible"]]
+        summary_data = None  # Cambiado para que no se muestre nada si está vacío
 
     condiciones_comerciales = Paragraph(
         f"<b>Condiciones Comerciales:</b><br/><br/>"
@@ -840,21 +840,28 @@ def generar_reporte(cotizacion_id):
         normal_style
     )
 
-    summary_table = Table(summary_data, colWidths=[1.2*inch, 1.3*inch])
-    summary_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-        ('ALIGN', (0, 10), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('BOX', (0, 0), (-1, -1), 1, colors.black),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('LEFTPADDING', (0, 0), (-1, -1), 10),  # Ajuste aquí
-    ]))
+    # Solo crea la tabla si summary_data tiene datos
+    if summary_data:
+        summary_table = Table(summary_data, colWidths=[1.2*inch, 1.3*inch])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 10), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('BOX', (0, 0), (-1, -1), 1, colors.black),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),  # Ajuste aquí
+        ]))
 
-    summary_and_conditions = Table([[condiciones_comerciales, summary_table]], colWidths=[4.2*inch, 2.6*inch])
-    summary_and_conditions.hAlign = 'RIGHT'  # Esta propiedad mueve toda la tabla hacia la izquierda
+        # Crea la tabla con condiciones comerciales y resumen
+        summary_and_conditions = Table([[condiciones_comerciales, summary_table]], colWidths=[4.2*inch, 2.6*inch])
+    else:
+        # Solo muestra condiciones comerciales si no hay datos de resumen
+        summary_and_conditions = Table([[condiciones_comerciales]], colWidths=[4.2*inch])
+
+    summary_and_conditions.hAlign = 'RIGHT'  # Esta propiedad mueve toda la tabla hacia la derecha
 
     elements.append(summary_and_conditions)
 

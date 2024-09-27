@@ -712,7 +712,6 @@ def generar_reporte(cotizacion_id):
         if len(cantidades) > 1:
             multiple_quantities = True
 
-        cantidades_paragraph = Paragraph("<br/>".join(cantidades), normal_style)
         valores_totales = []
         valores_unitarios = []
 
@@ -734,8 +733,19 @@ def generar_reporte(cotizacion_id):
                 valores_totales.append("$ 0")
                 valores_unitarios.append("$ 0.00")
 
-        valores_totales_paragraph = Paragraph("<br/>".join(valores_totales), normal_style)
-        valores_unitarios_paragraph = Paragraph("<br/>".join(valores_unitarios), normal_style)
+        # Creamos una lista de filas para las cantidades, valores unitarios y valores totales
+        cantidades_data = [[Paragraph(cantidades[i], normal_style), Paragraph(valores_unitarios[i], normal_style), Paragraph(valores_totales[i], normal_style)] for i in range(len(cantidades))]
+
+        # Creamos una tabla interna solo para esas columnas
+        internal_table = Table(cantidades_data, colWidths=[0.5*inch, 0.9*inch, 0.9*inch])
+        internal_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('ALIGN', (10, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
 
         item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
         items_description = "//".join(item_names) if item_names else "No se especifican items."
@@ -744,6 +754,7 @@ def generar_reporte(cotizacion_id):
 
         product_name_paragraph = Paragraph(producto.nombre, product_style)
 
+        # Modificamos la data de la tabla principal
         data = [
             str(item_counter),
             "",
@@ -751,21 +762,23 @@ def generar_reporte(cotizacion_id):
             f"{producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}",
             producto_descripcion,
             items_paragraph,
-            cantidades_paragraph,
-            valores_unitarios_paragraph,
-            valores_totales_paragraph
+            "",  # Columna vacia
+            "",  # Columna vacía para los valores unitarios en la tabla principal
+            internal_table   # Columna vacía para los valores totales en la tabla principal
         ]
 
         product_table = Table([data], colWidths=[0.3*inch, 0.8*inch, 1.3*inch, 1*inch, 1*inch, 1*inch, 0.5*inch, 0.9*inch, 0.9*inch])
         product_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.white),
-            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('ALIGN', (6, 0), (-1, 0), 'RIGHT'),
+            ('RIGHTPADDING', (7, 0), (10, 0), 0),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 6),
             ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
             ('BOX', (0, 0), (-1, -1), 1, colors.black),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ]))
+        
         elements.append(product_table)
         elements.append(Spacer(1, 1))
 

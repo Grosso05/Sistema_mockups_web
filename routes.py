@@ -579,9 +579,9 @@ def editar_cotizacion(cotizacion_id):
 
 
 # Definir las dimensiones de las imágenes
-encabezado_width = 768
+encabezado_width = 575
 encabezado_height = 30
-footer_width = 750
+footer_width = 550
 footer_height = 30
 footer_margin = 3
 
@@ -605,8 +605,8 @@ def generar_reporte(cotizacion_id):
             fecha_cotizacion = cotizacion.fecha_cotizacion
 
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
-    width, height = landscape(letter)
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    width, height = letter
 
     elements = []
 
@@ -629,6 +629,7 @@ def generar_reporte(cotizacion_id):
         wordWrap='CJK'
     )
 
+    # Título de negociación a la derecha
     title_background = colors.HexColor("#4CAF50")
     title = Table(
         [[Paragraph(f"Negociación: {cotizacion.negociacion}", heading_style)]],
@@ -639,32 +640,50 @@ def generar_reporte(cotizacion_id):
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
             ('BOX', (0, 0), (-1, -1), 1, colors.black),
             ('PADDING', (0, 0), (-1, -1), 6),
-        ]
+        ],
+        colWidths=[1.8*inch]  # Tamaño del cuadro de negociación
     )
 
+    # Datos con colores de fondo aplicados a ciertas celdas
     data = [
-        ["Fecha", fecha_cotizacion, "Cliente", Paragraph(cotizacion.cliente_cotizacion, normal_style)],
-        ["Proyecto", Paragraph(cotizacion.proyecto_cotizacion, normal_style), "Contacto", Paragraph(cotizacion.contacto_cotizacion, normal_style)]
+        [Paragraph("Fecha", normal_style), fecha_cotizacion, Paragraph("Cliente", normal_style), Paragraph(cotizacion.cliente_cotizacion, normal_style)],
+        [Paragraph("Proyecto", normal_style), Paragraph(cotizacion.proyecto_cotizacion, normal_style), Paragraph("Contacto", normal_style), Paragraph(cotizacion.contacto_cotizacion, normal_style)]
     ]
-    
-    table = Table(data, colWidths=[1.5*inch, 2.5*inch, 1*inch, 2.5*inch])
+
+    table = Table(data, colWidths=[1.5*inch, 2*inch, 1*inch, 2*inch])
     table.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('BOX', (0, 0), (-1, -1), 1, colors.black),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        # Estilos cruzados
+        ('BACKGROUND', (0, 0), (0, 0), colors.HexColor("#4CBE50")),  # Color para "Fecha"
+        ('BACKGROUND', (2, 0), (2, 0), colors.HexColor("#4CBE50")),  # Color para "Cliente"
+        ('BACKGROUND', (0, 1), (0, 1), colors.HexColor("#4CAF50")),  # Color para "Proyecto"
+        ('BACKGROUND', (2, 1), (2, 1), colors.HexColor("#4CAF50")),  # Color para "Contacto"
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('PADDING', (0, 0), (-1, -1), 4),
     ]))
 
-    table_and_title = Table([[table, title]], colWidths=[7.8*inch, 2.5*inch])
+    # Creando una tabla con tres columnas: tabla de datos a la izquierda, espacio en el medio, y título a la derecha
+    table_and_title = Table([[table, '', title]], colWidths=[4.7*inch, 1*inch, 2*inch])  # Más espacio entre la tabla y el título
+
+    # Estableciendo estilos de la tabla combinada
+    table_and_title.setStyle(TableStyle([
+        ('LEFTPADDING', (0, 0), (-1, -1), 15),  # Mueve todo el conjunto hacia la izquierda
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),  # Sin espacio adicional a la derecha
+    ]))
+
+    # Agregando espaciador y elementos
     elements.append(table_and_title)
     elements.append(Spacer(1, 12))
 
+    # Ajuste de las tablas de productos en vertical
     header_data = [
         ["ITEM", "Imagen", "Producto", "Medidas", "Descripción", "Materiales", "Cantidad", "Valor Unidad", "Valor Total"]
     ]
 
-    header_table = Table(header_data, colWidths=[0.3*inch, 1*inch, 1.5*inch, 1*inch, 2*inch, 2.3*inch, 0.5*inch, 1.1*inch, 0.9*inch])
+    # Anchos de las columnas ajustados
+    header_table = Table(header_data, colWidths=[0.3*inch, 0.8*inch, 1.3*inch, 1*inch, 1*inch, 1*inch, 0.5*inch, 0.9*inch, 0.9*inch])
     header_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4CAF50')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
@@ -737,7 +756,7 @@ def generar_reporte(cotizacion_id):
             valores_totales_paragraph
         ]
 
-        product_table = Table([data], colWidths=[0.3*inch, 1*inch, 1.5*inch, 1*inch, 2*inch, 2.3*inch, 0.5*inch, 1.1*inch, 0.9*inch])
+        product_table = Table([data], colWidths=[0.3*inch, 0.8*inch, 1.3*inch, 1*inch, 1*inch, 1*inch, 0.5*inch, 0.9*inch, 0.9*inch])
         product_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
@@ -857,7 +876,7 @@ def generar_reporte(cotizacion_id):
 
     def add_header_footer(canvas, doc):
         canvas.saveState()
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 10, height - encabezado_height - 10, width=encabezado_width, height=encabezado_height, mask='auto')
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 20, height - encabezado_height - 10, width=encabezado_width, height=encabezado_height, mask='auto')
         canvas.drawImage("static/images/footer_cotizacion.png", 20, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()
 

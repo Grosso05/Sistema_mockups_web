@@ -9,6 +9,18 @@
 
     <style>
 
+        button.custom-boton-ver-todos {
+            background-color: #4CAF50 !important; /* Usar !important para forzar la aplicación */
+        }
+        
+        button.custom-boton-agregar-temporal {
+            background-color: #FF9800 !important;
+        }
+        
+        button.custom-boton-agregar-seleccionados {
+            background-color: #2196F3 !important;
+        }
+        
         /* Estilo para cuando el checkbox está marcado */
         input[type="checkbox"]:checked {
             background-color: green;
@@ -202,7 +214,7 @@
 </head>
 <body>
 
-    <div class="sidebar">
+    <div class="sidebar collapsed">
         <div class="close-button" onclick="closeSidebar()">X</div> 
     
         <div class="logo">
@@ -758,9 +770,10 @@
                             <div id="seleccion-items-${nuevoNumeroProducto}"></div>
                             <div id="paginacion-items-${nuevoNumeroProducto}"></div>
                             <div class="botones-container">
-                            <button class="boton-ver-todos" onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Componentes</button>
-                            <button class="boton-agregar-temporal" id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Componente Temporal</button>
-                            <button class="boton-agregar-seleccionados" onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Componentes Seleccionados</button>
+                        <button class="boton-ver-todos custom-boton-ver-todos" onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Componentes</button>
+                        <button class="boton-agregar-temporal custom-boton-agregar-temporal" id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Componente Temporal</button>
+                        <button class="boton-agregar-seleccionados custom-boton-agregar-seleccionados" onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Componentes Seleccionados</button>
+
                             </div>
                         </div>
                     </div>
@@ -1426,12 +1439,13 @@ function agregarItemAlProducto(item, itemNumber) {
     
             // Crear las celdas de cantidad y total dinámicamente basadas en valoresCantidad
             const cantidadCeldas = valoresCantidad.map((valor, i) => 
-                `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${itemNumber})"></td>`
-            ).join('');
-            
-            const totalCeldas = valoresCantidad.map(() => 
-                `<td class="total">0</td>`
-            ).join('');
+            `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" 
+                   onchange="actualizarTotalProducto(${itemNumber})" style="width: 70px;"></td>`
+                ).join('');
+                
+                const totalCeldas = valoresCantidad.map(() => 
+                    `<td class="total" style="width: 80px;">0</td>`
+                ).join('');
     
             const nuevaFila = document.createElement('tr');
             nuevaFila.innerHTML = `

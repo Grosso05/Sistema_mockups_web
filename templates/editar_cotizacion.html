@@ -181,7 +181,7 @@
 </head>
 <body>
 
-    <div class="sidebar">
+    <div class="sidebar collapsed">
         <div class="close-button" onclick="closeSidebar()">X</div>
     
         <div class="logo">
@@ -457,6 +457,8 @@
     }
  */
 
+ const userRol = {{ user_rol }};
+
  function obtenerMayorProductoId() {
     const productos = document.querySelectorAll('.producto');
     let maxId = 0;
@@ -599,18 +601,23 @@ function agregarProducto(producto, items) {
     // Contenedor para el resumen de costos
     const resumenContainer = document.createElement('div');
     resumenContainer.className = 'resumen-costos';
-        resumenContainer.innerHTML = `
-        <h4>Resumen de Costos</h4>
-        <p id="costo-directo-${producto.producto_id}">Costo Directo: 0</p>
-        <p id="administracion-${producto.producto_id}">Administración: 0 <span id="porcentaje-administracion-${producto.producto_id}">(0%)</span></p>
-        <input type="number" id="administracionSeleccionada-${producto.producto_id}" placeholder="Administración (%)" step="0.01" style="width: 250px; height: 25px;">
-        <p id="imprevistos-${producto.producto_id}">Imprevistos: 0 <span id="porcentaje-imprevistos-${producto.producto_id}">(0%)</span></p>
-        <p id="utilidad-${producto.producto_id}">Utilidad: 0 <span id="porcentaje-utilidad-${producto.producto_id}">(0%)</span></p>
-        <input type="number" id="utilidadSeleccionada-${producto.producto_id}" placeholder="El porcentaje mínimo es: " onchange="actualizarTotalProducto(${producto.producto_id})" style="width: 250px; height: 25px;">
-        <p id="oferta-antes-iva-${producto.producto_id}">Oferta Antes De IVA: 0</p>
-        <p id="iva-${producto.producto_id}">IVA: 0</p>
-        <p style="color: #00b04f;" id="valor-oferta-${producto.producto_id}">Valor Oferta Impuestos Incluidos: 0</p>
-    `;
+    resumenContainer.innerHTML = `
+    <h4>Resumen de Costos</h4>
+    <p id="costo-directo-${producto.producto_id}">Costo Directo: 0</p>
+    <p id="administracion-${producto.producto_id}">Administración: 0 <span id="porcentaje-administracion-${producto.producto_id}">(0%)</span></p>
+    ${userRol === 1 || userRol === 3 ? `
+        <input type="number" id="administracionSeleccionada-${producto.producto_id}" 
+            placeholder="Administración (%)" step="0.01" 
+            style="width: 250px; height: 25px;"
+            oninput="actualizarCostoDirecto(${producto.producto_id}); actualizarTotalProducto(${producto.producto_id})">
+    ` : ''}
+    <p id="imprevistos-${producto.producto_id}">Imprevistos: 0 <span id="porcentaje-imprevistos-${producto.producto_id}">(0%)</span></p>
+    <p id="utilidad-${producto.producto_id}">Utilidad: 0 <span id="porcentaje-utilidad-${producto.producto_id}">(0%)</span></p>
+    <input type="number" id="utilidadSeleccionada-${producto.producto_id}" placeholder="El porcentaje mínimo es: " onchange="actualizarTotalProducto(${producto.producto_id})" style="width: 250px; height: 25px;">
+    <p id="oferta-antes-iva-${producto.producto_id}">Oferta Antes De IVA: 0</p>
+    <p id="iva-${producto.producto_id}">IVA: 0</p>
+    <p style="color: #00b04f;" id="valor-oferta-${producto.producto_id}">Valor Oferta Impuestos Incluidos: 0</p>
+`;
 
     // Contenedor para los botones de acción
     const accionesContainer = document.createElement('div');
@@ -633,8 +640,9 @@ function agregarProducto(producto, items) {
             <div id="seleccion-items-${producto.producto_id}"></div>
             <div id="paginacion-items-${producto.producto_id}"></div>
             <div class="botones-container">
-                <button onclick="agregarItemsSeleccionadosNuevos(${producto.producto_id})">Agregar Ítems Seleccionados</button>
-                <button onclick="verTodosItems(${producto.producto_id}, 1, '')">Ver Todos los Ítems</button>
+                <button class="boton-agregar-seleccionados custom-boton-agregar-seleccionados" onclick="agregarItemsSeleccionadosNuevos(${producto.producto_id})">Agregar Componentes Seleccionados</button>
+                <button class="boton-ver-todos custom-boton-ver-todos" onclick="verTodosItems(${producto.producto_id}, 1, '')">Ver Todos los Componentes</button>
+                <button class="boton-agregar-temporal custom-boton-agregar-temporal" id="toggleFormularioBtn-${producto.producto_id}" onclick="toggleFormulario(${producto.producto_id})">Agregar Componente Temporal</button>
             </div>
         </div>
     `;
@@ -748,18 +756,28 @@ function agregarProducto(producto, items) {
         let utilidadPorcentaje = parseFloat(inputUtilidad.value) || utilidadPorcentajeMinimo;
     
         // Obtener el input de administración
-        const inputAdministracion = document.getElementById(`administracionSeleccionada-${productoId}`);
         const administracionPorcentajeMinimo = parseFloat(nuevoProducto.dataset.administracion || 0); // Valor desde backend
     
-        if (!inputAdministracion) {
-            console.error(`Input de administración no encontrado para producto ${productoId}`);
-            return;
-        }
+        // Verificar si el usuario tiene permisos para modificar la administración
+        const userRol = {{ user_rol }};  // Asegúrate de que esta variable esté disponible aquí
     
-        // Si el campo está vacío o no es válido, usar el valor mínimo desde el backend
-        let administracionPorcentaje = inputAdministracion.value
-            ? parseFloat(inputAdministracion.value)
-            : administracionPorcentajeMinimo;
+        let administracionPorcentaje;
+        if (userRol === 1 || userRol === 3) {
+            const inputAdministracion = document.getElementById(`administracionSeleccionada-${productoId}`);
+    
+            if (!inputAdministracion) {
+                console.error(`Input de administración no encontrado para producto ${productoId}`);
+                return;
+            }
+    
+            // Si el campo está vacío o no es válido, usar el valor mínimo desde el backend
+            administracionPorcentaje = inputAdministracion.value
+                ? parseFloat(inputAdministracion.value)
+                : administracionPorcentajeMinimo;
+        } else {
+            // Si no tiene permisos, usar el porcentaje de la base de datos
+            administracionPorcentaje = administracionPorcentajeMinimo;
+        }
     
         // Verificar que los valores de administración sean válidos
         if (isNaN(administracionPorcentaje)) {
@@ -792,9 +810,7 @@ function agregarProducto(producto, items) {
         document.getElementById(`utilidad-${productoId}`).textContent = `Utilidad: ${utilidadValor.toFixed(3)} (${utilidadPorcentaje}%)`;
     
         document.getElementById(`oferta-antes-iva-${productoId}`).textContent = `Oferta Antes De IVA: ${ofertaAntesIVA.toFixed(3)}`;
-    
         document.getElementById(`iva-${productoId}`).textContent = `IVA: ${iva.toFixed(3)}`;
-    
         document.getElementById(`valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOfertaConImpuestos.toFixed(3)}`;
     }
 

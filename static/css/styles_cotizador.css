@@ -669,6 +669,19 @@ button {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
+.boton-ver-todos.custom-boton-ver-todos {
+    background: #2196F3 !important; /* Azul claro */
+}
+
+
+.boton-agregar-temporal.custom-boton-agregar-temporal {
+    background: #FF9800 !important; /* Naranja */
+}
+
+.boton-agregar-seleccionados.custom-boton-agregar-seleccionados {
+    background: #4CAF50 !important; /* Verde */
+}
+
 button:hover {
     background: linear-gradient(135deg, #007b33, #00b04f);
     transform: translateY(-3px);

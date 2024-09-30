@@ -163,7 +163,7 @@
             color: #fff;
             text-decoration: none;
             border-radius: 5px;
-            bottom: 12%;
+            bottom: 12%;}
           
         
           .navbar_logout a {
@@ -599,14 +599,14 @@ function agregarProducto(producto, items) {
     // Contenedor para el resumen de costos
     const resumenContainer = document.createElement('div');
     resumenContainer.className = 'resumen-costos';
-    resumenContainer.innerHTML = `
+        resumenContainer.innerHTML = `
         <h4>Resumen de Costos</h4>
         <p id="costo-directo-${producto.producto_id}">Costo Directo: 0</p>
-
         <p id="administracion-${producto.producto_id}">Administración: 0 <span id="porcentaje-administracion-${producto.producto_id}">(0%)</span></p>
+        <input type="number" id="administracionSeleccionada-${producto.producto_id}" placeholder="Administración (%)" step="0.01" style="width: 250px; height: 25px;">
         <p id="imprevistos-${producto.producto_id}">Imprevistos: 0 <span id="porcentaje-imprevistos-${producto.producto_id}">(0%)</span></p>
         <p id="utilidad-${producto.producto_id}">Utilidad: 0 <span id="porcentaje-utilidad-${producto.producto_id}">(0%)</span></p>
-                                <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: 10" onchange="actualizarTotalProducto(${nuevoNumeroProducto})" style="width: 250px; height: 25px;">
+        <input type="number" id="utilidadSeleccionada-${producto.producto_id}" placeholder="El porcentaje mínimo es: " onchange="actualizarTotalProducto(${producto.producto_id})" style="width: 250px; height: 25px;">
         <p id="oferta-antes-iva-${producto.producto_id}">Oferta Antes De IVA: 0</p>
         <p id="iva-${producto.producto_id}">IVA: 0</p>
         <p style="color: #00b04f;" id="valor-oferta-${producto.producto_id}">Valor Oferta Impuestos Incluidos: 0</p>
@@ -703,96 +703,124 @@ function agregarProducto(producto, items) {
             .catch(error => console.error('Error al cargar porcentajes:', error));
     }
     // Aquí puedes mantener la lógica para actualizar los costos, similar a la que ya tienes
-// Función para actualizar el costo directo y validar la utilidad
-// Función para actualizar el costo directo y validar la utilidad
-function actualizarCostoDirecto(productoId) {
-    const nuevoProducto = document.querySelector(`#producto-${productoId}`);
+    // Función para actualizar el costo directo y validar la utilidad
+    function actualizarCostoDirecto(productoId) {
+        const nuevoProducto = document.querySelector(`#producto-${productoId}`);
+        
+        if (!nuevoProducto) {
+            console.error(`Producto con ID ${productoId} no encontrado.`);
+            return;
+        }
     
-    // Obtener los ítems seleccionados
-    const itemsSeleccionados = nuevoProducto.querySelectorAll(`#itemsseleccionados-${productoId} .total-item`);
-    let costoDirecto = 0;
-
-    itemsSeleccionados.forEach(item => {
-        const total = parseFloat(item.textContent.replace('.', '').replace(',', '.'));
-        costoDirecto += total;
-    });
-
-    // Redondear el costo directo a 3 decimales
-    const costoDirectoRedondeado = Math.round(costoDirecto * 1000) / 1000;
-
-    // Aplicar formato colombiano
-    const formatoColombiano = costoDirectoRedondeado
-        .toFixed(3)
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-
-    // Actualizar el costo directo en el HTML
-    const costoDirectoElement = nuevoProducto.querySelector(`#costo-directo-${productoId}`);
-    costoDirectoElement.textContent = `Costo Directo: ${formatoColombiano}`;
-
-    // Obtener el input de utilidad
-    const inputUtilidad = document.getElementById(`utilidadSeleccionada-${productoId}`);
-    const utilidadPorcentajeMinimo = parseFloat(nuevoProducto.dataset.utilidad); // Min. desde backend
-
-    // Si el input está vacío, asignamos el valor mínimo desde el backend
-    if (!inputUtilidad.value) {
-        inputUtilidad.value = utilidadPorcentajeMinimo;
+        // Obtener los ítems seleccionados
+        const itemsSeleccionados = nuevoProducto.querySelectorAll(`#itemsseleccionados-${productoId} .total-item`);
+        let costoDirecto = 0;
+    
+        itemsSeleccionados.forEach(item => {
+            const total = parseFloat(item.textContent.replace('.', '').replace(',', '.'));
+            costoDirecto += total;
+        });
+    
+        // Redondear el costo directo a 3 decimales
+        const costoDirectoRedondeado = Math.round(costoDirecto * 1000) / 1000;
+    
+        // Aplicar formato colombiano
+        const formatoColombiano = costoDirectoRedondeado
+            .toFixed(3)
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    
+        // Actualizar el costo directo en el HTML
+        const costoDirectoElement = nuevoProducto.querySelector(`#costo-directo-${productoId}`);
+        costoDirectoElement.textContent = `Costo Directo: ${formatoColombiano}`;
+    
+        // Obtener el input de utilidad
+        const inputUtilidad = document.getElementById(`utilidadSeleccionada-${productoId}`);
+        if (!inputUtilidad) {
+            console.error(`Input de utilidad no encontrado para producto ${productoId}`);
+            return;
+        }
+    
+        const utilidadPorcentajeMinimo = parseFloat(nuevoProducto.dataset.utilidad) || 0; // Valor desde backend
+        if (!inputUtilidad.value) {
+            inputUtilidad.value = utilidadPorcentajeMinimo;
+        }
+    
+        let utilidadPorcentaje = parseFloat(inputUtilidad.value) || utilidadPorcentajeMinimo;
+    
+        // Obtener el input de administración
+        const inputAdministracion = document.getElementById(`administracionSeleccionada-${productoId}`);
+        const administracionPorcentajeMinimo = parseFloat(nuevoProducto.dataset.administracion || 0); // Valor desde backend
+    
+        if (!inputAdministracion) {
+            console.error(`Input de administración no encontrado para producto ${productoId}`);
+            return;
+        }
+    
+        // Si el campo está vacío o no es válido, usar el valor mínimo desde el backend
+        let administracionPorcentaje = inputAdministracion.value
+            ? parseFloat(inputAdministracion.value)
+            : administracionPorcentajeMinimo;
+    
+        // Verificar que los valores de administración sean válidos
+        if (isNaN(administracionPorcentaje)) {
+            console.error(`Administración inválida para producto ${productoId}, usando valor mínimo (${administracionPorcentajeMinimo})`);
+            administracionPorcentaje = administracionPorcentajeMinimo;
+        }
+    
+        console.log(`Administración: ${administracionPorcentaje} (Valor ingresado o mínimo: ${administracionPorcentajeMinimo})`);
+    
+        // Obtener los porcentajes de imprevistos
+        const imprevistosPorcentaje = parseFloat(nuevoProducto.dataset.imprevistos || 0);
+    
+        // Calcular los valores
+        const administracionValor = (costoDirecto * administracionPorcentaje) / 100;
+        const imprevistosValor = (costoDirecto * imprevistosPorcentaje) / 100;
+        const utilidadValor = (costoDirecto * utilidadPorcentaje) / 100;
+    
+        // Calcular la oferta antes de IVA
+        const ofertaAntesIVA = costoDirecto + administracionValor + imprevistosValor + utilidadValor;
+    
+        // Calcular el IVA (19%)
+        const iva = ofertaAntesIVA * 0.19;
+    
+        // Calcular el valor de la oferta con impuestos incluidos
+        const valorOfertaConImpuestos = ofertaAntesIVA + iva;
+    
+        // Actualizar los valores en el DOM
+        document.getElementById(`administracion-${productoId}`).textContent = `Administración: ${administracionValor.toFixed(3)} (${administracionPorcentaje}%)`;
+        document.getElementById(`imprevistos-${productoId}`).textContent = `Imprevistos: ${imprevistosValor.toFixed(3)} (${imprevistosPorcentaje}%)`;
+        document.getElementById(`utilidad-${productoId}`).textContent = `Utilidad: ${utilidadValor.toFixed(3)} (${utilidadPorcentaje}%)`;
+    
+        document.getElementById(`oferta-antes-iva-${productoId}`).textContent = `Oferta Antes De IVA: ${ofertaAntesIVA.toFixed(3)}`;
+    
+        document.getElementById(`iva-${productoId}`).textContent = `IVA: ${iva.toFixed(3)}`;
+    
+        document.getElementById(`valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOfertaConImpuestos.toFixed(3)}`;
     }
 
-    let utilidadPorcentaje = parseFloat(inputUtilidad.value);
+    // Evento para cuando el usuario cambie el valor de la utilidad
+    function validarUtilidad(input, productoId) {
+        const nuevoProducto = document.querySelector(`#producto-${productoId}`);
+        const utilidadPorcentajeMinimo = parseFloat(nuevoProducto.dataset.utilidad); // Min. desde backend
+        let utilidadPorcentaje = parseFloat(input.value);
 
-    // Obtener los porcentajes de administración e imprevistos
-    const administracionPorcentaje = parseFloat(nuevoProducto.dataset.administracion || 0);
-    const imprevistosPorcentaje = parseFloat(nuevoProducto.dataset.imprevistos || 0);
+        // Si el valor ingresado es menor al mínimo, mostrar alerta y corregir el valor
+        if (utilidadPorcentaje < utilidadPorcentajeMinimo) {
+            input.value = utilidadPorcentajeMinimo;
+            alert(`El porcentaje de utilidad no puede ser menor al ${utilidadPorcentajeMinimo}%`);
+        }
 
-    // Calcular los valores
-    const administracionValor = (costoDirecto * administracionPorcentaje) / 100;
-    const imprevistosValor = (costoDirecto * imprevistosPorcentaje) / 100;
-    const utilidadValor = (costoDirecto * utilidadPorcentaje) / 100;
-
-    // Calcular la oferta antes de IVA
-    const ofertaAntesIVA = costoDirecto + administracionValor + imprevistosValor + utilidadValor;
-
-    // Calcular el IVA (19%)
-    const iva = ofertaAntesIVA * 0.19;
-
-    // Calcular el valor de la oferta con impuestos incluidos
-    const valorOfertaConImpuestos = ofertaAntesIVA + iva;
-
-    // Actualizar los valores en el DOM
-    document.getElementById(`administracion-${productoId}`).textContent = `Administración: ${administracionValor.toFixed(3)} (${administracionPorcentaje}%)`;
-    document.getElementById(`imprevistos-${productoId}`).textContent = `Imprevistos: ${imprevistosValor.toFixed(3)} (${imprevistosPorcentaje}%)`;
-    document.getElementById(`utilidad-${productoId}`).textContent = `Utilidad: ${utilidadValor.toFixed(3)} (${utilidadPorcentaje}%)`;
-
-    document.getElementById(`oferta-antes-iva-${productoId}`).textContent = `Oferta Antes De IVA: ${ofertaAntesIVA.toFixed(3)}`;
-
-    document.getElementById(`iva-${productoId}`).textContent = `IVA: ${iva.toFixed(3)}`;
-
-    document.getElementById(`valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOfertaConImpuestos.toFixed(3)}`;
-}
-
-// Evento para cuando el usuario cambie el valor de la utilidad
-function validarUtilidad(input, productoId) {
-    const nuevoProducto = document.querySelector(`#producto-${productoId}`);
-    const utilidadPorcentajeMinimo = parseFloat(nuevoProducto.dataset.utilidad); // Min. desde backend
-    let utilidadPorcentaje = parseFloat(input.value);
-
-    // Si el valor ingresado es menor al mínimo, mostrar alerta y corregir el valor
-    if (utilidadPorcentaje < utilidadPorcentajeMinimo) {
-        input.value = utilidadPorcentajeMinimo;
-        alert(`El porcentaje de utilidad no puede ser menor al ${utilidadPorcentajeMinimo}%`);
+        // Actualizar el costo directo con el nuevo valor
+        actualizarCostoDirecto(productoId);
     }
 
-    // Actualizar el costo directo con el nuevo valor
-    actualizarCostoDirecto(productoId);
-}
-
-// Agrega este evento en tu input para disparar la validación
-document.querySelectorAll('input[id^="utilidadSeleccionada"]').forEach(input => {
-    input.addEventListener('change', function() {
-        const productoId = this.id.split('-')[1];
-        validarUtilidad(this, productoId);
+    // Agrega este evento en tu input para disparar la validación
+    document.querySelectorAll('input[id^="utilidadSeleccionada"]').forEach(input => {
+        input.addEventListener('change', function() {
+            const productoId = this.id.split('-')[1];
+            validarUtilidad(this, productoId);
+        });
     });
-});
 
     // Actualizar el costo directo al cambiar la cantidad o eliminar un ítem
     const cantidadInputs = nuevoProducto.querySelectorAll('.cantidad-item');

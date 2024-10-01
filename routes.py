@@ -1222,3 +1222,15 @@ def generar_requisicion(cotizacion_id):
     # Enviar el PDF como respuesta
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"Requisicion_{cotizacion.negociacion}.pdf", mimetype='application/pdf')
+
+@routes_blueprint.route('/verificar-negociacion')
+def verificar_negociacion():
+    negociacion = request.args.get('negociacion')
+    
+    # Busca si existe una cotización con esa negociación
+    cotizacion = Cotizacion.query.filter_by(negociacion=negociacion).first()
+    
+    if cotizacion:
+        return jsonify({"exists": True, "negociacion": cotizacion.negociacion})
+    else:
+        return jsonify({"exists": False})

@@ -2499,17 +2499,54 @@ function agregarItemAlProducto(item, itemNumber) {
             const productoId = productoDiv.id.split('-')[1];
             if (productoIdsCapturados.has(productoId)) return;
             productoIdsCapturados.add(productoId);
-
+        
             const productoSeleccionadoInput = productoDiv.querySelector('input[name="producto_seleccionado_id"]');
             const productoSeleccionadoId = productoSeleccionadoInput ? productoSeleccionadoInput.value : null;
-
+        
             const descripcion = productoDiv.querySelector('h4').innerText;
-            const medidasText = productoDiv.querySelector('h4:nth-of-type(2)').innerText;
-            const medidasMatch = medidasText.match(/Alto \(Cm\): (\d+) \|\| Ancho \(Cm\): (\d+) \|\| Fondo \(Cm\): (\d+)/);
-            const alto = medidasMatch ? parseFloat(medidasMatch[1]) : null;
-            const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
-            const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
-
+        
+            // Buscar el h4 que contiene las dimensiones
+            let medidasText = null;
+            productoDiv.querySelectorAll('h4').forEach(function(h4) {
+                if (h4.innerText.includes('Dimensiones:')) {
+                    medidasText = h4.innerText;
+                }
+            });
+        
+            let alto = null, ancho = null, fondo = null;
+            if (medidasText) {
+                const medidasMatch = medidasText.match(/Alto: (\d+)cm, Ancho: (\d+)cm, Fondo: (\d+)cm/);
+                if (medidasMatch) {
+                    alto = parseFloat(medidasMatch[1]);
+                    ancho = parseFloat(medidasMatch[2]);
+                    fondo = parseFloat(medidasMatch[3]);
+                } else {
+                    console.error('El formato de las dimensiones no coincide con el patrón esperado.');
+                }
+            }
+        
+            // Asegúrate de inicializar la variable items antes de usarla
+            const items = [];  // Inicializa aquí la variable
+        
+            // Capturar items del producto
+            document.querySelectorAll('tbody tr').forEach(function(itemRow) {
+                const cantidadInput = itemRow.querySelector('input[type="number"]');
+                if (cantidadInput) {
+                    const itemId = itemRow.querySelector('td:nth-child(1)').innerText.trim();
+                    const itemCantidad = cantidadInput.value;
+        
+                    // Verificar que el <td> con clase "total" existe
+                    const totalCell = itemRow.querySelector('td.total');
+                    const itemTotal = totalCell ? parseFloat(totalCell.innerText.trim().replace(/\./g, '').replace(',', '.')) : 0;
+        
+                    items.push({
+                        itemId: parseInt(itemId),
+                        itemCantidad: parseInt(itemCantidad),
+                        itemTotal: itemTotal
+                    });
+                }
+            });
+        
             const cantidadesSeleccionadas = [];
             productoDiv.querySelectorAll('h4').forEach(function(cantidadH4) {
                 const cantidadText = cantidadH4.innerText;
@@ -2518,26 +2555,7 @@ function agregarItemAlProducto(item, itemNumber) {
                     cantidadesSeleccionadas.push(parseInt(cantidadMatch[1]));
                 }
             });
-
-            const items = [];
-            document.querySelectorAll('tbody tr').forEach(function(itemRow) {
-                const cantidadInput = itemRow.querySelector('input[type="number"]');
-                if (cantidadInput) {
-                    const itemId = itemRow.querySelector('td:nth-child(1)').innerText.trim();
-                    const itemCantidad = cantidadInput.value;
-            
-                    // Verificar que el <td> con clase "total" existe
-                    const totalCell = itemRow.querySelector('td.total');
-                    const itemTotal = totalCell ? parseFloat(totalCell.innerText.trim().replace(/\./g, '').replace(',', '.')) : 0;
-            
-                    items.push({
-                        itemId: parseInt(itemId),
-                        itemCantidad: parseInt(itemCantidad),
-                        itemTotal: itemTotal
-                    });
-                }
-            });
-
+        
             const resúmenesCostos = [];
             productoDiv.querySelectorAll('.resumen-costos-individual').forEach(function(resumenDiv, index) {
                 const costoDirectoElement = resumenDiv.querySelector(`#costo-directo-${productoId}-${index}`);
@@ -2547,10 +2565,10 @@ function agregarItemAlProducto(item, itemNumber) {
                 const ofertaAntesIvaElement = resumenDiv.querySelector(`#oferta-antes-iva-${productoId}-${index}`);
                 const ivaElement = resumenDiv.querySelector(`#iva-${productoId}-${index}`);
                 const valorOfertaElement = resumenDiv.querySelector(`#valor-oferta-${productoId}-${index}`);
-
+        
                 if (costoDirectoElement && administracionElement && imprevistosElement && utilidadElement &&
                     ofertaAntesIvaElement && ivaElement && valorOfertaElement) {
-
+        
                     const costoDirecto = parseFloat(costoDirectoElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
                     const administracion = parseFloat(administracionElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
                     const imprevistos = parseFloat(imprevistosElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
@@ -2558,7 +2576,7 @@ function agregarItemAlProducto(item, itemNumber) {
                     const ofertaAntesIva = parseFloat(ofertaAntesIvaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
                     const iva = parseFloat(ivaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
                     const valorOferta = parseFloat(valorOfertaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-
+        
                     resúmenesCostos.push({
                         costoDirecto: costoDirecto,
                         administracion: administracion,
@@ -2572,7 +2590,7 @@ function agregarItemAlProducto(item, itemNumber) {
                     console.error(`Algunos elementos de resumen no se encontraron para el producto ${productoId} y resumen ${index}.`);
                 }
             });
-
+        
             productos.push({
                 productoId: parseInt(productoId),
                 productoSeleccionadoId: parseInt(productoSeleccionadoId),
@@ -2581,7 +2599,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 ancho: ancho,
                 fondo: fondo,
                 cantidadesSeleccionadas: cantidadesSeleccionadas,
-                items: items,
+                items: items,  // Aquí ahora está definida correctamente
                 resúmenesCostos: resúmenesCostos
             });
         });

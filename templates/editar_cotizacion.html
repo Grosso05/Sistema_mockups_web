@@ -530,7 +530,7 @@ function mostrarItems(items) {
             
                 html += `
                     <tr>
-                        <td>${item.id}</td>
+                        <td>${item.item_id}</td>
                         <td>${item.grupo}</td>
                         <td>${item.descripcion}</td>
                         <td>${item.unidad}</td>
@@ -566,10 +566,12 @@ function agregarProducto(producto, items) {
 
     // Crear HTML dinámico para el producto
     nuevoProducto.innerHTML = `
-        <h3 contenteditable="true" style="color: #00b04f;">Producto ${producto.producto_id}: ${nombreProducto}</h3> 
-        <h4 contenteditable="true">Descripción: ${producto.descripcion}</h4>
-        <h4 contenteditable="true">Dimensiones: Alto: ${producto.alto}cm, Ancho: ${producto.ancho}cm, Fondo: ${producto.fondo}cm</h4>
-    `;
+    <h3 contenteditable="true" style="color: #00b04f;" data-producto-seleccionado-id="${producto.producto_seleccionado_id}">
+        Producto ${producto.producto_id}: ${nombreProducto}
+    </h3>
+    <h4 contenteditable="true">Descripción: ${producto.descripcion}</h4>
+    <h4 contenteditable="true">Dimensiones: Alto: ${producto.alto}cm, Ancho: ${producto.ancho}cm, Fondo: ${producto.fondo}cm</h4>
+`;
 
     // Contenedor para los ítems seleccionados
     const itemsContainer = document.createElement('div');
@@ -2500,9 +2502,9 @@ function agregarItemAlProducto(item, itemNumber) {
             if (productoIdsCapturados.has(productoId)) return;
             productoIdsCapturados.add(productoId);
         
-            const productoSeleccionadoInput = productoDiv.querySelector('input[name="producto_seleccionado_id"]');
-            const productoSeleccionadoId = productoSeleccionadoInput ? productoSeleccionadoInput.value : null;
-        
+            // Capturar el producto_seleccionado_id desde el atributo data-producto-seleccionado-id del h3
+            const productoSeleccionadoId = productoDiv.querySelector('h3').getAttribute('data-producto-seleccionado-id');
+            
             const descripcion = productoDiv.querySelector('h4').innerText;
         
             // Buscar el h4 que contiene las dimensiones
@@ -2525,8 +2527,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 }
             }
         
-            // Asegúrate de inicializar la variable items antes de usarla
-            const items = [];  // Inicializa aquí la variable
+            const items = [];
         
             // Capturar items del producto
             document.querySelectorAll('tbody tr').forEach(function(itemRow) {
@@ -2534,15 +2535,23 @@ function agregarItemAlProducto(item, itemNumber) {
                 if (cantidadInput) {
                     const itemId = itemRow.querySelector('td:nth-child(1)').innerText.trim();
                     const itemCantidad = cantidadInput.value;
-        
-                    // Verificar que el <td> con clase "total" existe
-                    const totalCell = itemRow.querySelector('td.total');
-                    const itemTotal = totalCell ? parseFloat(totalCell.innerText.trim().replace(/\./g, '').replace(',', '.')) : 0;
-        
+            
+                    // Capturar el total_item desde la celda con clase "total-item"
+                    const totalItemCell = itemRow.querySelector('.total-item');
+                    
+                    // Capturar el valor del total_item
+                    let totalItemText = totalItemCell ? totalItemCell.innerText.trim() : '0';
+                    
+                    // Eliminar todos los puntos (separadores de miles) y reemplazar la coma decimal por un punto
+                    totalItemText = totalItemText.replace(/\./g, '').replace(',', '.');
+                    
+                    // Convertir el valor final en número flotante
+                    const itemTotal = parseFloat(totalItemText);
+            
                     items.push({
                         itemId: parseInt(itemId),
                         itemCantidad: parseInt(itemCantidad),
-                        itemTotal: itemTotal
+                        itemTotal: itemTotal  // Ahora debería almacenar correctamente los valores
                     });
                 }
             });
@@ -2593,16 +2602,17 @@ function agregarItemAlProducto(item, itemNumber) {
         
             productos.push({
                 productoId: parseInt(productoId),
-                productoSeleccionadoId: parseInt(productoSeleccionadoId),
+                productoSeleccionadoId: parseInt(productoSeleccionadoId),  // Ahora capturando el ID correctamente
                 descripcion: descripcion.trim(),
                 alto: alto,
                 ancho: ancho,
                 fondo: fondo,
                 cantidadesSeleccionadas: cantidadesSeleccionadas,
-                items: items,  // Aquí ahora está definida correctamente
+                items: items,
                 resúmenesCostos: resúmenesCostos
             });
         });
+        
     
                 const cotizacionData = {
                     fechaCotizacion: fechaCotizacion,

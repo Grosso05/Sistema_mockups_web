@@ -637,7 +637,7 @@ def generar_reporte(cotizacion_id):
     # Título de negociación a la derecha
     title_background = colors.HexColor("#4CAF50")
     title = Table(
-        [[Paragraph(f"Negociación: {cotizacion.negociacion}", heading_style)]],
+        [[Paragraph(f"Cotización: {cotizacion.negociacion}", heading_style)]],
         style=[
             ('BACKGROUND', (0, 0), (-1, -1), title_background),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
@@ -660,7 +660,6 @@ def generar_reporte(cotizacion_id):
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
-        # Estilos cruzados
         ('BACKGROUND', (0, 0), (0, 0), colors.HexColor("#4CBE50")),  # Color para "Fecha"
         ('BACKGROUND', (2, 0), (2, 0), colors.HexColor("#4CBE50")),  # Color para "Cliente"
         ('BACKGROUND', (0, 1), (0, 1), colors.HexColor("#4CAF50")),  # Color para "Proyecto"

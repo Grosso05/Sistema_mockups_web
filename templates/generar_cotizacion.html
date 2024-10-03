@@ -647,18 +647,6 @@
     
 
     
-    document.getElementById('btnEliminarCantidad').addEventListener('click', function() {
-        const cantidadContainer = document.getElementById('cantidadUnidades');
-        const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
-        
-        // Eliminar el último input si hay más de uno
-        if (cantidadInputs.length > 1) {
-            cantidadContainer.removeChild(cantidadInputs[cantidadInputs.length - 1]);
-        }
-        
-        // Contar los inputs
-        console.log('Número de inputs de cantidad:', cantidadInputs.length - 1);
-    });
 
     let itemNumber = 0;
     let numerosEliminados = [];
@@ -686,7 +674,12 @@
         
         const alto = altoInput.value.trim();
         const ancho = anchoInput.value.trim();
-        const fondo = fondoInput.value.trim();
+        let fondo = fondoInput.value.trim();
+    
+        // Verificar si fondo es null o está vacío
+        if (fondo === null || fondo === "") {
+            fondo = "0";
+        }
         
         const cantidad = parseInt(cantidadInput.value.trim(), 10);
         
@@ -1628,23 +1621,28 @@ function agregarItemAlProducto(item, itemNumber) {
             if (productoElement) {
                 const administracionPorcentaje = parseFloat(productoElement.dataset.administracion);
                 const imprevistosPorcentaje = parseFloat(productoElement.dataset.imprevistos);
-                const utilidadPorcentaje = nuevoValorUtilidad !== null ? nuevoValorUtilidad : parseFloat(productoElement.dataset.utilidad);
-            
+                
+                // Si `nuevoValorUtilidad` es null, sumamos 15 unidades al valor base
+                const utilidadPorcentajeBase = parseFloat(productoElement.dataset.utilidad);
+                const utilidadPorcentaje = nuevoValorUtilidad !== null 
+                    ? nuevoValorUtilidad 
+                    : utilidadPorcentajeBase + 15; // Sumamos 15 unidades
+        
                 const administracion = calcularPorcentaje(costoDirecto, administracionPorcentaje);
                 const imprevistos = calcularPorcentaje(costoDirecto, imprevistosPorcentaje);
                 const utilidad = calcularPorcentaje(costoDirecto, utilidadPorcentaje);
-            
+        
                 const ofertaAntesIva = costoDirecto + administracion + imprevistos + utilidad;
                 const iva = calcularPorcentaje(ofertaAntesIva, 19);
                 const valorOferta = ofertaAntesIva + iva;
                 const costoUnitario = costoDirecto / cantidadUnidades;
-            
+        
                 // Actualiza el título del resumen de costos
                 const resumenTitulo = document.getElementById(`titulo-resumen-${itemNumber}-${index}`);
                 if (resumenTitulo) {
                     resumenTitulo.textContent = `Resumen de costos (${cantidadUnidades})`;
-                } 
-            
+                }
+        
                 document.getElementById(`costo-directo-${itemNumber}-${index}`).textContent = `Costo Directo: ${formatearNumero(costoDirecto)}`;
                 document.getElementById(`costo-unitario-${itemNumber}-${index}`).textContent = `Costo Directo Unitario: ${formatearNumero(costoUnitario)}`;
                 document.getElementById(`administracion-${itemNumber}-${index}`).innerHTML = `Administración: ${formatearNumero(administracion)} <span id="porcentaje-administracion-${itemNumber}-${index}">(${administracionPorcentaje}%)</span>`;
@@ -1657,6 +1655,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 console.error('Error: Elemento del producto no encontrado');
             }
         }
+        
         
         
         function formatearNumero(numero) {

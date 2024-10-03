@@ -518,16 +518,38 @@ function mostrarItems(items) {
         if (itemsDelTipo.length > 0) {
             html += `<tr><td colspan="8" class="tipo-header"><strong>${tipo}</strong></td></tr>`;
             itemsDelTipo.forEach(item => {
-                const precioUnitario = parseFloat(item.precio_unitario.replace(',', '.'));
-                const cantidad = parseFloat(item.cantidad);
-                const total = precioUnitario * cantidad;
-            
-                // Formatear el total al renderizar inicialmente
-                const totalFormateado = total.toLocaleString('de-DE', {
-                    minimumFractionDigits: 3,
-                    maximumFractionDigits: 3,
-                });
-            
+                // Convertir precio unitario de coma a punto
+                const precioUnitario = parseFloat(item.precio_unitario.replace(',', '.')); 
+                const cantidad = parseFloat(item.cantidad);  // Asegurarse de que es número
+
+                // Calcular total
+                const total = precioUnitario * cantidad;  
+
+                // Total en formato que puedes guardar en la base de datos
+                const totalParaBD = total.toFixed(3).replace(',', '.'); // Asegúrate de usar punto
+                /*
+                // Imprimir para depuración
+                console.log(`Total para BD: ${totalParaBD}`);
+
+                
+
+                // Imprimir valores para depuración
+                console.log(`Item ID: ${item.item_id}`);
+                console.log(`Precio Unitario (formato original): ${item.precio_unitario}`);
+                console.log(`Precio Unitario (convertido): ${precioUnitario}`);
+                console.log(`Cantidad: ${cantidad}`);
+                console.log(`Total sin formatear: ${total}`);
+*/
+                // Formatear el total con punto decimal usando configuración es-CO
+    // Formatear el total con punto decimal usando configuración en-US
+    const totalFormateado = total.toLocaleString('en-US', {
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 3,
+    });
+
+                // Imprimir el total formateado para verificación
+                console.log(`Total formateado: ${totalFormateado}`);
+
                 html += `
                     <tr>
                         <td>${item.item_id}</td>
@@ -737,8 +759,8 @@ function agregarProducto(producto, items) {
     
         // Aplicar formato colombiano
         const formatoColombiano = costoDirectoRedondeado
-            .toFixed(3)
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        .toFixed(3)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     
         // Actualizar el costo directo en el HTML
         const costoDirectoElement = nuevoProducto.querySelector(`#costo-directo-${productoId}`);
@@ -850,7 +872,7 @@ function agregarProducto(producto, items) {
             const total = precioUnitario * cantidad;
 
             // Usar toLocaleString para formatear el total con separadores de miles y decimales
-            this.closest('tr').querySelector('.total-item').textContent = total.toLocaleString('de-DE', {
+            this.closest('tr').querySelector('.total-item').textContent = total.toLocaleString('en-US', {
                 minimumFractionDigits: 3,
                 maximumFractionDigits: 3,
             });
@@ -868,16 +890,23 @@ function agregarProducto(producto, items) {
             const descripcionInput = document.getElementById('descripcion');
             const altoInput = document.querySelector('.alto-input');
             const anchoInput = document.querySelector('.ancho-input');
-            const fondoInput = document.querySelector('.fondo-input');
+            const fondoInput = document.querySelector('.fondo-input');        
             const productoSelect = document.getElementById('seleccionarProducto');
-            const cantidadInput = document.querySelector('.cantidad-input');       
+            const cantidadInput = document.querySelector('.cantidad-input');
+            
             const descripcion = descripcionInput.value.trim();
-            const productoId = productoSelect.value;  
+            const productoId = productoSelect.value;  // ID del producto seleccionado desde el select
             const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
-        
+            
             const alto = altoInput.value.trim();
             const ancho = anchoInput.value.trim();
-            const fondo = fondoInput.value.trim();
+            let fondo = fondoInput.value.trim();
+        
+            // Verificar si fondo es null o está vacío
+            if (fondo === null || fondo === "") {
+                fondo = "0";
+            }
+
             const cantidad = parseInt(cantidadInput.value.trim(), 10);
         
             if (descripcion === "" || productoId === "" || cantidad <= 0) {
@@ -1362,18 +1391,7 @@ function agregarProducto(producto, items) {
     
 
     
-    document.getElementById('btnEliminarCantidad').addEventListener('click', function() {
-        const cantidadContainer = document.getElementById('cantidadUnidades');
-        const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
-        
-        // Eliminar el último input si hay más de uno
-        if (cantidadInputs.length > 1) {
-            cantidadContainer.removeChild(cantidadInputs[cantidadInputs.length - 1]);
-        }
-        
-        // Contar los inputs
-        console.log('Número de inputs de cantidad:', cantidadInputs.length - 1);
-    });
+
 
     let itemNumber = 0;
     let numerosEliminados = [];
@@ -2177,19 +2195,23 @@ function agregarItemAlProducto(item, itemNumber) {
         const itemsSeleccionados = nuevoProducto.querySelectorAll(`#itemsseleccionados-${productoId} .total-item`);
         let costoDirecto = 0;
     
+        // Iterar sobre los ítems y sumarlos
         itemsSeleccionados.forEach(item => {
             const total = parseFloat(item.textContent.replace('.', '').replace(',', '.'));
+            console.log(`Valor de item antes de sumar: ${total}`);
             costoDirecto += total;
+            console.log(`Costo Directo acumulado: ${costoDirecto}`);
         });
     
         // Redondear el costo directo a 3 decimales
         const costoDirectoRedondeado = Math.round(costoDirecto * 1000) / 1000;
+        console.log(`Costo Directo redondeado: ${costoDirectoRedondeado}`);
     
-        // Aplicar formato colombiano
+        // Aplicar formato colombiano sin decimales si no son necesarios
         const formatoColombiano = costoDirectoRedondeado
-            .toFixed(3)
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    
+            .toLocaleString("de-DE", { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+        console.log(`Costo Directo formateado: ${formatoColombiano}`);
+        
         // Actualizar el costo directo en el HTML
         const costoDirectoElement = nuevoProducto.querySelector(`#costo-directo-${productoId}`);
         costoDirectoElement.textContent = `Costo Directo: ${formatoColombiano}`;
@@ -2204,24 +2226,30 @@ function agregarItemAlProducto(item, itemNumber) {
         }
     
         let utilidadPorcentaje = parseFloat(inputUtilidad.value);
-    
+        console.log(`Utilidad Porcentaje: ${utilidadPorcentaje}`);
+        
         // Obtener los porcentajes de administración e imprevistos
         const administracionPorcentaje = parseFloat(nuevoProducto.dataset.administracion || 0);
         const imprevistosPorcentaje = parseFloat(nuevoProducto.dataset.imprevistos || 0);
+        console.log(`Administración Porcentaje: ${administracionPorcentaje}, Imprevistos Porcentaje: ${imprevistosPorcentaje}`);
     
         // Calcular los valores
         const administracionValor = (costoDirecto * administracionPorcentaje) / 100;
         const imprevistosValor = (costoDirecto * imprevistosPorcentaje) / 100;
         const utilidadValor = (costoDirecto * utilidadPorcentaje) / 100;
+        console.log(`Administración Valor: ${administracionValor}, Imprevistos Valor: ${imprevistosValor}, Utilidad Valor: ${utilidadValor}`);
     
         // Calcular la oferta antes de IVA
         const ofertaAntesIVA = costoDirecto + administracionValor + imprevistosValor + utilidadValor;
+        console.log(`Oferta Antes de IVA: ${ofertaAntesIVA}`);
     
         // Calcular el IVA (19%)
         const iva = ofertaAntesIVA * 0.19;
+        console.log(`IVA: ${iva}`);
     
         // Calcular el valor de la oferta con impuestos incluidos
         const valorOfertaConImpuestos = ofertaAntesIVA + iva;
+        console.log(`Valor Oferta con Impuestos: ${valorOfertaConImpuestos}`);
     
         // Actualizar los valores en el DOM
         document.getElementById(`administracion-${productoId}`).textContent = `Administración: ${administracionValor.toFixed(3)} (${administracionPorcentaje}%)`;
@@ -2234,6 +2262,7 @@ function agregarItemAlProducto(item, itemNumber) {
     
         document.getElementById(`valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOfertaConImpuestos.toFixed(3)}`;
     }
+    
 
     // Llamada para actualizar todos los resúmenes de costos cuando se modifiquen los items
     function actualizarResumenDeCostos(productoId) {
@@ -2260,6 +2289,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 resumenCostos.querySelector(`#oferta-antes-iva-${productoId}`).textContent = `Oferta Antes De IVA: ${ofertaAntesIVA}`;
                 resumenCostos.querySelector(`#iva-${productoId}`).textContent = `IVA: ${iva}`;
                 resumenCostos.querySelector(`#valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOferta}`;
+                
             }
         }
     }
@@ -2275,23 +2305,28 @@ function agregarItemAlProducto(item, itemNumber) {
             if (productoElement) {
                 const administracionPorcentaje = parseFloat(productoElement.dataset.administracion);
                 const imprevistosPorcentaje = parseFloat(productoElement.dataset.imprevistos);
-                const utilidadPorcentaje = nuevoValorUtilidad !== null ? nuevoValorUtilidad : parseFloat(productoElement.dataset.utilidad);
-            
+                
+                // Si `nuevoValorUtilidad` es null, sumamos 15 unidades al valor base
+                const utilidadPorcentajeBase = parseFloat(productoElement.dataset.utilidad);
+                const utilidadPorcentaje = nuevoValorUtilidad !== null 
+                    ? nuevoValorUtilidad 
+                    : utilidadPorcentajeBase + 15; // Sumamos 15 unidades
+        
                 const administracion = calcularPorcentaje(costoDirecto, administracionPorcentaje);
                 const imprevistos = calcularPorcentaje(costoDirecto, imprevistosPorcentaje);
                 const utilidad = calcularPorcentaje(costoDirecto, utilidadPorcentaje);
-            
+        
                 const ofertaAntesIva = costoDirecto + administracion + imprevistos + utilidad;
                 const iva = calcularPorcentaje(ofertaAntesIva, 19);
                 const valorOferta = ofertaAntesIva + iva;
                 const costoUnitario = costoDirecto / cantidadUnidades;
-            
+        
                 // Actualiza el título del resumen de costos
                 const resumenTitulo = document.getElementById(`titulo-resumen-${itemNumber}-${index}`);
                 if (resumenTitulo) {
                     resumenTitulo.textContent = `Resumen de costos (${cantidadUnidades})`;
-                } 
-            
+                }
+        
                 document.getElementById(`costo-directo-${itemNumber}-${index}`).textContent = `Costo Directo: ${formatearNumero(costoDirecto)}`;
                 document.getElementById(`costo-unitario-${itemNumber}-${index}`).textContent = `Costo Directo Unitario: ${formatearNumero(costoUnitario)}`;
                 document.getElementById(`administracion-${itemNumber}-${index}`).innerHTML = `Administración: ${formatearNumero(administracion)} <span id="porcentaje-administracion-${itemNumber}-${index}">(${administracionPorcentaje}%)</span>`;
@@ -2307,9 +2342,15 @@ function agregarItemAlProducto(item, itemNumber) {
         
         
         function formatearNumero(numero) {
-            return numero.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            // Convierte el número a un string con exactamente 3 decimales
+            const numeroFormateado = parseFloat(numero).toFixed(3);
+        
+            // Añadir puntos como separador de miles de forma manual
+            const partes = numeroFormateado.split('.'); // Separa la parte entera y decimal
+            partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Agrega puntos a los miles
+        
+            return partes.join('.'); // Une la parte entera y decimal
         }
-
 
         
     function mostrarNotificacion(mensaje, tipo) {

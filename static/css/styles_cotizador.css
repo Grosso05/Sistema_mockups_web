@@ -12,10 +12,25 @@ body {
     display: none;
 }
 
-/* Estilos para el input de cantidad */
-.cantidad-input {
-    width: 60px; /* Ajusta el tamaño según sea necesario */
+#cantidadUnidades {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Limita a 3 columnas por fila */
+    gap: 10px; /* Espacio entre los inputs */
 }
+
+/* Haz que el primer input sea más pequeño */
+.cantidad-input:first-child {
+    grid-column: 1; /* Coloca en la primera columna */
+    grid-row: 1; /* Coloca en la primera fila */
+    width: 70px; /* Ajusta el ancho del primer input */
+    height: 40px;
+}
+
+/* Nuevos inputs que se agregarán */
+.cantidad-input:not(:first-child) {
+    width: 100%; /* Los otros inputs ocuparán el 100% del espacio disponible en sus columnas */
+}
+
 
 /* Estilos para la tabla de productos */
 .tipo-header strong {

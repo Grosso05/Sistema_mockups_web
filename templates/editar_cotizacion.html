@@ -1847,7 +1847,7 @@ function agregarItemAlProducto(item, itemNumber) {
                     <thead>
                         <tr>
                             <th>Seleccionar</th>
-                            <th>Grupo</th>
+                            <th class="oculto">Grupo</th> <!-- Añadir la clase aquí -->
                             <th>Descripción</th>
                             <th>Unidad</th>
                             <th>Precio</th>
@@ -1858,7 +1858,7 @@ function agregarItemAlProducto(item, itemNumber) {
                         ${items.map(item => `
                             <tr>
                                 <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
-                                <td>${item.categoria}</td>
+                                <td class="oculto">${item.categoria}</td> <!-- Aplicar clase aquí -->
                                 <td>${item.descripcion}</td>
                                 <td>${item.unidad}</td>
                                 <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
@@ -2427,7 +2427,7 @@ function agregarItemAlProducto(item, itemNumber) {
                         <thead>
                             <tr>
                                 <th>Seleccionar</th>
-                                <th>Grupo</th>
+                                <th class="oculto">Grupo</th>
                                 <th>Descripción</th>
                                 <th>Unidad</th>
                                 <th>Precio</th>
@@ -2438,7 +2438,7 @@ function agregarItemAlProducto(item, itemNumber) {
                             ${items.map(item => `
                                 <tr>
                                     <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
-                                    <td>${item.categoria}</td>
+                                    <td class="oculto">${item.categoria}</td>
                                     <td>${item.descripcion}</td>
                                     <td>${item.unidad}</td>
                                     <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
@@ -2685,6 +2685,8 @@ function agregarItemAlProducto(item, itemNumber) {
                     console.log('Cotización guardada exitosamente:', data);
                     if (data.success) {
                         alert('Cotización guardada con éxito.');
+                        // Redirigir a la ruta /listar_cotizaciones
+                        window.location.href = '/listar_cotizaciones';
                     } else {
                         alert('Error al guardar la cotización.');
                     }

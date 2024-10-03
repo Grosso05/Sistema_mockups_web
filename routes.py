@@ -910,7 +910,7 @@ def generar_reporte(cotizacion_id):
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
     buffer.seek(0)
 
-    return send_file(buffer, as_attachment=True, download_name=f"cotizacion_{cotizacion_id}.pdf", mimetype='application/pdf')
+    return send_file(buffer, as_attachment=True, download_name=f"Cotizacion - N {cotizacion.negociacion}.{cotizacion.proyecto_cotizacion}-{cotizacion.cliente_cotizacion}.pdf", mimetype='application/pdf')
 
 # < ----------------------------------------------------------  Ruta para generar OP ---------------------------------------------------------------------------------------->
 
@@ -1057,7 +1057,7 @@ def generar_op(cotizacion_id):
 
     # Enviar el PDF como respuesta
     buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name=f"OP_{cotizacion.negociacion}.pdf", mimetype='application/pdf')
+    return send_file(buffer, as_attachment=True, download_name=f"OP - N {cotizacion.negociacion}.{cotizacion.proyecto_cotizacion}-{cotizacion.cliente_cotizacion}.pdf", mimetype='application/pdf')
 
 
 # <-------------------------------------------------------- Ruta para generar Requisición ------------------------------------------------------------------------------------------------->
@@ -1220,7 +1220,7 @@ def generar_requisicion(cotizacion_id):
 
     # Enviar el PDF como respuesta
     buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name=f"Requisicion_{cotizacion.negociacion}.pdf", mimetype='application/pdf')
+    return send_file(buffer, as_attachment=True, download_name=f"Requisicion - N {cotizacion.negociacion}.{cotizacion.proyecto_cotizacion}-{cotizacion.cliente_cotizacion}.pdf", mimetype='application/pdf')
 
 @routes_blueprint.route('/verificar-negociacion')
 def verificar_negociacion():

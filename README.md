@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Version 5.9.3.5) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 5.9.3.6) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 4 de octubre de 2024, 8:00 am
+
+Cambios Recientes
+v5.9.3.6
+
+Implementamos el input de imagen de producto, y ya se guarga en la ruta del backend, pasaremos a implementar esa imagen el la cotización
+
 
 # Fecha de lanzamiento: 3 de octubre de 2024, 9:00 am
 

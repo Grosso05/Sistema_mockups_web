@@ -1861,7 +1861,14 @@ function agregarItemAlProducto(item, itemNumber) {
             const productos = [];
             document.querySelectorAll('.producto').forEach(function(productoDiv) {
                 const productoId = productoDiv.id.split('-')[1];
-    
+                
+                // Verificar si el producto ya está en la lista
+                const productoYaAgregado = productos.find(p => p.productoId === parseInt(productoId));
+                if (productoYaAgregado) {
+                    return; // Salir si el producto ya está agregado
+                }
+            
+                // Captura del producto (incluye el mismo código que ya tienes)
                 const productoSeleccionadoId = productoDiv.querySelector('input[name="producto_seleccionado_id"]').value;
                 const descripcion = productoDiv.querySelector('h4').innerText.trim();
                 const medidasText = productoDiv.querySelector('h4:nth-of-type(2)').innerText;
@@ -1869,7 +1876,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 const alto = medidasMatch ? parseFloat(medidasMatch[1]) : null;
                 const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
                 const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
-    
+            
                 const productoData = {
                     productoId: parseInt(productoId),
                     productoSeleccionadoId: parseInt(productoSeleccionadoId),
@@ -1878,13 +1885,13 @@ function agregarItemAlProducto(item, itemNumber) {
                     ancho: ancho,
                     fondo: fondo
                 };
-    
+            
                 // Agregar archivo de imagen si se ha cargado
                 const inputFile = productoDiv.querySelector(`input[type="file"]`);
                 if (inputFile && inputFile.files.length > 0) {
-                    formData.append(`imagenProducto-${productoId}`, inputFile.files[0]); // Agregamos la imagen al FormData
+                    formData.append(`imagenProducto-${productoId}`, inputFile.files[0]);
                 }
-    
+            
                 productos.push(productoData);
             });
     
@@ -1899,7 +1906,7 @@ function agregarItemAlProducto(item, itemNumber) {
             .then(data => {
                 if (data.success) {
                     alert('Cotización guardada con éxito.');
-                    window.location.href = '/listar_cotizaciones';
+                    //window.location.href = '/listar_cotizaciones';
                 } else {
                     alert('Error al guardar la cotización.');
                 }

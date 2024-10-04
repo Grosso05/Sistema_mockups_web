@@ -1848,65 +1848,127 @@ function agregarItemAlProducto(item, itemNumber) {
             formData.append('negociacion', document.getElementById('negociacion').value.trim());
             formData.append('formaPago', document.getElementById('forma_pago').value.trim());
             formData.append('validezCotizacion', document.getElementById('validez_cotizacion').value.trim());
-            formData.append('descuentoCotizacion', document.getElementById('descuento_cotizacion').value.trim());
+            formData.append('descuentoCotizacion', parseFloat(document.getElementById('descuento_cotizacion').value.trim()));
             formData.append('ivaSeleccionado', document.getElementById('iva-select').value.trim());
     
             // Validar campos esenciales
             if (!formData.get('clienteCotizacion') || !formData.get('contactoCotizacion') || !formData.get('proyectoCotizacion') || !formData.get('vendedorCotizacion') || !formData.get('negociacion')) {
-                alert("Por favor, complete todos los campos obligatorios.");
+                alert("Por favor, complete todos los campos obligatorios: Cliente, Contacto, Proyecto, Vendedor y Negociación.");
                 return;
             }
     
             // Capturar productos en la cotización
             const productos = [];
+            const productoIdsCapturados = new Set();
+    
             document.querySelectorAll('.producto').forEach(function(productoDiv) {
                 const productoId = productoDiv.id.split('-')[1];
-                
-                // Verificar si el producto ya está en la lista
-                const productoYaAgregado = productos.find(p => p.productoId === parseInt(productoId));
-                if (productoYaAgregado) {
-                    return; // Salir si el producto ya está agregado
-                }
-            
-                // Captura del producto (incluye el mismo código que ya tienes)
+                if (productoIdsCapturados.has(productoId)) return;
+                productoIdsCapturados.add(productoId);
+    
                 const productoSeleccionadoId = productoDiv.querySelector('input[name="producto_seleccionado_id"]').value;
-                const descripcion = productoDiv.querySelector('h4').innerText.trim();
+                const descripcion = productoDiv.querySelector('h4').innerText;
                 const medidasText = productoDiv.querySelector('h4:nth-of-type(2)').innerText;
                 const medidasMatch = medidasText.match(/Alto \(Cm\): (\d+) \|\| Ancho \(Cm\): (\d+) \|\| Fondo \(Cm\): (\d+)/);
                 const alto = medidasMatch ? parseFloat(medidasMatch[1]) : null;
                 const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
                 const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
-            
-                const productoData = {
+    
+                const cantidadesSeleccionadas = [];
+                productoDiv.querySelectorAll('h4').forEach(function(cantidadH4) {
+                    const cantidadText = cantidadH4.innerText;
+                    const cantidadMatch = cantidadText.match(/Cantidad seleccionada \(\d+\): (\d+) unidades/);
+                    if (cantidadMatch) {
+                        cantidadesSeleccionadas.push(parseInt(cantidadMatch[1]));
+                    }
+                });
+    
+                const items = [];
+                document.querySelectorAll('tbody tr').forEach(function(itemRow) {
+                    const cantidadInput = itemRow.querySelector('input[type="number"]');
+                    if (cantidadInput) {
+                        const itemId = itemRow.querySelector('td:nth-child(1)').innerText.trim();
+                        const itemCantidad = cantidadInput.value;
+                        const itemTotalText = itemRow.querySelector('td.total').innerText.trim();
+                
+                        // Reemplazar separadores de miles y cambiar coma por punto decimal
+                        const itemTotal = parseFloat(itemTotalText.replace(/\./g, '').replace(',', '.'));
+                
+                        items.push({
+                            itemId: parseInt(itemId),
+                            itemCantidad: parseInt(itemCantidad),
+                            itemTotal: itemTotal
+                        });
+                    }
+                });
+    
+                const resúmenesCostos = [];
+                productoDiv.querySelectorAll('.resumen-costos-individual').forEach(function(resumenDiv, index) {
+                    const costoDirectoElement = resumenDiv.querySelector(`#costo-directo-${productoId}-${index}`);
+                    const administracionElement = resumenDiv.querySelector(`#administracion-${productoId}-${index}`);
+                    const imprevistosElement = resumenDiv.querySelector(`#imprevistos-${productoId}-${index}`);
+                    const utilidadElement = resumenDiv.querySelector(`#utilidad-${productoId}-${index}`);
+                    const ofertaAntesIvaElement = resumenDiv.querySelector(`#oferta-antes-iva-${productoId}-${index}`);
+                    const ivaElement = resumenDiv.querySelector(`#iva-${productoId}-${index}`);
+                    const valorOfertaElement = resumenDiv.querySelector(`#valor-oferta-${productoId}-${index}`);
+    
+                    if (costoDirectoElement && administracionElement && imprevistosElement && utilidadElement &&
+                        ofertaAntesIvaElement && ivaElement && valorOfertaElement) {
+    
+                        const costoDirecto = parseFloat(costoDirectoElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const administracion = parseFloat(administracionElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const imprevistos = parseFloat(imprevistosElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const utilidad = parseFloat(utilidadElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const ofertaAntesIva = parseFloat(ofertaAntesIvaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const iva = parseFloat(ivaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+                        const valorOferta = parseFloat(valorOfertaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
+    
+                        resúmenesCostos.push({
+                            costoDirecto: costoDirecto,
+                            administracion: administracion,
+                            imprevistos: imprevistos,
+                            utilidad: utilidad,
+                            ofertaAntesIva: ofertaAntesIva,
+                            iva: iva,
+                            valorOferta: valorOferta
+                        });
+                    } else {
+                        console.error(`Algunos elementos de resumen no se encontraron para el producto ${productoId} y resumen ${index}.`);
+                    }
+                });
+    
+                productos.push({
                     productoId: parseInt(productoId),
                     productoSeleccionadoId: parseInt(productoSeleccionadoId),
-                    descripcion: descripcion,
+                    descripcion: descripcion.trim(),
                     alto: alto,
                     ancho: ancho,
-                    fondo: fondo
-                };
-            
+                    fondo: fondo,
+                    cantidadesSeleccionadas: cantidadesSeleccionadas,
+                    items: items,
+                    resúmenesCostos: resúmenesCostos
+                });
+    
                 // Agregar archivo de imagen si se ha cargado
                 const inputFile = productoDiv.querySelector(`input[type="file"]`);
                 if (inputFile && inputFile.files.length > 0) {
-                    formData.append(`imagenProducto-${productoId}`, inputFile.files[0]);
+                    formData.append(`imagenProducto-${productoId}`, inputFile.files[0]); // Agregar la imagen al FormData
                 }
-            
-                productos.push(productoData);
             });
     
-            formData.append('productos', JSON.stringify(productos));
+            formData.append('productos', JSON.stringify(productos)); // Agregar productos a FormData
     
-            // Enviar la cotización junto con las imágenes
+            console.log('Datos a enviar:', Object.fromEntries(formData)); // Para ver los datos a enviar
+    
             fetch('/guardar-cotizacion', {
                 method: 'POST',
-                body: formData
+                body: formData // Enviar el FormData
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Cotización guardada exitosamente:', data);
                 if (data.success) {
                     alert('Cotización guardada con éxito.');
-                    //window.location.href = '/listar_cotizaciones';
                 } else {
                     alert('Error al guardar la cotización.');
                 }
@@ -1916,7 +1978,6 @@ function agregarItemAlProducto(item, itemNumber) {
             });
         });
     });
-    
     
     function debounce(func, wait) {
         let timeout;

@@ -789,10 +789,19 @@ def generar_reporte(cotizacion_id):
 
         product_name_paragraph = Paragraph(producto.nombre, product_style)
 
+        # Definir la ruta de la imagen desde la base de datos
+        imagen_ruta = producto_cotizado.imagen_ruta  # Asegúrate que este campo está correctamente asignado
+
+        # Crear un objeto Image
+        if imagen_ruta and os.path.exists(imagen_ruta):  # Verificar que la imagen existe
+            image = Image(imagen_ruta, width=0.8*inch, height=0.8*inch)  # Ajustar el tamaño según sea necesario
+        else:
+            image = None  # Puedes dejarla como None o asignar una imagen por defecto
+
         # Modificamos la data de la tabla principal
         data = [
             str(item_counter),
-            "",
+            image,  # Aquí se coloca el objeto de la imagen
             product_name_paragraph,
             f"{producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}",
             producto_descripcion,
@@ -813,7 +822,7 @@ def generar_reporte(cotizacion_id):
             ('BOX', (0, 0), (-1, -1), 1, colors.black),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ]))
-        
+
         elements.append(product_table)
         elements.append(Spacer(1, 1))
 

@@ -269,6 +269,7 @@ class ProductoCotizado(db.Model):
     fondo = db.Column(db.Float)
     cotizacion_id = db.Column(db.Integer, db.ForeignKey('cotizacion.id_cotizacion'), nullable=False)
     cantidades = db.Column(db.String(255), nullable=False)  # Nuevo campo para almacenar cantidades
+    imagen_ruta = Column(String(255))  # Agregar este campo para la ruta de la imagen
 
     linea = db.relationship("Lineas", backref="productos_cotizados")
     producto = db.relationship("Productos", foreign_keys=[producto_seleccionado_id], backref="productos_cotizados")
@@ -289,6 +290,7 @@ class ProductoCotizado(db.Model):
             'fondo': self.fondo,
             'cotizacion_id': self.cotizacion_id,
             'cantidades': self.cantidades,
+            'imagen_ruta': self.imagen_ruta,
         }
 
 class ItemCotizado(db.Model):

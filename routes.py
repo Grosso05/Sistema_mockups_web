@@ -1,6 +1,7 @@
 import datetime
 import os
 from sqlite3 import IntegrityError
+import uuid
 from flask import Blueprint, flash, json, jsonify, render_template, request, redirect, session, url_for,send_file
 from flask_login import login_required, login_user, current_user
 from models import Categoria, Cotizacion, ItemCotizado, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db, PrecioEscalonado
@@ -38,6 +39,7 @@ def admin():
     if current_user.user_rol != 1:  # Verifica si el rol del usuario es igual a 1 (ID del rol de administrador)
         return redirect(url_for('users.login'))  # Redirige a la página de inicio de sesión u otra página 
     return render_template('/dashboard_admin.html')
+
 
 
 #ruta para el dashboard de usuario
@@ -298,9 +300,9 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-import json
 
-@routes_blueprint.route('/guardar-cotizacion', methods=['POST'])
+@routes_blueprint.route('/guardar-cotizacion', methods=['POST']) 
+
 def guardar_cotizacion():
     data = request.form
     negociacion = data.get('negociacion') or ''
@@ -318,7 +320,7 @@ def guardar_cotizacion():
         negociacion=negociacion,
         forma_de_pago_cotizacion=data['formaPago'],
         validez_cotizacion=data['validezCotizacion'],
-        descuento_cotizacion=float(data.get('descuentoCotizacion', 0) or 0),  # Asegurarse de que no sea vacío
+        descuento_cotizacion=float(data.get('descuentoCotizacion', 0) or 0),
         iva_seleccionado=data['ivaSeleccionado']
     )
     db.session.add(nueva_cotizacion)
@@ -329,10 +331,8 @@ def guardar_cotizacion():
 
     # Procesar los productos
     for producto_data in productos:
-        # Depuración: Verifica el contenido de producto_data
         print("Datos del producto:", producto_data)
 
-        # Si cantidadesSeleccionadas no existe, usa una lista vacía
         cantidades_seleccionadas = producto_data.get('cantidadesSeleccionadas', [])
         cantidades_str = ','.join(map(str, cantidades_seleccionadas))
         
@@ -354,10 +354,14 @@ def guardar_cotizacion():
         if image_key in request.files:
             file = request.files[image_key]
             if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(UPLOAD_FOLDER, filename)
+                original_filename = secure_filename(file.filename)
+                # Generar un nombre único para el archivo
+                unique_filename = f"{producto_data['productoId']}_{uuid.uuid4().hex}_{original_filename}"
+                filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
                 file.save(filepath)
-                # Guardar la ruta de la imagen o manejar como corresponda
+                # Guardar la ruta de la imagen en el modelo
+                nuevo_producto_cotizado.imagen_ruta = filepath
+                db.session.commit()
 
         # Manejo de resúmenes de costos
         for resumen in producto_data.get('resúmenesCostos', []):
@@ -374,7 +378,7 @@ def guardar_cotizacion():
             db.session.add(resumen_de_costos)
 
         # Manejo de items cotizados
-        items_data = producto_data.get('items', [])  # Usa una lista vacía si 'items' no está presente
+        items_data = producto_data.get('items', [])
         for item_data in items_data:
             nuevo_item_cotizado = ItemCotizado(
                 producto_cotizado_id=nuevo_producto_cotizado.id,

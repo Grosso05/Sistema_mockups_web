@@ -1,6 +1,7 @@
 import datetime
+import os
 from sqlite3 import IntegrityError
-from flask import Blueprint, flash, jsonify, render_template, request, redirect, session, url_for,send_file
+from flask import Blueprint, flash, json, jsonify, render_template, request, redirect, session, url_for,send_file
 from flask_login import login_required, login_user, current_user
 from models import Categoria, Cotizacion, ItemCotizado, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db, PrecioEscalonado
 from utils import roles_required
@@ -14,6 +15,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable, Image
 from flask_login import current_user
+from werkzeug.utils import secure_filename
  
 
 import locale
@@ -291,13 +293,18 @@ def crear_cotizacion():
 
 
 
+UPLOAD_FOLDER = './product_images'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+import json
+
 @routes_blueprint.route('/guardar-cotizacion', methods=['POST'])
 def guardar_cotizacion():
-    data = request.json
-    print(data)  # Para depuración
-
-    negociacion = data.get('negociacion') or ''  # Reemplaza None con una cadena vacía o un valor por defecto
-
+    data = request.form
+    negociacion = data.get('negociacion') or ''
+    
     # Convertir la cadena de fecha y hora a un objeto datetime
     fecha_cotizacion = datetime.fromisoformat(data['fechaCotizacion']).astimezone(timezone.utc)
 
@@ -311,30 +318,48 @@ def guardar_cotizacion():
         negociacion=negociacion,
         forma_de_pago_cotizacion=data['formaPago'],
         validez_cotizacion=data['validezCotizacion'],
-        descuento_cotizacion=data.get('descuentoCotizacion', 0),  # Asegurarse de que no sea None
+        descuento_cotizacion=float(data.get('descuentoCotizacion', 0) or 0),  # Asegurarse de que no sea vacío
         iva_seleccionado=data['ivaSeleccionado']
     )
     db.session.add(nueva_cotizacion)
     db.session.flush()  # Para obtener el ID de la cotización
 
-    for producto_data in data['productos']:
-        # Convertir la lista de cantidades a una cadena separada por comas
-        cantidades_str = ','.join(map(str, producto_data['cantidadesSeleccionadas']))
+    # Convertir la cadena JSON de productos en una lista de diccionarios
+    productos = json.loads(data.get('productos', '[]'))
+
+    # Procesar los productos
+    for producto_data in productos:
+        # Depuración: Verifica el contenido de producto_data
+        print("Datos del producto:", producto_data)
+
+        # Si cantidadesSeleccionadas no existe, usa una lista vacía
+        cantidades_seleccionadas = producto_data.get('cantidadesSeleccionadas', [])
+        cantidades_str = ','.join(map(str, cantidades_seleccionadas))
         
         nuevo_producto_cotizado = ProductoCotizado(
             descripcion=producto_data['descripcion'],
             alto=producto_data['alto'],
             ancho=producto_data['ancho'],
             fondo=producto_data['fondo'],
-            cantidades=cantidades_str,  # Usar la cadena de cantidades
+            cantidades=cantidades_str,
             cotizacion_id=nueva_cotizacion.id_cotizacion,
             producto_id=producto_data['productoId'],
-            producto_seleccionado_id=producto_data.get('productoSeleccionadoId')  # Guardar el nuevo campo
+            producto_seleccionado_id=producto_data.get('productoSeleccionadoId')
         )
         db.session.add(nuevo_producto_cotizado)
         db.session.flush()  # Para obtener el ID del producto cotizado
 
-        # Guardar los resúmenes de costos
+        # Guardar las imágenes si existen
+        image_key = f'imagenProducto-{producto_data["productoId"]}'
+        if image_key in request.files:
+            file = request.files[image_key]
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(UPLOAD_FOLDER, filename)
+                file.save(filepath)
+                # Guardar la ruta de la imagen o manejar como corresponda
+
+        # Manejo de resúmenes de costos
         for resumen in producto_data.get('resúmenesCostos', []):
             resumen_de_costos = ResumenDeCostos(
                 costo_directo=resumen['costoDirecto'],
@@ -348,7 +373,9 @@ def guardar_cotizacion():
             )
             db.session.add(resumen_de_costos)
 
-        for item_data in producto_data['items']:
+        # Manejo de items cotizados
+        items_data = producto_data.get('items', [])  # Usa una lista vacía si 'items' no está presente
+        for item_data in items_data:
             nuevo_item_cotizado = ItemCotizado(
                 producto_cotizado_id=nuevo_producto_cotizado.id,
                 item_id=item_data['itemId'],
@@ -360,6 +387,7 @@ def guardar_cotizacion():
     db.session.commit()
 
     return jsonify({'success': True})
+
 
 def incrementar_version(ultima_version):
     if ultima_version:

@@ -719,16 +719,37 @@
     
                 // Crear el contenido del nuevo producto
                 nuevoProducto.innerHTML = `
-            <div class="producto" id="producto-${nuevoNumeroProducto}">
-                <h3 contenteditable="true" style="color: #00b04f;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
-                <h4 contenteditable="true">Descripción: ${descripcion}</h4>
-                <h4 contenteditable="true">Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
+<div class="producto" id="producto-${nuevoNumeroProducto}" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+    <div style="flex-grow: 1;">
+        <h3 contenteditable="true" style="color: #00b04f; margin: 0; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
+        <h4 contenteditable="true" style="margin: 3px 0;">Descripción: ${descripcion}</h4>
+        <h4 contenteditable="true" style="margin: 3px 0;">Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
+    </div>
     
-                    <!-- Añadimos el productoId con un nombre diferente -->
-                    <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
+    <!-- Añadimos el productoId con un nombre diferente -->
+    <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
 
-            </div>
-    
+    <!-- Input para cargar imágenes -->
+    <div style="display: flex; align-items: center; margin-left: 5px;">
+        <label for="imagen-${nuevoNumeroProducto}" style="font-weight: bold; margin-right: 5px;">Cargar Imagen:</label>
+        <input 
+            type="file" 
+            id="imagen-${nuevoNumeroProducto}" 
+            name="imagen_producto" 
+            accept="image/*" 
+            style="
+                padding: 6px; 
+                border: 1px solid #00b04f; 
+                border-radius: 4px; 
+                cursor: pointer; 
+                background-color: #f5f5f5; 
+                transition: border-color 0.3s ease;"
+            onfocus="this.style.borderColor='#007bff';"
+            onblur="this.style.borderColor='#00b04f';"
+        >
+    </div>
+</div>
+
                     ${cantidadesSeleccionadasHTML}
                     <div class="itemsseleccionados">
                         <h4>Items Seleccionados</h4>
@@ -1815,149 +1836,69 @@ function agregarItemAlProducto(item, itemNumber) {
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('guardarCotizacionBtn').addEventListener('click', function() {
             // Capturar datos generales de la cotización
-            const fecha = new Date();
+            const formData = new FormData();
             const fechaCotizacion = new Date().toISOString(); // Fecha y hora en formato ISO 8601
     
             // Captura otros datos
-            const clienteCotizacion = document.getElementById('cliente_cotizacion').value.trim();
-            const contactoCotizacion = document.getElementById('contacto_cotizacion').value.trim();
-            const proyectoCotizacion = document.getElementById('proyecto_cotizacion').value.trim();
-            const vendedorCotizacion = document.getElementById('vendedor_cotizacion').value.trim();
-            const negociacion = document.getElementById('negociacion').value.trim();
-            const formaPago = document.getElementById('forma_pago').value.trim();
-            const validezCotizacion = document.getElementById('validez_cotizacion').value.trim();
-            const descuentoCotizacion = document.getElementById('descuento_cotizacion').value.trim();
-            const ivaSeleccionado = document.getElementById('iva-select').value.trim();
+            formData.append('fechaCotizacion', fechaCotizacion);
+            formData.append('clienteCotizacion', document.getElementById('cliente_cotizacion').value.trim());
+            formData.append('contactoCotizacion', document.getElementById('contacto_cotizacion').value.trim());
+            formData.append('proyectoCotizacion', document.getElementById('proyecto_cotizacion').value.trim());
+            formData.append('vendedorCotizacion', document.getElementById('vendedor_cotizacion').value.trim());
+            formData.append('negociacion', document.getElementById('negociacion').value.trim());
+            formData.append('formaPago', document.getElementById('forma_pago').value.trim());
+            formData.append('validezCotizacion', document.getElementById('validez_cotizacion').value.trim());
+            formData.append('descuentoCotizacion', document.getElementById('descuento_cotizacion').value.trim());
+            formData.append('ivaSeleccionado', document.getElementById('iva-select').value.trim());
     
             // Validar campos esenciales
-            if (!clienteCotizacion || !contactoCotizacion || !proyectoCotizacion || !vendedorCotizacion || !negociacion) {
-                alert("Por favor, complete todos los campos obligatorios: Cliente, Contacto, Proyecto, Vendedor y Negociación.");
+            if (!formData.get('clienteCotizacion') || !formData.get('contactoCotizacion') || !formData.get('proyectoCotizacion') || !formData.get('vendedorCotizacion') || !formData.get('negociacion')) {
+                alert("Por favor, complete todos los campos obligatorios.");
                 return;
             }
     
-        
             // Capturar productos en la cotización
             const productos = [];
-            const productoIdsCapturados = new Set();
-    
             document.querySelectorAll('.producto').forEach(function(productoDiv) {
                 const productoId = productoDiv.id.split('-')[1];
-                if (productoIdsCapturados.has(productoId)) return;
-                productoIdsCapturados.add(productoId);
     
                 const productoSeleccionadoId = productoDiv.querySelector('input[name="producto_seleccionado_id"]').value;
-                const descripcion = productoDiv.querySelector('h4').innerText;
+                const descripcion = productoDiv.querySelector('h4').innerText.trim();
                 const medidasText = productoDiv.querySelector('h4:nth-of-type(2)').innerText;
                 const medidasMatch = medidasText.match(/Alto \(Cm\): (\d+) \|\| Ancho \(Cm\): (\d+) \|\| Fondo \(Cm\): (\d+)/);
                 const alto = medidasMatch ? parseFloat(medidasMatch[1]) : null;
                 const ancho = medidasMatch ? parseFloat(medidasMatch[2]) : null;
                 const fondo = medidasMatch ? parseFloat(medidasMatch[3]) : null;
     
-                const cantidadesSeleccionadas = [];
-                productoDiv.querySelectorAll('h4').forEach(function(cantidadH4) {
-                    const cantidadText = cantidadH4.innerText;
-                    const cantidadMatch = cantidadText.match(/Cantidad seleccionada \(\d+\): (\d+) unidades/);
-                    if (cantidadMatch) {
-                        cantidadesSeleccionadas.push(parseInt(cantidadMatch[1]));
-                    }
-                });
-    
-                const items = [];
-                document.querySelectorAll('tbody tr').forEach(function(itemRow) {
-                    const cantidadInput = itemRow.querySelector('input[type="number"]');
-                    if (cantidadInput) {
-                        const itemId = itemRow.querySelector('td:nth-child(1)').innerText.trim();
-                        const itemCantidad = cantidadInput.value;
-                        const itemTotalText = itemRow.querySelector('td.total').innerText.trim();
-                
-                        // Reemplazar separadores de miles y cambiar coma por punto decimal
-                        const itemTotal = parseFloat(itemTotalText.replace(/\./g, '').replace(',', '.'));
-                
-                        items.push({
-                            itemId: parseInt(itemId),
-                            itemCantidad: parseInt(itemCantidad),
-                            itemTotal: itemTotal
-                        });
-                    }
-                });
-    
-                const resúmenesCostos = [];
-                productoDiv.querySelectorAll('.resumen-costos-individual').forEach(function(resumenDiv, index) {
-                    const costoDirectoElement = resumenDiv.querySelector(`#costo-directo-${productoId}-${index}`);
-                    const administracionElement = resumenDiv.querySelector(`#administracion-${productoId}-${index}`);
-                    const imprevistosElement = resumenDiv.querySelector(`#imprevistos-${productoId}-${index}`);
-                    const utilidadElement = resumenDiv.querySelector(`#utilidad-${productoId}-${index}`);
-                    const ofertaAntesIvaElement = resumenDiv.querySelector(`#oferta-antes-iva-${productoId}-${index}`);
-                    const ivaElement = resumenDiv.querySelector(`#iva-${productoId}-${index}`);
-                    const valorOfertaElement = resumenDiv.querySelector(`#valor-oferta-${productoId}-${index}`);
-    
-                    if (costoDirectoElement && administracionElement && imprevistosElement && utilidadElement &&
-                        ofertaAntesIvaElement && ivaElement && valorOfertaElement) {
-    
-                        const costoDirecto = parseFloat(costoDirectoElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                        const administracion = parseFloat(administracionElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                        const imprevistos = parseFloat(imprevistosElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                        const utilidad = parseFloat(utilidadElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                        const ofertaAntesIva = parseFloat(ofertaAntesIvaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                        const iva = parseFloat(ivaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-                        const valorOferta = parseFloat(valorOfertaElement.innerText.split(': ')[1].replace(/\./g, '').replace(',', '.'));
-    
-                        resúmenesCostos.push({
-                            costoDirecto: costoDirecto,
-                            administracion: administracion,
-                            imprevistos: imprevistos,
-                            utilidad: utilidad,
-                            ofertaAntesIva: ofertaAntesIva,
-                            iva: iva,
-                            valorOferta: valorOferta
-                        });
-                    } else {
-                        console.error(`Algunos elementos de resumen no se encontraron para el producto ${productoId} y resumen ${index}.`);
-                    }
-                });
-    
-                productos.push({
+                const productoData = {
                     productoId: parseInt(productoId),
                     productoSeleccionadoId: parseInt(productoSeleccionadoId),
-                    descripcion: descripcion.trim(),
+                    descripcion: descripcion,
                     alto: alto,
                     ancho: ancho,
-                    fondo: fondo,
-                    cantidadesSeleccionadas: cantidadesSeleccionadas,
-                    items: items,
-                    resúmenesCostos: resúmenesCostos
-                });
+                    fondo: fondo
+                };
+    
+                // Agregar archivo de imagen si se ha cargado
+                const inputFile = productoDiv.querySelector(`input[type="file"]`);
+                if (inputFile && inputFile.files.length > 0) {
+                    formData.append(`imagenProducto-${productoId}`, inputFile.files[0]); // Agregamos la imagen al FormData
+                }
+    
+                productos.push(productoData);
             });
     
-            const cotizacionData = {
-                fechaCotizacion: fechaCotizacion,
-                clienteCotizacion: clienteCotizacion,
-                contactoCotizacion: contactoCotizacion,
-                proyectoCotizacion: proyectoCotizacion,
-                vendedorCotizacion: vendedorCotizacion,
-                negociacion: negociacion,
-                formaPago: formaPago,
-                validezCotizacion: validezCotizacion,
-                descuentoCotizacion: parseFloat(descuentoCotizacion),
-                ivaSeleccionado: ivaSeleccionado,
-                productos: productos
-            };
+            formData.append('productos', JSON.stringify(productos));
     
-            console.log('Datos a enviar:', cotizacionData);
-    
+            // Enviar la cotización junto con las imágenes
             fetch('/guardar-cotizacion', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(cotizacionData),
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Cotización guardada exitosamente:', data);
                 if (data.success) {
                     alert('Cotización guardada con éxito.');
-                    // Redirigir a la ruta /listar_cotizaciones
                     window.location.href = '/listar_cotizaciones';
                 } else {
                     alert('Error al guardar la cotización.');

@@ -302,7 +302,6 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @routes_blueprint.route('/guardar-cotizacion', methods=['POST']) 
-
 def guardar_cotizacion():
     data = request.form
     negociacion = data.get('negociacion') or ''

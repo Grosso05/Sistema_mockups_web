@@ -1524,7 +1524,7 @@ function agregarItemAlProducto(item, itemNumber) {
     }
     
     function actualizarTotalProducto(itemNumber) {
-        console.log(`Actualizando total para producto ${itemNumber}`);
+
         
         const contenedores = [
             document.getElementById(`materiaprima-${itemNumber}`),
@@ -1543,7 +1543,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 filas.forEach(fila => {
                     const precioElement = fila.querySelector('td:nth-child(5)');
                     const cantidadInputs = fila.querySelectorAll('input.cantidad');
-                    console.log(`Cantidad de inputs: ${cantidadInputs.length}`);
+
                     const preciosEscalonados = JSON.parse(fila.getAttribute('data-precios-escalonados') || '[]');
     
                     if (precioElement && cantidadInputs.length > 0) {

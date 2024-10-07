@@ -294,7 +294,6 @@ def crear_cotizacion():
 #Ruta para guardar en bd la cotizacion
 
 
-
 UPLOAD_FOLDER = './product_images'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -615,11 +614,11 @@ def editar_cotizacion(cotizacion_id):
 
 
 # Definir las dimensiones de las imágenes
-encabezado_width = 575
-encabezado_height = 30
-footer_width = 550
-footer_height = 30
-footer_margin = 3
+encabezado_width = 612.07 #21,59
+encabezado_height = 121.90 #4,3
+footer_width = 612.07 
+footer_height = 195.615 #6.9
+footer_margin = 0
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
@@ -666,7 +665,7 @@ def generar_reporte(cotizacion_id):
     )
 
     # Título de negociación a la derecha
-    title_background = colors.HexColor("#4CAF50")
+    title_background = colors.HexColor("#0C086D")
     title = Table(
         [[Paragraph(f"Cotización: {cotizacion.negociacion}", heading_style)]],
         style=[
@@ -682,7 +681,7 @@ def generar_reporte(cotizacion_id):
 
     # Datos con colores de fondo aplicados a ciertas celdas
     data = [
-        [Paragraph("Fecha", normal_style), fecha_cotizacion, Paragraph("Cliente", normal_style), Paragraph(cotizacion.cliente_cotizacion, normal_style)],
+        [Paragraph("Fecha", normal_style), Paragraph(fecha_cotizacion, normal_style), Paragraph("Cliente", normal_style), Paragraph(cotizacion.cliente_cotizacion, normal_style)],
         [Paragraph("Proyecto", normal_style), Paragraph(cotizacion.proyecto_cotizacion, normal_style), Paragraph("Contacto", normal_style), Paragraph(cotizacion.contacto_cotizacion, normal_style)]
     ]
 
@@ -691,13 +690,28 @@ def generar_reporte(cotizacion_id):
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('BACKGROUND', (0, 0), (0, 0), colors.HexColor("#4CBE50")),  # Color para "Fecha"
-        ('BACKGROUND', (2, 0), (2, 0), colors.HexColor("#4CBE50")),  # Color para "Cliente"
-        ('BACKGROUND', (0, 1), (0, 1), colors.HexColor("#4CAF50")),  # Color para "Proyecto"
-        ('BACKGROUND', (2, 1), (2, 1), colors.HexColor("#4CAF50")),  # Color para "Contacto"
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('BACKGROUND', (0, 0), (0, 0), colors.HexColor("#0C086D")),  # Color para "Fecha"
+        ('BACKGROUND', (2, 0), (2, 0), colors.HexColor("#0C086D")),  # Color para "Cliente"
+        ('BACKGROUND', (0, 1), (0, 1), colors.HexColor("#110CA6")),  # Color para "Proyecto"
+        ('BACKGROUND', (2, 1), (2, 1), colors.HexColor("#110CA6")),  # Color para "Contacto"
+        ('TEXTCOLOR', (0, 0), (0, 0), colors.white),  # Cambia el texto "Fecha" a blanco
+        ('TEXTCOLOR', (2, 0), (2, 0), colors.white),  # Cambia el texto "Cliente" a blanco
+        ('TEXTCOLOR', (0, 1), (0, 1), colors.white),  # Cambia el texto "Proyecto" a blanco
+        ('TEXTCOLOR', (2, 1), (2, 1), colors.white),  # Cambia el texto "Contacto" a blanco
+        ('TEXTCOLOR', (1, 0), (1, 0), colors.black),  # Contenido de fecha en negro
+        ('TEXTCOLOR', (3, 0), (3, 0), colors.black),  # Contenido de cliente en negro
+        ('TEXTCOLOR', (1, 1), (1, 1), colors.black),  # Contenido de proyecto en negro
+        ('TEXTCOLOR', (3, 1), (3, 1), colors.black),  # Contenido de contacto en negro
         ('PADDING', (0, 0), (-1, -1), 4),
     ]))
+
+    # Asegúrate de que los estilos de normal_style permitan el color
+    normal_style.fontName = 'Helvetica'
+    normal_style.fontSize = 8
+    normal_style.textColor = colors.black  # Establecer el color de texto por defecto para el contenido
+
+
+
 
     # Creando una tabla con tres columnas: tabla de datos a la izquierda, espacio en el medio, y título a la derecha
     table_and_title = Table([[table, '', title]], colWidths=[4.7*inch, 1*inch, 2*inch])  # Más espacio entre la tabla y el título
@@ -720,7 +734,7 @@ def generar_reporte(cotizacion_id):
     # Anchos de las columnas ajustados
     header_table = Table(header_data, colWidths=[0.3*inch, 0.8*inch, 1.3*inch, 1*inch, 1*inch, 1*inch, 0.5*inch, 0.9*inch, 0.9*inch])
     header_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4CAF50')),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C086D')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -943,8 +957,8 @@ def generar_reporte(cotizacion_id):
 
     def add_header_footer(canvas, doc):
         canvas.saveState()
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 20, height - encabezado_height - 10, width=encabezado_width, height=encabezado_height, mask='auto')
-        canvas.drawImage("static/images/footer_cotizacion.png", 20, footer_margin, width=footer_width, height=footer_height, mask='auto')
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 0, height - encabezado_height - 0, width=encabezado_width, height=encabezado_height, mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 0, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()
 
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)

@@ -930,34 +930,22 @@ const actualizarIdsYEventos = (element, nuevoId) => {
         const partesId = child.id.split('-');
         partesId[partesId.length - 1] = nuevoId;
         child.id = partesId.join('-');
-        console.log(`Actualizado ID: ${child.id}`); // Verifica IDs actualizados
     });
-
-    // Verifica los IDs actualizados en el DOM
-    console.log(`IDs actualizados en el producto duplicado con ID ${nuevoId}:`);
-    document.querySelectorAll(`#producto-${nuevoId} [id]`).forEach(el => console.log(el.id));
-};
-
-    // Actualiza los atributos `for`
     element.querySelectorAll('[for]').forEach(child => {
         const partesFor = child.getAttribute('for').split('-');
         partesFor[partesFor.length - 1] = nuevoId;
         child.setAttribute('for', partesFor.join('-'));
     });
-
-    // Actualiza los atributos `name`
     element.querySelectorAll('[name]').forEach(child => {
         const partesName = child.name.split('-');
         partesName[partesName.length - 1] = nuevoId;
         child.name = partesName.join('-');
     });
-
-    // Actualiza los atributos `data-producto-id`
     element.querySelectorAll('[data-producto-id]').forEach(child => {
         child.setAttribute('data-producto-id', nuevoId);
     });
 
-    // Actualiza los eventos `onclick` de los botones
+    // Actualizar los eventos `onclick` de los botones
     element.querySelectorAll('button').forEach(button => {
         const originalOnClick = button.getAttribute('onclick');
         if (originalOnClick) {
@@ -965,11 +953,11 @@ const actualizarIdsYEventos = (element, nuevoId) => {
         }
     });
 
-    // Actualiza eventos relacionados con las cantidades y utilidades
+    // Asegurarse de que los eventos de cambio de cantidad y utilidad están configurados
     element.querySelectorAll('.cantidad').forEach(input => {
         input.addEventListener('change', function() {
             actualizarTotalProducto(nuevoId);
-            actualizarResumenDeCostos(nuevoId);
+            actualizarResumenDeCostos(nuevoId); // Actualiza el resumen de costos
         });
     });
     element.querySelectorAll('.utilidadSeleccionada').forEach(input => {
@@ -984,7 +972,7 @@ const actualizarIdsYEventos = (element, nuevoId) => {
                         const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
                         if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
                             actualizarTotalProducto(nuevoId, nuevoValorUtilidad);
-                            actualizarResumenDeCostos(nuevoId);
+                            actualizarResumenDeCostos(nuevoId); // Actualiza el resumen de costos
                         } else {
                             alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
                         }
@@ -1012,8 +1000,6 @@ actualizarIdsYEventos(nuevoProductoDuplicado, nuevoNumeroProductoDuplicado);
 let timeout;
 nuevoProductoDuplicado.querySelectorAll('.utilidadSeleccionada').forEach(input => {
     input.addEventListener('input', function() {
-        console.log('Cambio en utilidad detectado'); // Verifica el evento
-        let timeout;
         clearTimeout(timeout);
         timeout = setTimeout(() => {
             const nuevoValorUtilidad = parseFloat(this.value);
@@ -1023,7 +1009,7 @@ nuevoProductoDuplicado.querySelectorAll('.utilidadSeleccionada').forEach(input =
                     const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
                     if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
                         actualizarTotalProducto(nuevoNumeroProductoDuplicado, nuevoValorUtilidad);
-                        actualizarResumenDeCostos(nuevoNumeroProductoDuplicado);
+                        actualizarResumenDeCostos(nuevoNumeroProductoDuplicado); // Actualiza el resumen de costos
                     } else {
                         alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
                     }
@@ -1036,9 +1022,8 @@ nuevoProductoDuplicado.querySelectorAll('.utilidadSeleccionada').forEach(input =
 // Añadir manejador de eventos para cambios en las cantidades
 nuevoProductoDuplicado.querySelectorAll('.cantidad').forEach(input => {
     input.addEventListener('change', function() {
-        console.log('Cambio en cantidad detectado'); // Verifica el evento
         actualizarTotalProducto(nuevoNumeroProductoDuplicado);
-        actualizarResumenDeCostos(nuevoNumeroProductoDuplicado);
+        actualizarResumenDeCostos(nuevoNumeroProductoDuplicado); // Actualiza el resumen de costos
     });
 });
 
@@ -1099,7 +1084,7 @@ function guardarCambios(productoId) {
         if (agregarItemsSeleccionadosBtn) {
             agregarItemsSeleccionadosBtn.setAttribute('onclick', `agregarItemsSeleccionados(${nuevoNumeroProductoDuplicado})`);
         }
-    
+    }
 });
 
 
@@ -1824,13 +1809,12 @@ function agregarItemAlProducto(item, itemNumber) {
                     buscador.addEventListener('input', debounce(() => {
                         const busqueda = buscador.value;
                         verTodosItems(itemNumber, 1, busqueda);
-                    }, 300));
+                    }, 500));
         
                     isLoading = false; // Rehabilitar búsqueda
                 }, 1300); // Retraso de 2 segundos
             });
     }
-
 
 
     document.addEventListener('DOMContentLoaded', function() {

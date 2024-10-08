@@ -4,6 +4,7 @@ from sqlite3 import IntegrityError
 import uuid
 from flask import Blueprint, flash, json, jsonify, render_template, request, redirect, session, url_for,send_file
 from flask_login import login_required, login_user, current_user
+from matplotlib import cm
 from models import Categoria, Cotizacion, ItemCotizado, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db, PrecioEscalonado
 from utils import roles_required
 import locale
@@ -18,6 +19,9 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from flask_login import current_user
 from werkzeug.utils import secure_filename
 from reportlab.platypus import XBox
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8') 
@@ -632,7 +636,9 @@ def generar_reporte(cotizacion_id):
         return "Cotización no encontrada", 404
 
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=legal)
+    ancho = 21.59 * cm
+    alto = 33 * cm
+    doc = SimpleDocTemplate(buffer, pagesize=(ancho, alto))
     width, height = legal
 
     elements = []
@@ -660,7 +666,7 @@ def generar_reporte(cotizacion_id):
     title_background = colors.HexColor("#0C086D")
 
     # Ajustar márgenes con Spacer para mover la tabla a la derecha
-    elements.append(Spacer(1 * inch, 0))  # 1 pulgada de espaciado a la derecha
+    elements.append(Spacer(1 * inch, 4))  # 1 pulgada de espaciado a la derecha
 
     # Tabla de información del cliente
     data = [
@@ -678,7 +684,7 @@ def generar_reporte(cotizacion_id):
     row_heights = [0.3 * inch]  # Aumentar la altura de la fila
 
     # Crear la tabla y establecer las alturas de las filas
-    table = Table(data, colWidths=[1 * inch, 1.2 * inch, 1 * inch, 1.2 * inch, 1 * inch, 1.2 * inch], rowHeights=row_heights)
+    table = Table(data, colWidths=[1 * inch, 1.4 * inch, 1 * inch, 1.4 * inch, 1 * inch, 1.4 * inch], rowHeights=row_heights)
 
     # Ajuste de estilo de la tabla
     table.setStyle(TableStyle([
@@ -734,17 +740,17 @@ def generar_reporte(cotizacion_id):
 
     # Ajuste de las tablas de productos en vertical
     header_data = [
-        ["ITEM", "Imagen", "Producto", "Medidas", "Descripción", "Materiales", "Cantidad", "Valor Unidad", "Valor Total"]
+        ["ITEM", "Imagen", "Producto", "Materiales", "Cantidad", "Valor Unidad", "Valor Total"]
     ]
 
     # Anchos de las columnas ajustados
-    header_table = Table(header_data, colWidths=[0.3*inch, 0.8*inch, 1.3*inch, 1*inch, 1*inch, 1*inch, 0.5*inch, 0.9*inch, 0.9*inch])
+    header_table = Table(header_data, colWidths=[0.3*inch, 1.3*inch, 1.3*inch, 2.3*inch, 0.6*inch, 0.9*inch])
     header_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C086D')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 6),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
         ('BOX', (0, 0), (-1, -1), 1, colors.black),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
     ]))
@@ -788,23 +794,43 @@ def generar_reporte(cotizacion_id):
                 valores_totales.append("$ 0")
                 valores_unitarios.append("$ 0.00")
 
+        # Definir un estilo de párrafo más pequeño para la tabla interna
+        small_style = ParagraphStyle(
+            'SmallStyle',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=7.5,  # Ajusta el tamaño de fuente aquí
+            textColor=colors.black
+        )
+
         # Creamos una lista de filas para las cantidades, valores unitarios y valores totales
-        cantidades_data = [[Paragraph(cantidades[i], normal_style), Paragraph(valores_unitarios[i], normal_style), Paragraph(valores_totales[i], normal_style)] for i in range(len(cantidades))]
+        cantidades_data = [[Paragraph(cantidades[i], small_style), Paragraph(valores_unitarios[i], small_style), Paragraph(valores_totales[i], small_style)] for i in range(len(cantidades))]
 
         # Creamos una tabla interna solo para esas columnas
-        internal_table = Table(cantidades_data, colWidths=[0.5*inch, 0.9*inch, 0.9*inch])
+        internal_table = Table(cantidades_data, colWidths=[0.6*inch, 0.9*inch, 0.9*inch])
         internal_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), colors.white),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 6),
+            ('FONTSIZE', (0, 0), (-1, -1), 7.5),  # Ajusta el tamaño de la fuente aquí
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('ALIGN', (10, 0), (-1, -1), 'CENTER'),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ]))
 
         item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
         items_description = "//".join(item_names) if item_names else "No se especifican items."
-        items_paragraph = Paragraph(items_description)
+        
+        # Cambiar el tamaño de la fuente para la descripción de los materiales
+        materials_style = ParagraphStyle(
+            'MaterialsStyle',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=7,  # Ajusta el tamaño de fuente aquí
+            textColor=colors.black
+        )
+        
+        items_paragraph = Paragraph(items_description, materials_style)  # Aplica el nuevo estilo
+
         producto_descripcion = Paragraph(producto_cotizado.descripcion)
 
         product_name_paragraph = Paragraph(producto.nombre)
@@ -814,24 +840,46 @@ def generar_reporte(cotizacion_id):
 
         # Crear un objeto Image
         if imagen_ruta and os.path.exists(imagen_ruta):  # Verificar que la imagen existe
-            image = Image(imagen_ruta, width=0.8*inch, height=0.8*inch)  # Ajustar el tamaño según sea necesario
+            image = Image(imagen_ruta, width=1.1*inch, height=1.2*inch)  # Ajustar el tamaño según sea necesario
         else:
             image = None  # Puedes dejarla como None o asignar una imagen por defecto
+
+        # Modificamos la data de la tabla principal
+        # Definir estilos para los encabezados y el contenido
+        heading_style = ParagraphStyle(
+            'HeadingStyle',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=8,
+            textColor=colors.HexColor("#0C086D")  # Puedes cambiar el color si lo deseas
+        )
+
+        # Crear un párrafo que combina los elementos con títulos
+        product_info = Paragraph(
+            f"<b>Nombre:</b> {producto.nombre}<br/><br/>"  # Título para el nombre
+            f"<b>Medidas:</b> {producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}<br/><br/>"  # Título para las medidas
+            f"<b>Descripción:</b> {producto_cotizado.descripcion}",
+            normal_style
+        )
+
+        # Crear una tabla que actúe como un contenedor con espacio vacío a la izquierda
+        wrapped_internal_table = Table(
+            [[Spacer(width=10, height=0), internal_table]],  # La tabla interna movida hacia la derecha
+            colWidths=[0*inch, None]  # El primer ancho es el "margen", ajústalo a lo que necesites
+        )
 
         # Modificamos la data de la tabla principal
         data = [
             str(item_counter),
             image,  # Aquí se coloca el objeto de la imagen
-            product_name_paragraph,
-            f"{producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}",
-            producto_descripcion,
+            product_info,  # Usamos el nuevo párrafo que incluye títulos
             items_paragraph,
-            "",  # Columna vacia
+            "",  # Columna vacia para la columna de materiales
             "",  # Columna vacía para los valores unitarios en la tabla principal
-            internal_table   # Columna vacía para los valores totales en la tabla principal
+            internal_table   # Columna para los valores totales en la tabla principal
         ]
 
-        product_table = Table([data], colWidths=[0.3*inch, 0.8*inch, 1.3*inch, 1*inch, 1*inch, 1*inch, 0.5*inch, 0.9*inch, 0.9*inch])
+        product_table = Table([data], colWidths=[0.3*inch, 1.3*inch, 1.3*inch, 2.3*inch, 0.6*inch, 0.9*inch])
         product_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (6, 0), (-1, 0), 'RIGHT'),
@@ -841,6 +889,9 @@ def generar_reporte(cotizacion_id):
             ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
             ('BOX', (0, 0), (-1, -1), 1, colors.black),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            # Aplicar padding solo a la columna de la tabla interna
+            ('LEFTPADDING', (6, 0), (6, 0), 2),  # Ajusta este valor para mover la tabla un poco a la derecha
+            ('RIGHTPADDING', (6, 0), (6, 0), 0),  # Asegurarnos que no haya relleno a la derecha
         ]))
 
         elements.append(product_table)
@@ -906,7 +957,7 @@ def generar_reporte(cotizacion_id):
 
     # Solo crea la tabla si summary_data tiene datos
     if summary_data:
-        summary_table = Table(summary_data, colWidths=[1.2*inch, 1.3*inch])
+        summary_table = Table(summary_data, colWidths=[0.9*inch, 0.9*inch])
         summary_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), colors.white),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
@@ -925,9 +976,12 @@ def generar_reporte(cotizacion_id):
         # Solo muestra condiciones comerciales si no hay datos de resumen
         summary_and_conditions = Table([[condiciones_comerciales]], colWidths=[4.2*inch])
 
-    summary_and_conditions.hAlign = 'RIGHT'  # Esta propiedad mueve toda la tabla hacia la derecha
+    # Añadir un Spacer para mover la tabla hacia la derecha
+    wrapped_summary_table = Table([[Spacer(61, 0), summary_and_conditions]], colWidths=[None, None])
 
-    elements.append(summary_and_conditions)
+    wrapped_summary_table.hAlign = 'RIGHT'  # Esta propiedad mueve toda la tabla hacia la derecha
+
+    elements.append(wrapped_summary_table)
 
     separator_line = HRFlowable(width="110%", thickness=1, lineCap='round', color=colors.black, spaceBefore=10, spaceAfter=10)
 
@@ -965,18 +1019,18 @@ def generar_reporte(cotizacion_id):
         canvas.saveState()
 
         # Insertar el encabezado y pie de página
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 0, height - 100, width=width, height=100, mask='auto')
+        canvas.drawImage("static/images/encabezado_cotizacion.png",0, 815, height=encabezado_height, width=width,  mask='auto')
         canvas.drawImage("static/images/footer_cotizacion.png", 0, 0, width=footer_width, height=footer_height, mask='auto')
 
         # Posicionar la negociación en coordenadas específicas
-        textobject = canvas.beginText(502, 982)  # 
+        textobject = canvas.beginText(502, 905)  # 
         textobject.setFont("Helvetica", 10)
         textobject.textLine(cotizacion.negociacion)  # Colocar el texto de la negociación
         canvas.drawText(textobject)
 
         # Posicionar la fecha en coordenadas específicas
         fecha_cotizacion = cotizacion.fecha_cotizacion.strftime("%d/%m/%Y")  # Convertir a formato dd/mm/yyyy
-        canvas.drawString(505, 947, f"{fecha_cotizacion}")  # Cambia las coordenadas (400, 750) por las deseadas
+        canvas.drawString(505, 864, f"{fecha_cotizacion}")  # Cambia las coordenadas (400, 750) por las deseadas
 
 
         canvas.restoreState()

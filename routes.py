@@ -10,14 +10,14 @@ import locale
 from datetime import datetime, timezone
 from io import BytesIO
 from flask import send_file
-from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib.pagesizes import legal, landscape
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable, Image
 from flask_login import current_user
 from werkzeug.utils import secure_filename
- 
+from reportlab.platypus import XBox
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8') 
@@ -631,17 +631,9 @@ def generar_reporte(cotizacion_id):
     if not cotizacion:
         return "Cotización no encontrada", 404
 
-    if isinstance(cotizacion.fecha_cotizacion, datetime):
-        fecha_cotizacion = cotizacion.fecha_cotizacion.strftime('%Y-%m-%d')
-    else:
-        try:
-            fecha_cotizacion = datetime.strptime(cotizacion.fecha_cotizacion, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
-        except ValueError:
-            fecha_cotizacion = cotizacion.fecha_cotizacion
-
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    width, height = letter
+    doc = SimpleDocTemplate(buffer, pagesize=legal)
+    width, height = legal
 
     elements = []
 
@@ -655,76 +647,82 @@ def generar_reporte(cotizacion_id):
         textColor=colors.HexColor("#ffffff")
     )
 
-    product_style = ParagraphStyle(
-        'ProductStyle',
+    # Definir estilo del contenido en negro
+    content_style = ParagraphStyle(
+        'ContentStyle',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=7,
-        alignment=1,
-        wordWrap='CJK'
+        fontSize=8,
+        textColor=colors.black  # El contenido será negro
     )
 
-    # Título de negociación a la derecha
+    # Color de fondo para los títulos
     title_background = colors.HexColor("#0C086D")
-    title = Table(
-        [[Paragraph(f"Cotización: {cotizacion.negociacion}", heading_style)]],
-        style=[
-            ('BACKGROUND', (0, 0), (-1, -1), title_background),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
-            ('BOX', (0, 0), (-1, -1), 1, colors.black),
-            ('PADDING', (0, 0), (-1, -1), 6),
-        ],
-        colWidths=[1.8*inch]  # Tamaño del cuadro de negociación
-    )
 
-    # Datos con colores de fondo aplicados a ciertas celdas
+    # Ajustar márgenes con Spacer para mover la tabla a la derecha
+    elements.append(Spacer(1 * inch, 0))  # 1 pulgada de espaciado a la derecha
+
+    # Tabla de información del cliente
     data = [
-        [Paragraph("Fecha", normal_style), Paragraph(fecha_cotizacion, normal_style), Paragraph("Cliente", normal_style), Paragraph(cotizacion.cliente_cotizacion, normal_style)],
-        [Paragraph("Proyecto", normal_style), Paragraph(cotizacion.proyecto_cotizacion, normal_style), Paragraph("Contacto", normal_style), Paragraph(cotizacion.contacto_cotizacion, normal_style)]
+        [
+            Paragraph("Cliente", heading_style),
+            Paragraph(cotizacion.cliente_cotizacion, content_style),
+            Paragraph("Proyecto", heading_style),
+            Paragraph(cotizacion.proyecto_cotizacion, content_style), 
+            Paragraph("Contacto", heading_style),
+            Paragraph(cotizacion.contacto_cotizacion, content_style)
+        ]
     ]
 
-    table = Table(data, colWidths=[1*inch, 1.2*inch, 1*inch, 3*inch])
+    # Ajustar las alturas de las filas
+    # Ajustar las alturas de las filas
+    row_heights = [0.3 * inch]  # Aumentar la altura de la fila
+
+    # Crear la tabla y establecer las alturas de las filas
+    table = Table(data, colWidths=[0.8 * inch, 1.2 * inch, 0.8 * inch, 1.2 * inch, 0.8 * inch, 1.2 * inch], rowHeights=row_heights)
+
+    # Ajuste de estilo de la tabla
     table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('ALIGN', (0, 0), (0, 0), 'CENTER'),  # Centrar "Cliente"
+        ('ALIGN', (2, 0), (2, 0), 'CENTER'),  # Centrar "Proyecto"
+        ('ALIGN', (4, 0), (4, 0), 'CENTER'),  # Centrar "Contacto"
+
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('BACKGROUND', (0, 0), (0, 0), colors.HexColor("#0C086D")),  # Color para "Fecha"
-        ('BACKGROUND', (2, 0), (2, 0), colors.HexColor("#0C086D")),  # Color para "Cliente"
-        ('BACKGROUND', (0, 1), (0, 1), colors.HexColor("#110CA6")),  # Color para "Proyecto"
-        ('BACKGROUND', (2, 1), (2, 1), colors.HexColor("#110CA6")),  # Color para "Contacto"
-        ('TEXTCOLOR', (0, 0), (0, 0), colors.white),  # Cambia el texto "Fecha" a blanco
-        ('TEXTCOLOR', (2, 0), (2, 0), colors.white),  # Cambia el texto "Cliente" a blanco
-        ('TEXTCOLOR', (0, 1), (0, 1), colors.white),  # Cambia el texto "Proyecto" a blanco
-        ('TEXTCOLOR', (2, 1), (2, 1), colors.white),  # Cambia el texto "Contacto" a blanco
-        ('TEXTCOLOR', (1, 0), (1, 0), colors.black),  # Contenido de fecha en negro
-        ('TEXTCOLOR', (3, 0), (3, 0), colors.black),  # Contenido de cliente en negro
-        ('TEXTCOLOR', (1, 1), (1, 1), colors.black),  # Contenido de proyecto en negro
-        ('TEXTCOLOR', (3, 1), (3, 1), colors.black),  # Contenido de contacto en negro
-        ('PADDING', (0, 0), (-1, -1), 4),
+        ('FONTSIZE', (0, 0), (-1, -1), 6),  # Tamaño de fuente más pequeño para mayor compresión
+
+        # Colores de fondo y texto
+        ('BACKGROUND', (0, 0), (0, 0), title_background),
+        ('BACKGROUND', (2, 0), (2, 0), title_background),
+        ('BACKGROUND', (4, 0), (4, 0), title_background),
+        ('TEXTCOLOR', (0, 0), (0, 0), colors.white),
+        ('TEXTCOLOR', (2, 0), (2, 0), colors.white),
+        ('TEXTCOLOR', (4, 0), (4, 0), colors.white),
+        ('TEXTCOLOR', (1, 0), (1, 0), colors.black),
+        ('TEXTCOLOR', (3, 0), (3, 0), colors.black),
+        ('TEXTCOLOR', (5, 0), (5, 0), colors.black),
+
+        # Reducir al mínimo el padding
+        ('PADDING', (0, 0), (-1, -1), 0),        # Sin padding en general
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),  # Sin padding inferior
+        ('TOPPADDING', (0, 0), (-1, -1), 0),     # Sin padding superior
+        ('LEFTPADDING', (0, 0), (-1, -1), 1),    # Mínimo padding a la izquierda para separación visual
+        ('RIGHTPADDING', (0, 0), (-1, -1), 1),   # Mínimo padding a la derecha para separación visual
+
+        # Ajustar padding específico para los encabezados
+        ('TOPPADDING', (0, 0), (0, 0), 3),  # Padding superior para "Cliente"
+        ('BOTTOMPADDING', (0, 0), (0, 0), 3),  # Padding inferior para "Cliente"
+        ('TOPPADDING', (2, 0), (2, 0), 3),  # Padding superior para "Proyecto"
+        ('BOTTOMPADDING', (2, 0), (2, 0), 3),  # Padding inferior para "Proyecto"
+        ('TOPPADDING', (4, 0), (4, 0), 3),  # Padding superior para "Contacto"
+        ('BOTTOMPADDING', (4, 0), (4, 0), 3),  # Padding inferior para "Contacto"
+
+        # Añadir borde delgado (opcional, para visualizar mejor)
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
     ]))
 
-    # Asegúrate de que los estilos de normal_style permitan el color
-    normal_style.fontName = 'Helvetica'
-    normal_style.fontSize = 8
-    normal_style.textColor = colors.black  # Establecer el color de texto por defecto para el contenido
 
-
-
-
-    # Creando una tabla con tres columnas: tabla de datos a la izquierda, espacio en el medio, y título a la derecha
-    table_and_title = Table([[table, '', title]], colWidths=[4.7*inch, 1*inch, 2*inch])  # Más espacio entre la tabla y el título
-
-    # Estableciendo estilos de la tabla combinada
-    table_and_title.setStyle(TableStyle([
-        ('LEFTPADDING', (0, 0), (-1, -1), 15),  # Mueve todo el conjunto hacia la izquierda
-        ('RIGHTPADDING', (0, 0), (-1, -1), 0),  # Sin espacio adicional a la derecha
-    ]))
-
-    # Agregando espaciador y elementos
-    elements.append(table_and_title)
-    elements.append(Spacer(1, 12))
+    # Agregar tabla a la lista de elementos
+    elements.append(table)
 
     # Ajuste de las tablas de productos en vertical
     header_data = [
@@ -798,10 +796,10 @@ def generar_reporte(cotizacion_id):
 
         item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
         items_description = "//".join(item_names) if item_names else "No se especifican items."
-        items_paragraph = Paragraph(items_description, product_style)
-        producto_descripcion = Paragraph(producto_cotizado.descripcion, product_style)
+        items_paragraph = Paragraph(items_description)
+        producto_descripcion = Paragraph(producto_cotizado.descripcion)
 
-        product_name_paragraph = Paragraph(producto.nombre, product_style)
+        product_name_paragraph = Paragraph(producto.nombre)
 
         # Definir la ruta de la imagen desde la base de datos
         imagen_ruta = producto_cotizado.imagen_ruta  # Asegúrate que este campo está correctamente asignado
@@ -838,7 +836,7 @@ def generar_reporte(cotizacion_id):
         ]))
 
         elements.append(product_table)
-        elements.append(Spacer(1, 1))
+        elements.append(Spacer(1, 1))#
 
         item_counter += 1
 
@@ -957,15 +955,30 @@ def generar_reporte(cotizacion_id):
 
     def add_header_footer(canvas, doc):
         canvas.saveState()
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 0, height - encabezado_height - 0, width=encabezado_width, height=encabezado_height, mask='auto')
-        canvas.drawImage("static/images/footer_cotizacion.png", 0, footer_margin, width=footer_width, height=footer_height, mask='auto')
+
+        # Insertar el encabezado y pie de página
+        canvas.drawImage("static/images/encabezado_cotizacion.png", 0, height - 100, width=width, height=100, mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 0, 0, width=footer_width, height=50, mask='auto')
+
+        # Posicionar la negociación en coordenadas específicas
+        textobject = canvas.beginText(502, 982)  # 
+        textobject.setFont("Helvetica", 10)
+        textobject.textLine(cotizacion.negociacion)  # Colocar el texto de la negociación
+        canvas.drawText(textobject)
+
+        # Posicionar la fecha en coordenadas específicas
+        fecha_cotizacion = cotizacion.fecha_cotizacion.strftime("%d/%m/%Y")  # Convertir a formato dd/mm/yyyy
+        canvas.drawString(505, 947, f"{fecha_cotizacion}")  # Cambia las coordenadas (400, 750) por las deseadas
+
+
         canvas.restoreState()
 
+    # Crear el documento con los elementos y agregar encabezado/pie de página
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
     buffer.seek(0)
 
+    # Devolver el archivo PDF
     return send_file(buffer, as_attachment=True, download_name=f"Cotizacion - N {cotizacion.negociacion}.{cotizacion.proyecto_cotizacion}-{cotizacion.cliente_cotizacion}.pdf", mimetype='application/pdf')
-
 # < ----------------------------------------------------------  Ruta para generar OP ---------------------------------------------------------------------------------------->
 
 @routes_blueprint.route('/generar-op/<int:cotizacion_id>', methods=['GET'])
@@ -987,8 +1000,8 @@ def generar_op(cotizacion_id):
     buffer = BytesIO()
 
     # Crear el documento PDF
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
-    width, height = landscape(letter)  # Obtener el ancho y alto de la página
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(legal))
+    width, height = landscape(legal)  # Obtener el ancho y alto de la página
 
     # Crear el contenido del documento
     elements = []
@@ -1140,8 +1153,8 @@ def generar_requisicion(cotizacion_id):
     buffer = BytesIO()
 
     # Crear el documento PDF
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
-    width, height = landscape(letter)
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(legal))
+    width, height = landscape(legal)
 
     # Crear el contenido del documento
     elements = []

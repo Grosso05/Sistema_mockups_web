@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Version 5.9.4.4) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 5.9.4.5) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 8 de octubre de 2024, 9:30 am
+
+Cambios Recientes
+v5.9.4.5
+
+Estamos trabajando en los estilos de la cotización, aca ya tenemos el header bien, estamos en el contenido de la tabla
+
 
 # Fecha de lanzamiento: 7 de octubre de 2024, 3:00 pm
 

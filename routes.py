@@ -967,7 +967,7 @@ def generar_reporte(cotizacion_id):
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('BOX', (0, 0), (-1, -1), 1, colors.black),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('LEFTPADDING', (0, 0), (-1, -1), 10),  # Ajuste aquí
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),  
         ]))
 
         # Crea la tabla con condiciones comerciales y resumen

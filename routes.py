@@ -643,7 +643,7 @@ def generar_reporte(cotizacion_id):
         'SmallHeading',
         parent=styles['Heading1'],
         fontName='Helvetica-Bold',
-        fontSize=12,
+        fontSize=13,
         textColor=colors.HexColor("#ffffff")
     )
 
@@ -675,11 +675,10 @@ def generar_reporte(cotizacion_id):
     ]
 
     # Ajustar las alturas de las filas
-    # Ajustar las alturas de las filas
     row_heights = [0.3 * inch]  # Aumentar la altura de la fila
 
     # Crear la tabla y establecer las alturas de las filas
-    table = Table(data, colWidths=[0.8 * inch, 1.2 * inch, 0.8 * inch, 1.2 * inch, 0.8 * inch, 1.2 * inch], rowHeights=row_heights)
+    table = Table(data, colWidths=[1 * inch, 1.2 * inch, 1 * inch, 1.2 * inch, 1 * inch, 1.2 * inch], rowHeights=row_heights)
 
     # Ajuste de estilo de la tabla
     table.setStyle(TableStyle([
@@ -688,7 +687,7 @@ def generar_reporte(cotizacion_id):
         ('ALIGN', (4, 0), (4, 0), 'CENTER'),  # Centrar "Contacto"
 
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 6),  # Tamaño de fuente más pequeño para mayor compresión
+        ('FONTSIZE', (0, 0), (-1, -1), 5),  # Tamaño de fuente más pequeño para mayor compresión
 
         # Colores de fondo y texto
         ('BACKGROUND', (0, 0), (0, 0), title_background),
@@ -701,20 +700,26 @@ def generar_reporte(cotizacion_id):
         ('TEXTCOLOR', (3, 0), (3, 0), colors.black),
         ('TEXTCOLOR', (5, 0), (5, 0), colors.black),
 
-        # Reducir al mínimo el padding
-        ('PADDING', (0, 0), (-1, -1), 0),        # Sin padding en general
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),  # Sin padding inferior
-        ('TOPPADDING', (0, 0), (-1, -1), 0),     # Sin padding superior
-        ('LEFTPADDING', (0, 0), (-1, -1), 1),    # Mínimo padding a la izquierda para separación visual
-        ('RIGHTPADDING', (0, 0), (-1, -1), 1),   # Mínimo padding a la derecha para separación visual
+        # Ajustar padding específico para los encabezados y contenido
+        ('PADDING', (0, 0), (-1, -1), 20),        # Sin padding en general
+        ('TOPPADDING', (0, 0), (0, 0), 10),      # Aumentar padding superior para "Cliente"
+        ('BOTTOMPADDING', (0, 0), (0, 0), 0),    # Reducir padding inferior para "Cliente"
+        
+        ('TOPPADDING', (2, 0), (2, 0), 10),      # Aumentar padding superior para "Proyecto"
+        ('BOTTOMPADDING', (2, 0), (2, 0), 0),    # Reducir padding inferior para "Proyecto"
+        
+        ('TOPPADDING', (4, 0), (4, 0), 10),      # Aumentar padding superior para "Contacto"
+        ('BOTTOMPADDING', (4, 0), (4, 0), 0),    # Reducir padding inferior para "Contacto"
 
-        # Ajustar padding específico para los encabezados
-        ('TOPPADDING', (0, 0), (0, 0), 3),  # Padding superior para "Cliente"
-        ('BOTTOMPADDING', (0, 0), (0, 0), 3),  # Padding inferior para "Cliente"
-        ('TOPPADDING', (2, 0), (2, 0), 3),  # Padding superior para "Proyecto"
-        ('BOTTOMPADDING', (2, 0), (2, 0), 3),  # Padding inferior para "Proyecto"
-        ('TOPPADDING', (4, 0), (4, 0), 3),  # Padding superior para "Contacto"
-        ('BOTTOMPADDING', (4, 0), (4, 0), 3),  # Padding inferior para "Contacto"
+        # Mantener el padding original para el contenido
+        ('TOPPADDING', (1, 0), (1, 0), 5),        # Espacio superior para contenido (Cliente)
+        ('BOTTOMPADDING', (1, 0), (1, 0), 5),     # Espacio inferior para contenido (Cliente)
+
+        ('TOPPADDING', (3, 0), (3, 0), 5),        # Espacio superior para contenido (Proyecto)
+        ('BOTTOMPADDING', (3, 0), (3, 0), 5),     # Espacio inferior para contenido (Proyecto)
+
+        ('TOPPADDING', (5, 0), (5, 0), 5),        # Espacio superior para contenido (Contacto)
+        ('BOTTOMPADDING', (5, 0), (5, 0), 5),     # Espacio inferior para contenido (Contacto)
 
         # Añadir borde delgado (opcional, para visualizar mejor)
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
@@ -723,6 +728,9 @@ def generar_reporte(cotizacion_id):
 
     # Agregar tabla a la lista de elementos
     elements.append(table)
+
+    # Agregar un espacio entre la tabla de información del cliente y la tabla de productos
+    elements.append(Spacer(1 * inch, 0.2 * inch))  # 0.5 pulgadas de espacio vertical
 
     # Ajuste de las tablas de productos en vertical
     header_data = [
@@ -958,7 +966,7 @@ def generar_reporte(cotizacion_id):
 
         # Insertar el encabezado y pie de página
         canvas.drawImage("static/images/encabezado_cotizacion.png", 0, height - 100, width=width, height=100, mask='auto')
-        canvas.drawImage("static/images/footer_cotizacion.png", 0, 0, width=footer_width, height=50, mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 0, 0, width=footer_width, height=footer_height, mask='auto')
 
         # Posicionar la negociación en coordenadas específicas
         textobject = canvas.beginText(502, 982)  # 
@@ -1115,7 +1123,7 @@ def generar_op(cotizacion_id):
     def add_header_footer(canvas, doc):
         canvas.saveState()
         # Ajustar la imagen del encabezado
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 10, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
+        canvas.drawImage("static/images/encabezado_op.png", 10, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
         # Ajustar la imagen del pie de página
         canvas.drawImage("static/images/footer_cotizacion.png", 20, footer_margin, width=footer_width, height=footer_height, mask='auto')
         canvas.restoreState()

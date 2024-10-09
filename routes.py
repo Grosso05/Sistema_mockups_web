@@ -684,7 +684,7 @@ def generar_reporte(cotizacion_id):
     row_heights = [0.3 * inch]  # Aumentar la altura de la fila
 
     # Crear la tabla y establecer las alturas de las filas
-    table = Table(data, colWidths=[1 * inch, 1.4 * inch, 1 * inch, 1.4 * inch, 1 * inch, 1.4 * inch], rowHeights=row_heights)
+    table = Table(data, colWidths=[1 * inch, 1.6 * inch, 1 * inch, 1.4 * inch, 1 * inch, 1.4 * inch], rowHeights=row_heights)
 
     # Ajuste de estilo de la tabla
     table.setStyle(TableStyle([
@@ -1043,6 +1043,15 @@ def generar_reporte(cotizacion_id):
     return send_file(buffer, as_attachment=True, download_name=f"Cotizacion - N {cotizacion.negociacion}.{cotizacion.proyecto_cotizacion}-{cotizacion.cliente_cotizacion}.pdf", mimetype='application/pdf')
 # < ----------------------------------------------------------  Ruta para generar OP ---------------------------------------------------------------------------------------->
 
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Spacer
+from flask import send_file
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
 @routes_blueprint.route('/generar-op/<int:cotizacion_id>', methods=['GET'])
 def generar_op(cotizacion_id):
     # Buscar la cotización por ID
@@ -1051,19 +1060,18 @@ def generar_op(cotizacion_id):
     if not cotizacion:
         return "Cotización no encontrada", 404
 
-        # Buscar el vendedor
+    # Buscar el vendedor
     vendedor = Users.query.get(cotizacion.vendedor_cotizacion)
     if vendedor:
         vendedor_nombre = f"{vendedor.user_name} {vendedor.user_last_name}"
     else:
         vendedor_nombre = "Desconocido"    
 
-    # Crear un buffer para almacenar el PDF
     buffer = BytesIO()
-
-    # Crear el documento PDF
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(legal))
-    width, height = landscape(legal)  # Obtener el ancho y alto de la página
+    ancho = 21.59 * cm
+    alto = 33 * cm
+    doc = SimpleDocTemplate(buffer, pagesize=(ancho, alto))
+    width, height = legal
 
     # Crear el contenido del documento
     elements = []
@@ -1071,30 +1079,91 @@ def generar_op(cotizacion_id):
     # Estilos
     styles = getSampleStyleSheet()
     normal_style = styles['Normal']
-    heading_style = styles['Heading1']
+    normal_style.fontSize = 9  # Cambiar a 7 para el texto normal
 
-    # Añadir título con estilo
-    title = Paragraph(f"Orden de Producción - OP: {cotizacion.negociacion}", heading_style)
-    elements.append(title)
-    elements.append(Spacer(1, 12))
+    heading_style = styles['Heading1']
+    heading_style.fontSize = 8  # Cambiar a 8 para el título
+
+        # Definir estilo del contenido en negro
+    content_style = ParagraphStyle(
+        'ContentStyle',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=8,
+        textColor=colors.black  # El contenido será negro
+    )
+
+    title_background = colors.HexColor("#00A859")
+
+    elements.append(Spacer(1 * inch, 7))  # 1 pulgada de espaciado a la derecha
+
+
 
     # Datos de la OP en una tabla horizontal
     data = [
-        ["Fecha", cotizacion.fecha_cotizacion, "Cliente", cotizacion.cliente_cotizacion],
-        ["Proyecto", cotizacion.proyecto_cotizacion, "Vendedor", vendedor_nombre]
+        [
+            Paragraph("Cliente", heading_style),
+            Paragraph(cotizacion.cliente_cotizacion, content_style),
+            Paragraph("Proyecto", heading_style),
+            Paragraph(cotizacion.proyecto_cotizacion, content_style), 
+            Paragraph("Vendedor", heading_style),
+            Paragraph(vendedor_nombre, content_style)
+        ]
     ]
 
-    table = Table(data, colWidths=[1*inch, 3.5*inch, 1*inch, 3.5*inch]) #8inch
+    # Ajustar las alturas de las filas
+    row_heights = [0.3 * inch]  # Aumentar la altura de la fila
+
+    # Crear la tabla y establecer las alturas de las filas
+    table = Table(data, colWidths=[1 * inch, 1.6 * inch, 1 * inch, 1.4 * inch, 1 * inch, 1.2 * inch], rowHeights=row_heights)
+
+    # Ajuste de estilo de la tabla
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
-        ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),  # Centrar horizontalmente todos los encabezados
+        ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),  # Centrar verticalmente todos los encabezados
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+        ('FONTSIZE', (0, 0), (-1, -1), 5),  # Tamaño de fuente más pequeño para mayor compresión
+
+        # Colores de fondo y texto
+        ('BACKGROUND', (0, 0), (0, 0), title_background),
+        ('BACKGROUND', (2, 0), (2, 0), title_background),
+        ('BACKGROUND', (4, 0), (4, 0), title_background),
+        ('TEXTCOLOR', (0, 0), (0, 0), colors.white),  # Cliente
+        ('TEXTCOLOR', (2, 0), (2, 0), colors.white),  # Proyecto
+        ('TEXTCOLOR', (4, 0), (4, 0), colors.white),  # Vendedor
+        ('TEXTCOLOR', (1, 0), (1, 0), colors.black),  # Contenido Cliente
+        ('TEXTCOLOR', (3, 0), (3, 0), colors.black),  # Contenido Proyecto
+        ('TEXTCOLOR', (5, 0), (5, 0), colors.black),  # Contenido Vendedor
+
+        # Ajustar padding específico para los encabezados y contenido
+        ('PADDING', (0, 0), (-1, -1), 30),        # Sin padding en general
+        ('TOPPADDING', (0, 0), (0, 0), 10),      # Aumentar padding superior para "Cliente"
+        ('BOTTOMPADDING', (0, 0), (0, 0), 0),    # Reducir padding inferior para "Cliente"
+
+        ('TOPPADDING', (2, 0), (2, 0), 10),      # Aumentar padding superior para "Proyecto"
+        ('BOTTOMPADDING', (2, 0), (2, 0), 0),    # Reducir padding inferior para "Proyecto"
+        
+        ('TOPPADDING', (4, 0), (4, 0), 10),      # Aumentar padding superior para "Contacto"
+        ('BOTTOMPADDING', (4, 0), (4, 0), 0),    # Reducir padding inferior para "Contacto"
+
+        # Mantener el padding original para el contenido
+        ('TOPPADDING', (1, 0), (1, 0), 5),        # Espacio superior para contenido (Cliente)
+        ('BOTTOMPADDING', (1, 0), (1, 0), 5),     # Espacio inferior para contenido (Cliente)
+
+        ('TOPPADDING', (3, 0), (3, 0), 5),        # Espacio superior para contenido (Proyecto)
+        ('BOTTOMPADDING', (3, 0), (3, 0), 5),     # Espacio inferior para contenido (Proyecto)
+
+        ('TOPPADDING', (5, 0), (5, 0), 5),        # Espacio superior para contenido (Contacto)
+        ('BOTTOMPADDING', (5, 0), (5, 0), 5),     # Espacio inferior para contenido (Contacto)
+
+        # Añadir borde delgado (opcional, para visualizar mejor)
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
     ]))
+
+    # Agregar tabla a la lista de elementos
     elements.append(table)
+
+
     elements.append(Spacer(1, 12))
 
     # Cabecera de la tabla de productos
@@ -1102,18 +1171,18 @@ def generar_op(cotizacion_id):
         ["ITEM", "Descripción", "Medidas", "Cantidad"]
     ]
 
-    header_table = Table(header_data, colWidths=[0.5*inch, 5*inch, 3*inch, 0.5*inch]) #8inch
+    header_table = Table(header_data, colWidths=[0.5*inch, 4*inch, 2.5*inch, 1*inch])  # 8inch
     header_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), '#4CAF50'),
+        ('BACKGROUND', (0, 0), (-1, 0), '#00A859'),
         ('TEXTCOLOR', (0, 0), (-1, 0), '#FFFFFF'),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 8),
-        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),  # Cambiar a 7
+        ('BOX', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del borde
+        ('GRID', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del grid
     ]))
     elements.append(header_table)
-    elements.append(Spacer(1, 6))
+
 
     # Detalle de Productos
     item_counter = 1
@@ -1132,14 +1201,14 @@ def generar_op(cotizacion_id):
             producto_cotizado.cantidades
         ]
 
-        product_table = Table([data], colWidths=[0.5*inch, 5*inch, 3*inch, 0.5*inch])
+        product_table = Table([data], colWidths=[0.5*inch, 4*inch, 2.5*inch, 1*inch])
         product_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), '#e0e0e0'),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-            ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),  # Cambiar a 7
+            ('BOX', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del borde
+            ('GRID', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del grid
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ]))
         elements.append(product_table)
@@ -1157,15 +1226,15 @@ def generar_op(cotizacion_id):
         for name, unit, quantity in zip(item_names, item_units, item_quantities):
             items_data.append([name, unit, quantity])
 
-        items_table = Table(items_data, colWidths=[5*inch, 3*inch, 1*inch])
+        items_table = Table(items_data, colWidths=[4*inch, 3*inch, 1*inch])
         items_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), '#c0c0c0'),
+            ('BACKGROUND', (0, 0), (-1, 0), '#00A859'),
             ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-            ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),  # Cambiar a 7
+            ('BOX', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del borde
+            ('GRID', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del grid
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ]))
         elements.append(items_table)
@@ -1176,17 +1245,30 @@ def generar_op(cotizacion_id):
     # Añadir imagen de encabezado y pie de página
     def add_header_footer(canvas, doc):
         canvas.saveState()
-        # Ajustar la imagen del encabezado
-        canvas.drawImage("static/images/encabezado_op.png", 10, height - encabezado_height - 20, width=encabezado_width, height=encabezado_height, mask='auto')
-        # Ajustar la imagen del pie de página
-        canvas.drawImage("static/images/footer_cotizacion.png", 20, footer_margin, width=footer_width, height=footer_height, mask='auto')
+
+        # Insertar el encabezado y pie de página
+        canvas.drawImage("static/images/encabezado_op.png",0, 815, height=encabezado_height, width=width,  mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 0, 0, width=footer_width, height=footer_height, mask='auto')
+
+        # Posicionar la negociación en coordenadas específicas
+        textobject = canvas.beginText(500, 905)  # 
+        textobject.setFont("Helvetica", 12)
+        textobject.textLine(cotizacion.negociacion)  # Colocar el texto de la negociación
+        canvas.drawText(textobject)
+
+        # Posicionar la fecha en coordenadas específicas
+        fecha_cotizacion = cotizacion.fecha_cotizacion.strftime("%d/%m/%Y")  # Convertir a formato dd/mm/yyyy
+        canvas.drawString(503, 863, f"{fecha_cotizacion}")  # Cambia las coordenadas (400, 750) por las deseadas
+
+
         canvas.restoreState()
 
+    # Crear el documento con los elementos y agregar encabezado/pie de página
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
-
-    # Enviar el PDF como respuesta
     buffer.seek(0)
+
     return send_file(buffer, as_attachment=True, download_name=f"OP - N {cotizacion.negociacion}.{cotizacion.proyecto_cotizacion}-{cotizacion.cliente_cotizacion}.pdf", mimetype='application/pdf')
+
 
 
 # <-------------------------------------------------------- Ruta para generar Requisición ------------------------------------------------------------------------------------------------->
@@ -1211,42 +1293,106 @@ def generar_requisicion(cotizacion_id):
     else:
         vendedor_nombre = "Desconocido"
 
-    # Crear un buffer para almacenar el PDF
     buffer = BytesIO()
-
-    # Crear el documento PDF
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(legal))
-    width, height = landscape(legal)
+    ancho = 21.59 * cm
+    alto = 33 * cm
+    doc = SimpleDocTemplate(buffer, pagesize=(ancho, alto))
+    width, height = legal
 
     # Crear el contenido del documento
     elements = []
 
     # Estilos
+
     styles = getSampleStyleSheet()
     normal_style = styles['Normal']
     heading_style = styles['Heading1']
 
-    # Añadir título con estilo
-    title = Paragraph(f"Requisición - {cotizacion.negociacion}", heading_style)
-    elements.append(title)
+    # Crear estilo para los encabezados de la tabla (Cliente, Proyecto, Vendedor)
+    heading_white_style = ParagraphStyle(
+        'HeadingWhiteStyle',
+        parent=styles['Heading1'],
+        fontName='Helvetica-Bold',
+        fontSize=10,  # Tamaño de fuente más pequeño
+        textColor=colors.white,  # Texto en color blanco
+        alignment=1  # Centrar el texto
+    )
+
+    # Definir estilo del contenido en negro
+    content_style = ParagraphStyle(
+        'ContentStyle',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=7,
+        textColor=colors.black  # El contenido será negro
+    )
+
+    # Color de fondo de los títulos
+    title_background = colors.HexColor("#E09834")
     elements.append(Spacer(1, 12))
 
     # Datos de la OP en una tabla horizontal
     data = [
-        ["Fecha", cotizacion.fecha_cotizacion, "Cliente", cotizacion.cliente_cotizacion],
-        ["Proyecto", cotizacion.proyecto_cotizacion, "Vendedor", vendedor_nombre]
+        [
+            Paragraph("Cliente", heading_white_style),  # Aplicar estilo blanco
+            Paragraph(cotizacion.cliente_cotizacion, content_style),
+            Paragraph("Proyecto", heading_white_style),  # Aplicar estilo blanco
+            Paragraph(cotizacion.proyecto_cotizacion, content_style),
+            Paragraph("Vendedor", heading_white_style),  # Aplicar estilo blanco
+            Paragraph(vendedor_nombre, content_style)
+        ]
     ]
 
-    table = Table(data, colWidths=[1*inch, 3.5*inch, 1*inch, 3.5*inch])
+    # Ajustar las alturas de las filas
+    row_heights = [0.3 * inch]  # Aumentar la altura de la fila
+
+    # Crear la tabla y establecer las alturas de las filas
+    table = Table(data, colWidths=[1 * inch, 1.6 * inch, 1 * inch, 1.4 * inch, 1 * inch, 1.2 * inch], rowHeights=row_heights)
+
+    # Ajuste de estilo de la tabla
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
-        ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),  # Centrar horizontalmente todos los encabezados
+        ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),  # Centrar verticalmente todos los encabezados
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-        ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+        ('FONTSIZE', (0, 0), (-1, -1), 5),  # Tamaño de fuente más pequeño para mayor compresión
+
+        # Colores de fondo y texto
+        ('BACKGROUND', (0, 0), (0, 0), title_background),
+        ('BACKGROUND', (2, 0), (2, 0), title_background),
+        ('BACKGROUND', (4, 0), (4, 0), title_background),
+        ('TEXTCOLOR', (0, 0), (0, 0), colors.white),  # Cliente
+        ('TEXTCOLOR', (2, 0), (2, 0), colors.white),  # Proyecto
+        ('TEXTCOLOR', (4, 0), (4, 0), colors.white),  # Vendedor
+        ('TEXTCOLOR', (1, 0), (1, 0), colors.black),  # Contenido Cliente
+        ('TEXTCOLOR', (3, 0), (3, 0), colors.black),  # Contenido Proyecto
+        ('TEXTCOLOR', (5, 0), (5, 0), colors.black),  # Contenido Vendedor
+
+        # Ajustar padding específico para los encabezados y contenido
+        ('PADDING', (0, 0), (-1, -1), 30),        # Sin padding en general
+        ('TOPPADDING', (0, 0), (0, 0), 10),      # Aumentar padding superior para "Cliente"
+        ('BOTTOMPADDING', (0, 0), (0, 0), 0),    # Reducir padding inferior para "Cliente"
+
+        ('TOPPADDING', (2, 0), (2, 0), 10),      # Aumentar padding superior para "Proyecto"
+        ('BOTTOMPADDING', (2, 0), (2, 0), 0),    # Reducir padding inferior para "Proyecto"
+        
+        ('TOPPADDING', (4, 0), (4, 0), 10),      # Aumentar padding superior para "Contacto"
+        ('BOTTOMPADDING', (4, 0), (4, 0), 0),    # Reducir padding inferior para "Contacto"
+
+        # Mantener el padding original para el contenido
+        ('TOPPADDING', (1, 0), (1, 0), 5),        # Espacio superior para contenido (Cliente)
+        ('BOTTOMPADDING', (1, 0), (1, 0), 5),     # Espacio inferior para contenido (Cliente)
+
+        ('TOPPADDING', (3, 0), (3, 0), 5),        # Espacio superior para contenido (Proyecto)
+        ('BOTTOMPADDING', (3, 0), (3, 0), 5),     # Espacio inferior para contenido (Proyecto)
+
+        ('TOPPADDING', (5, 0), (5, 0), 5),        # Espacio superior para contenido (Contacto)
+        ('BOTTOMPADDING', (5, 0), (5, 0), 5),     # Espacio inferior para contenido (Contacto)
+
+        # Añadir borde delgado (opcional, para visualizar mejor)
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
     ]))
+
+    # Agregar tabla a la lista de elementos
     elements.append(table)
     elements.append(Spacer(1, 12))
 
@@ -1257,7 +1403,7 @@ def generar_requisicion(cotizacion_id):
 
     header_table = Table(header_data, colWidths=[0.5*inch, 3.5*inch, 1*inch])
     header_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), '#4CAF50'),
+        ('BACKGROUND', (0, 0), (-1, 0), '#E09834'),
         ('TEXTCOLOR', (0, 0), (-1, 0), '#FFFFFF'),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -1287,7 +1433,7 @@ def generar_requisicion(cotizacion_id):
 
         product_table = Table([data], colWidths=[0.5*inch, 3.5*inch, 1*inch])
         product_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), '#e0e0e0'),
+            ('BACKGROUND', (0, 0), (-1, 0), '#c0c0c0'),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 8),
@@ -1318,11 +1464,11 @@ def generar_requisicion(cotizacion_id):
             total_precio_total += precio_total  # Acumular el total
 
         # Añadir fila de total a la tabla de ítems
-        items_data.append(["", "", "", "             Total", formatear_numero(total_precio_total)])
+        items_data.append(["", "", "", " Total", formatear_numero(total_precio_total)])
 
-        items_table = Table(items_data, colWidths=[3.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch])
+        items_table = Table(items_data, colWidths=[3*inch, 1*inch, 1*inch, 1*inch, 1*inch])
         items_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), '#c0c0c0'),
+            ('BACKGROUND', (0, 0), (-1, 0), '#E09834'),
             ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
@@ -1339,15 +1485,26 @@ def generar_requisicion(cotizacion_id):
     # Añadir imagen de encabezado y pie de página
     def add_header_footer(canvas, doc):
         canvas.saveState()
-        # Ajustar la imagen del encabezado
-        canvas.drawImage("static/images/encabezado_cotizacion.png", 10, height - encabezado_height - 10, width=encabezado_width, height=encabezado_height, mask='auto')
-        # Ajustar la imagen del pie de página
-        canvas.drawImage("static/images/footer_cotizacion.png", 20, footer_margin, width=footer_width, height=footer_height, mask='auto')
+
+        # Insertar el encabezado y pie de página
+        canvas.drawImage("static/images/encabezado_requisicion.png",0, 815, height=encabezado_height, width=width,  mask='auto')
+        canvas.drawImage("static/images/footer_cotizacion.png", 0, 0, width=footer_width, height=footer_height, mask='auto')
+
+        # Posicionar la negociación en coordenadas específicas
+        textobject = canvas.beginText(502, 905)  # 
+        textobject.setFont("Helvetica", 10)
+        textobject.textLine(cotizacion.negociacion)  # Colocar el texto de la negociación
+        canvas.drawText(textobject)
+
+        # Posicionar la fecha en coordenadas específicas
+        fecha_cotizacion = cotizacion.fecha_cotizacion.strftime("%d/%m/%Y")  # Convertir a formato dd/mm/yyyy
+        canvas.drawString(505, 864, f"{fecha_cotizacion}")  # Cambia las coordenadas (400, 750) por las deseadas
+
+
         canvas.restoreState()
 
+    # Crear el documento con los elementos y agregar encabezado/pie de página
     doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
-
-    # Enviar el PDF como respuesta
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"Requisicion - N {cotizacion.negociacion}.{cotizacion.proyecto_cotizacion}-{cotizacion.cliente_cotizacion}.pdf", mimetype='application/pdf')
 

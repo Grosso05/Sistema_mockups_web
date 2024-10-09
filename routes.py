@@ -73,6 +73,7 @@ def generar_catalogouser():
 
 
 @routes_blueprint.route('/generar_cotizacion')
+@login_required
 def generar_cotizacion():
     lineas = Lineas.query.all()
     productos = Productos.query.all()

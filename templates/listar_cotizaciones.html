@@ -126,7 +126,7 @@
             </tr>
             {% for cotizacion in cotizaciones %}
             <tr>
-                <td>{{ cotizacion.negociacion }}</td>
+                <td>{{ cotizacion.negociacion }} - {{ cotizacion.version }}</td>
                 <td>{{ cotizacion.cliente_cotizacion }}</td>
                 <td>{{ cotizacion.proyecto_cotizacion }}</td>
                 <td>

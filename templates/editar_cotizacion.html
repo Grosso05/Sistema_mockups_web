@@ -397,65 +397,7 @@
 </main>
 
 <script>
-/*
-    document.addEventListener('DOMContentLoaded', function() {
-        // Asignar los datos a variables globales si es necesario
-        const productosCotizados = {{ productos_cotizados | tojson }};
-        const itemsCotizados = {{ items_cotizados | tojson }};
-        const resumenCostos = {{ resumen_costos | tojson }};
-    
-        // Llamar a una función para actualizar el contenedor
-        actualizarContenedor(productosCotizados, itemsCotizados, resumenCostos);
-    });
-    
-    function actualizarContenedor(productos, items, resumen) {
-        // Obtener el contenedor donde se van a mostrar los datos
-        const contenedor = document.getElementById('productos-container');
-    
-        // Generar el HTML para los productos cotizados
-        let productosHtml = productos.map(producto => `
-            <div class="producto">
-                <p>Descripción: ${producto.descripcion}</p>
-                <p>Altura: ${producto.alto}</p>
-                <p>Ancho: ${producto.ancho}</p>
-                <p>Cantidad: ${producto.cantidades}</p>
-                <!-- Añadir más campos si es necesario -->
-            </div>
-        `).join('');
-    
-        // Generar el HTML para los ítems cotizados
-        let itemsHtml = items.map(item => `
-            <div class="item">
-                <p>Descripción: ${item.descripcion}</p>
-                <p>Cantidad: ${item.cantidad}</p>
-                <p>Grupo: ${item.grupo}</p>
-                <p>Precio Unitario: ${item.precio_unitario}</p>
-                <!-- Añadir más campos si es necesario -->
-            </div>
-        `).join('');
-    
-        // Generar el HTML para el resumen de costos
-        let resumenHtml = resumen.map(costos => `
-            <div class="resumen">
-                <p>Administración: ${costos.administracion}</p>
-                <p>Costo Directo: ${costos.costo_directo}</p>
-                <p>Imprevistos: ${costos.imprevistos}</p>
-                <p>IVA: ${costos.iva}</p>
-                <!-- Añadir más campos si es necesario -->
-            </div>
-        `).join('');
-    
-        // Insertar el HTML generado en el contenedor
-        contenedor.innerHTML = `
-            <h2>Productos Cotizados</h2>
-            ${productosHtml}
-            <h2>Ítems Cotizados</h2>
-            ${itemsHtml}
-            <h2>Resumen de Costos</h2>
-            ${resumenHtml}
-        `;
-    }
- */
+
 
  const userRol = {{ user_rol }};
 

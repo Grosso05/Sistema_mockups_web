@@ -1832,7 +1832,12 @@ function agregarItemAlProducto(item, itemNumber) {
             formData.append('negociacion', document.getElementById('negociacion').value.trim());
             formData.append('formaPago', document.getElementById('forma_pago').value.trim());
             formData.append('validezCotizacion', document.getElementById('validez_cotizacion').value.trim());
-            formData.append('descuentoCotizacion', parseFloat(document.getElementById('descuento_cotizacion').value.trim()));
+    
+            // Captura el descuento y verifica si es null o vacío
+            let descuentoCotizacion = document.getElementById('descuento_cotizacion').value.trim();
+            descuentoCotizacion = descuentoCotizacion === '' || isNaN(descuentoCotizacion) ? 0 : parseFloat(descuentoCotizacion);
+            formData.append('descuentoCotizacion', descuentoCotizacion);
+    
             formData.append('ivaSeleccionado', document.getElementById('iva-select').value.trim());
     
             // Validar campos esenciales
@@ -1868,16 +1873,17 @@ function agregarItemAlProducto(item, itemNumber) {
                 });
     
                 const items = [];
-                document.querySelectorAll('tbody tr').forEach(function(itemRow) {
+                // Aquí cambiamos el selector para que sólo obtenga los items dentro del producto actual
+                productoDiv.querySelectorAll('tbody tr').forEach(function(itemRow) {
                     const cantidadInput = itemRow.querySelector('input[type="number"]');
                     if (cantidadInput) {
                         const itemId = itemRow.querySelector('td:nth-child(1)').innerText.trim();
                         const itemCantidad = cantidadInput.value;
                         const itemTotalText = itemRow.querySelector('td.total').innerText.trim();
-                
+    
                         // Reemplazar separadores de miles y cambiar coma por punto decimal
                         const itemTotal = parseFloat(itemTotalText.replace(/\./g, '').replace(',', '.'));
-                
+    
                         items.push({
                             itemId: parseInt(itemId),
                             itemCantidad: parseInt(itemCantidad),
@@ -1953,6 +1959,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 console.log('Cotización guardada exitosamente:', data);
                 if (data.success) {
                     alert('Cotización guardada con éxito.');
+                    window.location.href = '/listar_cotizaciones'; 
                 } else {
                     alert('Error al guardar la cotización.');
                 }

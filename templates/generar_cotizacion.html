@@ -1873,7 +1873,6 @@ function agregarItemAlProducto(item, itemNumber) {
                 });
     
                 const items = [];
-                // Aquí cambiamos el selector para que sólo obtenga los items dentro del producto actual
                 productoDiv.querySelectorAll('tbody tr').forEach(function(itemRow) {
                     const cantidadInput = itemRow.querySelector('input[type="number"]');
                     if (cantidadInput) {
@@ -1942,7 +1941,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 // Agregar archivo de imagen si se ha cargado
                 const inputFile = productoDiv.querySelector(`input[type="file"]`);
                 if (inputFile && inputFile.files.length > 0) {
-                    formData.append(`imagenProducto-${productoId}`, inputFile.files[0]); // Agregar la imagen al FormData
+                    formData.append(`imagenProducto-${productoId}`, inputFile.files[0]); // Usar un nombre único para cada producto
                 }
             });
     
@@ -1970,6 +1969,7 @@ function agregarItemAlProducto(item, itemNumber) {
         });
     });
     
+
     function debounce(func, wait) {
         let timeout;
         return function(...args) {

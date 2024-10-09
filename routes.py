@@ -334,7 +334,7 @@ def guardar_cotizacion():
 
     # Procesar los productos
     for producto_data in productos:
-        print("Datos del producto:", producto_data)
+        print("Procesando producto:", producto_data['productoId'])
 
         cantidades_seleccionadas = producto_data.get('cantidadesSeleccionadas', [])
         cantidades_str = ','.join(map(str, cantidades_seleccionadas))
@@ -362,9 +362,10 @@ def guardar_cotizacion():
                 unique_filename = f"{producto_data['productoId']}_{uuid.uuid4().hex}_{original_filename}"
                 filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
                 file.save(filepath)
+                print(f"Imagen guardada en: {filepath}")
+
                 # Guardar la ruta de la imagen en el modelo
                 nuevo_producto_cotizado.imagen_ruta = filepath
-                db.session.commit()
 
         # Manejo de resúmenes de costos
         for resumen in producto_data.get('resúmenesCostos', []):
@@ -391,6 +392,7 @@ def guardar_cotizacion():
             )
             db.session.add(nuevo_item_cotizado)
 
+    # Mover el commit fuera del bucle para asegurarse de que todo se guarde al final
     db.session.commit()
 
     return jsonify({'success': True})

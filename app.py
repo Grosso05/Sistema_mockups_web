@@ -8,7 +8,7 @@ from logos import logos_blueprint
 from customers import customers_blueprint
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = secrets.token_hex(24)
+app.config['SECRET_KEY'] = 'ef0591037a338ffa8ea682ad4c609465d2225dbd25ed598a'
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'users.login'

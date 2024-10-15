@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Version 5.9.6) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 5.9.7) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 9 de octubre de 2024, 12:44 pm
+
+Cambios Recientes
+v5.9.7
+
+Version de correcion de bugs. corregimos el error de que solo se guardaba la imagen de 1 producto
+
 
 # Fecha de lanzamiento: 9 de octubre de 2024, 12:26 pm
 

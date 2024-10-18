@@ -228,7 +228,7 @@ class Cotizacion(db.Model):
     proyecto_cotizacion = db.Column(db.String(255), nullable=False)
     vendedor_cotizacion = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     negociacion = db.Column(db.String(255), nullable=False)
-    version = db.Column(db.String(10), nullable=False, default='a')  # Nueva columna para la versión
+    version = db.Column(db.String(10), nullable=False, default='A')  # Nueva columna para la versión
     forma_de_pago_cotizacion = db.Column(db.String(255), nullable=True)
     validez_cotizacion = db.Column(db.String(255), nullable=True)
     descuento_cotizacion = db.Column(db.String(255), nullable=True)
@@ -298,7 +298,7 @@ class ItemCotizado(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     producto_cotizado_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('items.item_id'), nullable=False)
-    cantidad = db.Column(db.Integer, nullable=False)
+    cantidad = db.Column(db.Float, nullable=False)
     precio_unitario = db.Column(db.Float, nullable=False)
     temporal = db.Column(db.Boolean, default=False, nullable=False)
     total_item = db.Column(db.Float, nullable=False)

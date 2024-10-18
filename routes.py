@@ -22,6 +22,8 @@ from reportlab.platypus import XBox
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8') 
@@ -296,22 +298,35 @@ def crear_cotizacion():
 
 
 
-#Ruta para guardar en bd la cotizacion
-
-
 UPLOAD_FOLDER = './product_images'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@routes_blueprint.route('/guardar-cotizacion', methods=['POST']) 
+def incrementar_version(ultima_version):
+    if ultima_version:
+        nueva_version = chr(ord(ultima_version.upper()) + 1)
+        return nueva_version if nueva_version <= 'Z' else 'A'
+    return 'A'
+
+@routes_blueprint.route('/guardar-cotizacion', methods=['POST'])
 def guardar_cotizacion():
     data = request.form
     negociacion = data.get('negociacion') or ''
     
     # Convertir la cadena de fecha y hora a un objeto datetime
     fecha_cotizacion = datetime.fromisoformat(data['fechaCotizacion']).astimezone(timezone.utc)
+
+    # Buscar cotizaciones existentes con el mismo número de negociación
+    cotizaciones_existentes = Cotizacion.query.filter_by(negociacion=negociacion).order_by(Cotizacion.version.desc()).all()
+
+    # Determinar la nueva versión
+    if cotizaciones_existentes:
+        ultima_version = cotizaciones_existentes[0].version
+        nueva_version = incrementar_version(ultima_version)
+    else:
+        nueva_version = 'A'
 
     # Crear la nueva cotización
     nueva_cotizacion = Cotizacion(
@@ -324,7 +339,8 @@ def guardar_cotizacion():
         forma_de_pago_cotizacion=data['formaPago'],
         validez_cotizacion=data['validezCotizacion'],
         descuento_cotizacion=float(data.get('descuentoCotizacion', 0) or 0),
-        iva_seleccionado=data['ivaSeleccionado']
+        iva_seleccionado=data['ivaSeleccionado'],
+        version=nueva_version
     )
     db.session.add(nueva_cotizacion)
     db.session.flush()  # Para obtener el ID de la cotización
@@ -332,13 +348,18 @@ def guardar_cotizacion():
     # Convertir la cadena JSON de productos en una lista de diccionarios
     productos = json.loads(data.get('productos', '[]'))
 
+
+
+
     # Procesar los productos
     for producto_data in productos:
-        print("Procesando producto:", producto_data['productoId'])
+        print("Procesando producto:", producto_data)
 
+        # Obtener las cantidades seleccionadas
         cantidades_seleccionadas = producto_data.get('cantidadesSeleccionadas', [])
         cantidades_str = ','.join(map(str, cantidades_seleccionadas))
-        
+
+        # Crear una nueva instancia para cada producto
         nuevo_producto_cotizado = ProductoCotizado(
             descripcion=producto_data['descripcion'],
             alto=producto_data['alto'],
@@ -349,6 +370,7 @@ def guardar_cotizacion():
             producto_id=producto_data['productoId'],
             producto_seleccionado_id=producto_data.get('productoSeleccionadoId')
         )
+        
         db.session.add(nuevo_producto_cotizado)
         db.session.flush()  # Para obtener el ID del producto cotizado
 
@@ -358,14 +380,17 @@ def guardar_cotizacion():
             file = request.files[image_key]
             if file and allowed_file(file.filename):
                 original_filename = secure_filename(file.filename)
-                # Generar un nombre único para el archivo
                 unique_filename = f"{producto_data['productoId']}_{uuid.uuid4().hex}_{original_filename}"
                 filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
                 file.save(filepath)
-                print(f"Imagen guardada en: {filepath}")
 
-                # Guardar la ruta de la imagen en el modelo
-                nuevo_producto_cotizado.imagen_ruta = filepath
+                if os.path.exists(filepath):
+                    print(f"Imagen guardada en: {filepath}")
+                    nuevo_producto_cotizado.imagen_ruta = filepath  # Guarda la ruta completa
+                else:
+                    print("Error: el archivo no se guardó correctamente.")
+            else:
+                print(f"No se pudo cargar la imagen para el producto {producto_data['productoId']} o no es un formato permitido.")
 
         # Manejo de resúmenes de costos
         for resumen in producto_data.get('resúmenesCostos', []):
@@ -392,17 +417,19 @@ def guardar_cotizacion():
             )
             db.session.add(nuevo_item_cotizado)
 
-    # Mover el commit fuera del bucle para asegurarse de que todo se guarde al final
-    db.session.commit()
+    # Intentar guardar en la base de datos
+    try:
+        db.session.commit()
+        print("Cotización guardada con éxito.")
+    except Exception as e:
+        db.session.rollback()
+        print("Error al guardar la cotización:", e)
 
     return jsonify({'success': True})
 
 
-def incrementar_version(ultima_version):
-    if ultima_version:
-        nueva_version = chr(ord(ultima_version) + 1)
-        return nueva_version if nueva_version <= 'z' else 'a'
-    return 'a'
+
+
 
 @routes_blueprint.route('/guardar-cotizacion-editada', methods=['POST'])
 def guardar_cotizacion_editada():
@@ -419,7 +446,7 @@ def guardar_cotizacion_editada():
         nueva_version = incrementar_version(ultima_cotizacion.version)
     else:
         # Si no existe, comenzar con la versión 'a'
-        nueva_version = 'a'
+        nueva_version = 'A'
 
     # Crear la nueva cotización con la nueva versión
     nueva_cotizacion = Cotizacion(
@@ -626,6 +653,7 @@ encabezado_height = 121.90 #4,3
 footer_width = 612.07 
 footer_height = 195.615 #6.9
 footer_margin = 0
+DEFAULT_IMAGE_PATH = "product_images\logo.png"
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
@@ -671,7 +699,22 @@ def generar_reporte(cotizacion_id):
     # Ajustar márgenes con Spacer para mover la tabla a la derecha
     elements.append(Spacer(1 * inch, 4))  # 1 pulgada de espaciado a la derecha
 
-    # Tabla de información del cliente
+    # Estilos para títulos y contenido
+    heading_style = ParagraphStyle(
+        'Heading',
+        fontSize=8,  # Tamaño de fuente para títulos
+        alignment=TA_CENTER,  # Alineación centrada para los títulos
+        textColor=colors.white
+    )
+
+    content_style = ParagraphStyle(
+        'Content',
+        fontSize=6,  # Tamaño pequeño para el contenido
+        wordWrap='CJK',  # Ajuste de texto a la celda
+        alignment=TA_LEFT  # Alineación izquierda
+    )
+
+    # Datos de la tabla
     data = [
         [
             Paragraph("Cliente", heading_style),
@@ -683,22 +726,17 @@ def generar_reporte(cotizacion_id):
         ]
     ]
 
-    # Ajustar las alturas de las filas
-    row_heights = [0.3 * inch]  # Aumentar la altura de la fila
+    # Ajuste de ancho de columnas
+    col_widths = [1 * inch, 1.6 * inch, 1 * inch, 1.4 * inch, 1 * inch, 1.4 * inch]
 
-    # Crear la tabla y establecer las alturas de las filas
-    table = Table(data, colWidths=[1 * inch, 1.6 * inch, 1 * inch, 1.4 * inch, 1 * inch, 1.4 * inch], rowHeights=row_heights)
+    # Crear la tabla
+    table = Table(data, colWidths=col_widths)
 
-    # Ajuste de estilo de la tabla
+    # Estilos de la tabla
     table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (0, 0), 'CENTER'),  # Centrar "Cliente"
-        ('ALIGN', (2, 0), (2, 0), 'CENTER'),  # Centrar "Proyecto"
-        ('ALIGN', (4, 0), (4, 0), 'CENTER'),  # Centrar "Contacto"
-
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alineación centrada para todo el contenido
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 5),  # Tamaño de fuente más pequeño para mayor compresión
-
-        # Colores de fondo y texto
+        ('FONTSIZE', (0, 0), (-1, -1), 5),
         ('BACKGROUND', (0, 0), (0, 0), title_background),
         ('BACKGROUND', (2, 0), (2, 0), title_background),
         ('BACKGROUND', (4, 0), (4, 0), title_background),
@@ -708,32 +746,8 @@ def generar_reporte(cotizacion_id):
         ('TEXTCOLOR', (1, 0), (1, 0), colors.black),
         ('TEXTCOLOR', (3, 0), (3, 0), colors.black),
         ('TEXTCOLOR', (5, 0), (5, 0), colors.black),
-
-        # Ajustar padding específico para los encabezados y contenido
-        ('PADDING', (0, 0), (-1, -1), 20),        # Sin padding en general
-        ('TOPPADDING', (0, 0), (0, 0), 10),      # Aumentar padding superior para "Cliente"
-        ('BOTTOMPADDING', (0, 0), (0, 0), 0),    # Reducir padding inferior para "Cliente"
-        
-        ('TOPPADDING', (2, 0), (2, 0), 10),      # Aumentar padding superior para "Proyecto"
-        ('BOTTOMPADDING', (2, 0), (2, 0), 0),    # Reducir padding inferior para "Proyecto"
-        
-        ('TOPPADDING', (4, 0), (4, 0), 10),      # Aumentar padding superior para "Contacto"
-        ('BOTTOMPADDING', (4, 0), (4, 0), 0),    # Reducir padding inferior para "Contacto"
-
-        # Mantener el padding original para el contenido
-        ('TOPPADDING', (1, 0), (1, 0), 5),        # Espacio superior para contenido (Cliente)
-        ('BOTTOMPADDING', (1, 0), (1, 0), 5),     # Espacio inferior para contenido (Cliente)
-
-        ('TOPPADDING', (3, 0), (3, 0), 5),        # Espacio superior para contenido (Proyecto)
-        ('BOTTOMPADDING', (3, 0), (3, 0), 5),     # Espacio inferior para contenido (Proyecto)
-
-        ('TOPPADDING', (5, 0), (5, 0), 5),        # Espacio superior para contenido (Contacto)
-        ('BOTTOMPADDING', (5, 0), (5, 0), 5),     # Espacio inferior para contenido (Contacto)
-
-        # Añadir borde delgado (opcional, para visualizar mejor)
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
     ]))
-
 
     # Agregar tabla a la lista de elementos
     elements.append(table)
@@ -743,7 +757,7 @@ def generar_reporte(cotizacion_id):
 
     # Ajuste de las tablas de productos en vertical
     header_data = [
-        ["ITEM", "Imagen", "Producto", "Materiales", "Cantidad", "Valor Unidad", "Valor Total"]
+        ["ITEM", "Imagen", "Producto", "Materiales / Servicios", "Cantidad", "Valor Unidad", "Valor Total"]
     ]
 
     # Anchos de las columnas ajustados
@@ -845,7 +859,7 @@ def generar_reporte(cotizacion_id):
         if imagen_ruta and os.path.exists(imagen_ruta):  # Verificar que la imagen existe
             image = Image(imagen_ruta, width=1.1*inch, height=1.2*inch)  # Ajustar el tamaño según sea necesario
         else:
-            image = None  # Puedes dejarla como None o asignar una imagen por defecto
+            image = Image(DEFAULT_IMAGE_PATH, width=1.1*inch, height=0.5*inch)
 
         # Modificamos la data de la tabla principal
         # Definir estilos para los encabezados y el contenido
@@ -859,9 +873,8 @@ def generar_reporte(cotizacion_id):
 
         # Crear un párrafo que combina los elementos con títulos
         product_info = Paragraph(
-            f"<b>Nombre:</b> {producto.nombre}<br/><br/>"  # Título para el nombre
-            f"<b>Medidas:</b> {producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}<br/><br/>"  # Título para las medidas
-            f"<b>Descripción:</b> {producto_cotizado.descripcion}",
+            f"<b>Descripción:</b> {producto_cotizado.descripcion}<br/><br/>"  # Título para la descripción
+            f"<b>Medidas:</b> {producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}",  # Título para las medidas
             normal_style
         )
 
@@ -874,12 +887,12 @@ def generar_reporte(cotizacion_id):
         # Modificamos la data de la tabla principal
         data = [
             str(item_counter),
-            image,  # Aquí se coloca el objeto de la imagen
-            product_info,  # Usamos el nuevo párrafo que incluye títulos
+            image,  # Imagen del producto
+            product_info,  # Descripción y medidas del producto (sin el nombre)
             items_paragraph,
-            "",  # Columna vacia para la columna de materiales
-            "",  # Columna vacía para los valores unitarios en la tabla principal
-            internal_table   # Columna para los valores totales en la tabla principal
+            "",  # Columna vacía para la columna de materiales
+            "",  # Columna vacía para los valores unitarios
+            internal_table   # Columna para los valores totales
         ]
 
         product_table = Table([data], colWidths=[0.3*inch, 1.3*inch, 1.3*inch, 2.3*inch, 0.6*inch, 0.9*inch])
@@ -914,6 +927,7 @@ def generar_reporte(cotizacion_id):
                 ["Subtotal", locale.format_string("$ %d", subtotal, grouping=True)],
                 ["Total", locale.format_string("$ %d", total, grouping=True)]
             ]
+            col_widths = [0.9*inch, 0.9*inch]  # Anchos normales sin descuento
         else:
             if descuento_porcentaje > 0:
                 valor_descuento = subtotal * descuento_porcentaje
@@ -933,6 +947,9 @@ def generar_reporte(cotizacion_id):
                     ["IVA (19%)", iva_formateado],
                     ["Total", total_formateado]
                 ]
+
+                # Aumentar el ancho de las columnas para acomodar el texto del descuento
+                col_widths = [1.6*inch, 0.9*inch]  # Anchos más grandes cuando hay descuento
             else:
                 iva = subtotal * 0.19
                 total = subtotal + iva
@@ -947,6 +964,8 @@ def generar_reporte(cotizacion_id):
                     ["Total", total_formateado]
                 ]
 
+                col_widths = [0.9*inch, 0.9*inch]  # Anchos normales sin descuento
+
     # Asegúrate de que summary_data tenga datos
     if not summary_data:
         summary_data = None 
@@ -960,7 +979,8 @@ def generar_reporte(cotizacion_id):
 
     # Solo crea la tabla si summary_data tiene datos
     if summary_data:
-        summary_table = Table(summary_data, colWidths=[0.9*inch, 0.9*inch])
+        # Usa los colWidths definidos dinámicamente
+        summary_table = Table(summary_data, colWidths=col_widths)
         summary_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), colors.white),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
@@ -970,7 +990,7 @@ def generar_reporte(cotizacion_id):
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('BOX', (0, 0), (-1, -1), 1, colors.black),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('LEFTPADDING', (0, 0), (-1, -1), 10),  
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),
         ]))
 
         # Crea la tabla con condiciones comerciales y resumen
@@ -980,7 +1000,7 @@ def generar_reporte(cotizacion_id):
         summary_and_conditions = Table([[condiciones_comerciales]], colWidths=[4.2*inch])
 
     # Añadir un Spacer para mover la tabla hacia la derecha
-    wrapped_summary_table = Table([[Spacer(61, 0), summary_and_conditions]], colWidths=[None, None])
+    wrapped_summary_table = Table([[Spacer(5, 0), summary_and_conditions]], colWidths=[None, None])
 
     wrapped_summary_table.hAlign = 'RIGHT'  # Esta propiedad mueve toda la tabla hacia la derecha
 

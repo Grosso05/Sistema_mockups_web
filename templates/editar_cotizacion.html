@@ -364,7 +364,6 @@
                     <option value="">Seleccionar</option>
 
                 </select>
-
                 <label for="alto-1">Alto: (Cm):</label>
                 <input type="number" class="alto-input" name="alto" />
                 <label for="ancho-1">Ancho: (Cm):</label>
@@ -1349,8 +1348,8 @@ function agregarProducto(producto, items) {
 
 
     
- // Delegación de eventos para los botones de productos
- document.addEventListener('click', function(event) {
+// Delegación de eventos para los botones de productos
+document.addEventListener('click', function(event) {
     const target = event.target;
 
     if (target.matches('.confirmar-producto-btn')) {
@@ -1360,13 +1359,20 @@ function agregarProducto(producto, items) {
         const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
         seleccionItemsContainer.style.display = 'block';
 
-
     } else if (target.matches('.eliminar-producto-btn')) {
-        const producto = document.getElementById(`producto-${target.dataset.productoId}`);
-        numerosEliminados.push(parseInt(target.dataset.productoId, 10)); // Añadir el número del producto eliminado al array
-        producto.remove();
-        actualizarNumeroProducto(); // Actualizar el número de producto visible
-        actualizarResumenesDeCostos(); // Actualizar los resúmenes de costos
+        // Confirmación antes de eliminar el producto
+        const confirmacion = confirm("¿Estás seguro de que deseas eliminar este producto?");
+        
+        if (confirmacion) {
+            const producto = document.getElementById(`producto-${target.dataset.productoId}`);
+            numerosEliminados.push(parseInt(target.dataset.productoId, 10)); // Añadir el número del producto eliminado al array
+            producto.remove();
+            actualizarNumeroProducto(); // Actualizar el número de producto visible
+            actualizarResumenesDeCostos(); // Actualizar los resúmenes de costos
+        } else {
+            console.log('Eliminación cancelada');
+        }
+
     } else if (target.matches('.duplicar-producto-btn')) {
         let nuevoNumeroProductoDuplicado;
         if (numerosEliminados.length > 0) {
@@ -1631,7 +1637,7 @@ function toggleFormulario(numeroProducto) {
                         
                         // Generar las celdas de cantidad y total dinámicamente
                         const cantidadCeldas = valoresCantidad.map((valor, i) => 
-                            `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${productoId})"></td>`
+                    `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${productoId})" style="width: 70px;"></td>`
                         ).join('');
             
                         const totalCeldas = valoresCantidad.map(() => 
@@ -1640,9 +1646,9 @@ function toggleFormulario(numeroProducto) {
                         
                         const nuevaFila = document.createElement('tr');
                         nuevaFila.innerHTML = `
-                            <td>${itemId}</td>
-                            <td>Temporales</td>
-                            <td>${descripcion}</td>
+                            <td class="oculto">${itemId}</td>
+                            <td class="oculto">Temporales</td>
+                            <td >${descripcion}</td>
                             <td>Unidad</td>
                             <td>${formatearNumero(precio)}</td>
                             ${cantidadCeldas} 
@@ -2533,7 +2539,7 @@ function agregarItemAlProducto(item, itemNumber) {
             
                     items.push({
                         itemId: parseInt(itemId),
-                        itemCantidad: parseInt(itemCantidad),
+                        itemCantidad: parseFloat(itemCantidad),
                         itemTotal: itemTotal  // Ahora debería almacenar correctamente los valores
                     });
                 }

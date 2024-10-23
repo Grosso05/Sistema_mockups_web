@@ -331,8 +331,11 @@
                         <div class="grupo">
                             <label for="vendedor_cotizacion">Vendedor:</label>
                             <select id="vendedor_cotizacion" name="vendedor_cotizacion" required>
-                                <!-- Solo se mostrará el usuario logueado -->
-                                <option value="{{ vendedores[0].user_id }}" selected>{{ vendedores[0].user_name }} {{ vendedores[0].user_last_name }}</option>
+                                {% for vendedor in vendedores %}
+                                    <option value="{{ vendedor.user_id }}" {% if vendedor.user_id == logged_user.user_id %}selected{% endif %}>
+                                        {{ vendedor.user_name }} {{ vendedor.user_last_name }}
+                                    </option>
+                                {% endfor %}
                             </select>
                         </div>
                         
@@ -1156,59 +1159,41 @@ function toggleFormulario(numeroProducto) {
                     return;
                 }
             
-                fetch('/agregar_item_temporal', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        descripcion: descripcion,
-                        precio: precio,
-                        aprobado: false,
-                        producto_id: productoId
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Agregar el ítem al contenedor del producto
-                        const contenedor = document.getElementById(`itemsseleccionados-${productoId}`);
-                        const itemId = data.item_id;
-                        
-                        // Generar las celdas de cantidad y total dinámicamente
-                        const cantidadCeldas = valoresCantidad.map((valor, i) => 
-                  `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${productoId})" style="width: 70px;"></td>`
-                        ).join('');
+                // Asignar un itemId único temporal (puedes usar un contador o algo similar)
+                const itemId = Date.now(); // Usar timestamp como identificador único temporal
             
-                        const totalCeldas = valoresCantidad.map(() => 
-                            `<td class="total">0</td>`
-                        ).join('');
-                        
-                        const nuevaFila = document.createElement('tr');
-                        nuevaFila.innerHTML = `
-                            <td class="oculto">${itemId}</td>
-                            <td class="oculto">Temporales</td>
-                            <td>${descripcion}</td>
-                            <td>Unidad</td>
-                            <td>${formatearNumero(precio)}</td>
-                            ${cantidadCeldas} <!-- Aquí se generan los td de cantidad -->
-                            ${totalCeldas}    <!-- Aquí se generan los td de total -->
-                            <td class="oculto">Temporal</td>
-                            <td><button onclick="eliminarItemTemporal(this, ${itemId}, ${productoId})">Eliminar</button></td>
-                        `;
-                        contenedor.appendChild(nuevaFila);
+                // Agregar el ítem al contenedor del producto
+                const contenedor = document.getElementById(`itemsseleccionados-${productoId}`);
             
-                        limpiarFormularioTemporal(productoId);
-                        // Actualizar total del producto
-                        actualizarTotalProducto(productoId);
-                    } else {
-                        alert('Error al agregar el ítem temporal: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+                // Generar las celdas de cantidad y total dinámicamente
+                const valoresCantidad = [cantidad]; // Usar la cantidad seleccionada
+                const cantidadCeldas = valoresCantidad.map((valor, i) => 
+                    `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${productoId})" style="width: 70px;"></td>`
+                ).join('');
+            
+                const totalCeldas = valoresCantidad.map(() => 
+                    `<td class="total">0</td>`
+                ).join('');
+            
+                const nuevaFila = document.createElement('tr');
+                nuevaFila.innerHTML = `
+                    <td class="oculto">${itemId}</td>
+                    <td class="oculto">Temporales</td>
+                    <td>${descripcion}</td>
+                    <td>Unidad</td>
+                    <td>${formatearNumero(precio)}</td>
+                    ${cantidadCeldas} <!-- Aquí se generan los td de cantidad -->
+                    ${totalCeldas}    <!-- Aquí se generan los td de total -->
+                    <td class="oculto">Temporal</td>
+                    <td><button onclick="eliminarItemTemporal(this, ${itemId}, ${productoId})">Eliminar</button></td>
+                `;
+                contenedor.appendChild(nuevaFila);
+            
+                limpiarFormularioTemporal(productoId);
+                // Actualizar total del producto
+                actualizarTotalProducto(productoId);
             }
+            
             
             
             function limpiarFormularioTemporal(productoId) {
@@ -1951,7 +1936,42 @@ function agregarItemAlProducto(item, itemNumber) {
     
             formData.append('productos', JSON.stringify(productos)); // Agregar productos a FormData
     
-            console.log('Datos a enviar:', Object.fromEntries(formData)); // Para ver los datos a enviar
+            // Capturar items temporales en la cotización
+            const itemsTemporales = [];
+
+            document.querySelectorAll('tbody[id^="itemsseleccionados-"]').forEach(function(itemTemporalTbody) {
+                const productoId = itemTemporalTbody.id.split('-')[1]; // Extrae el ID del producto
+            
+                itemTemporalTbody.querySelectorAll('tr').forEach(function(itemRow) {
+                    const itemDescripcion = itemRow.querySelector('td:nth-child(3)').innerText.trim();
+                    const itemUnidad = itemRow.querySelector('td:nth-child(4)').innerText.trim();
+                    const itemPrecioUnitarioText = itemRow.querySelector('td:nth-child(5)').innerText.trim();
+                    const itemCantidad = parseFloat(itemRow.querySelector('input[type="number"]').value.trim());
+                    const itemTotalText = itemRow.querySelector('td.total').innerText.trim();
+            
+                    // Reemplazar separadores de miles y cambiar coma por punto decimal
+                    const itemPrecioUnitario = parseFloat(itemPrecioUnitarioText.replace(/\./g, '').replace(',', '.'));
+                    const itemTotal = parseFloat(itemTotalText.replace(/\./g, '').replace(',', '.'));
+            
+                    itemsTemporales.push({
+                        descripcion: itemDescripcion,
+                        unidad: itemUnidad,  // Asegúrate de capturar la unidad aquí
+                        precioUnitario: itemPrecioUnitario,
+                        cantidad: itemCantidad,
+                        total: itemTotal,
+                        productoId: parseInt(productoId)  // Asociar item temporal al producto correspondiente
+                    });
+                });
+            });
+    
+            formData.append('itemsTemporales', JSON.stringify(itemsTemporales)); // Agregar los items temporales a FormData
+    
+            // Aquí va el nuevo código para ver lo que contiene el FormData
+            console.log('Mostrando datos de FormData:');
+            formData.forEach((value, key) => {
+                console.log(key + ': ' + value);
+            });
+
     
             fetch('/guardar-cotizacion', {
                 method: 'POST',
@@ -1962,7 +1982,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 console.log('Cotización guardada exitosamente:', data);
                 if (data.success) {
                     alert('Cotización guardada con éxito.');
-                    window.location.href = '/listar_cotizaciones'; 
+                    //window.location.href = '/listar_cotizaciones';
                 } else {
                     alert('Error al guardar la cotización.');
                 }
@@ -1972,6 +1992,7 @@ function agregarItemAlProducto(item, itemNumber) {
             });
         });
     });
+    
     
 
     function debounce(func, wait) {

@@ -92,6 +92,9 @@ class ItemTemporal(db.Model):
     descripcion = db.Column(db.String(255), nullable=False)  
     precio = db.Column(db.Float, nullable=False)
     creado_por = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=True)  # Agregado
+    cantidad = db.Column(db.Integer, nullable=True)  # Agregado
+    unidad = db.Column(db.String(50), nullable=True)  # Agregado
     aprobado = db.Column(db.Boolean, default=False)
 
     # Definir la relación con Users
@@ -99,6 +102,8 @@ class ItemTemporal(db.Model):
 
     def __repr__(self):
         return f"<ItemTemporal {self.descripcion}>"
+
+
 
   
 class ItemsPorProducto(db.Model):

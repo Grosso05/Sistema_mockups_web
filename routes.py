@@ -79,9 +79,13 @@ def generar_catalogouser():
 def generar_cotizacion():
     lineas = Lineas.query.all()
     productos = Productos.query.all()
+    
+    # Obtener todos los vendedores
     vendedores = Users.query.all()
+    
     user_rol = current_user.user_rol if current_user.is_authenticated else None
-    return render_template('generar_cotizacion.html', lineas=lineas, productos=productos, vendedores=vendedores, user_rol=user_rol)
+    return render_template('generar_cotizacion.html', lineas=lineas, productos=productos, vendedores=vendedores, user_rol=user_rol, logged_user=current_user)
+
 
 @routes_blueprint.route('/productos_por_linea/<int:linea_id>')
 def productos_por_linea(linea_id):
@@ -348,9 +352,6 @@ def guardar_cotizacion():
     # Convertir la cadena JSON de productos en una lista de diccionarios
     productos = json.loads(data.get('productos', '[]'))
 
-
-
-
     # Procesar los productos
     for producto_data in productos:
         print("Procesando producto:", producto_data)
@@ -409,13 +410,29 @@ def guardar_cotizacion():
         # Manejo de items cotizados
         items_data = producto_data.get('items', [])
         for item_data in items_data:
-            nuevo_item_cotizado = ItemCotizado(
-                producto_cotizado_id=nuevo_producto_cotizado.id,
-                item_id=item_data['itemId'],
-                cantidad=item_data['itemCantidad'],
-                total_item=item_data['itemTotal']
-            )
-            db.session.add(nuevo_item_cotizado)
+            if item_data['itemId'] < 1000000000000:  # Condición para asegurarse de que solo los items no temporales se procesen
+                nuevo_item_cotizado = ItemCotizado(
+                    producto_cotizado_id=nuevo_producto_cotizado.id,
+                    item_id=item_data['itemId'],
+                    cantidad=item_data['itemCantidad'],
+                    total_item=item_data['itemTotal']
+                )
+                db.session.add(nuevo_item_cotizado)
+
+        # Procesar items temporales si existen para este producto
+        items_temporales = json.loads(data.get('itemsTemporales', '[]'))
+        for item_temporal in items_temporales:
+            # Asociar los items temporales solo con el producto actual
+            if item_temporal.get('productoId') == producto_data['productoId']:  # Asegúrate de que pertenezca al producto correcto
+                nuevo_item_temporal = ItemTemporal(
+                    descripcion=item_temporal['descripcion'],
+                    precio=item_temporal['total'],
+                    creado_por=data.get('vendedorCotizacion'),
+                    producto_id=nuevo_producto_cotizado.id,  # Asociado al producto correcto
+                    cantidad=item_temporal['cantidad'],
+                    unidad=item_temporal['unidad']
+                )
+                db.session.add(nuevo_item_temporal)
 
     # Intentar guardar en la base de datos
     try:
@@ -653,10 +670,20 @@ encabezado_height = 121.90 #4,3
 footer_width = 612.07 
 footer_height = 195.615 #6.9
 footer_margin = 0
-DEFAULT_IMAGE_PATH = "product_images\logo.png"
+DEFAULT_IMAGE_PATH = "product_images/logo.png"
 
-import locale
-locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
+
+
+def format_precio(precio):
+    if precio is None:
+        return "$ 0.00"
+    try:
+        precio = float(precio)
+        # Formatear el precio como string con separadores
+        formatted = f"{precio:,.2f}"  # Esto da el formato "1,234.56"
+        return f"${formatted.replace(',', 'X').replace('.', ',').replace('X', '.')}"  # Cambiar a "$ 1.234,56"
+    except (ValueError, TypeError):
+        return "$ 0.00"  # Retornar "$ 0.00" si hay un error
 
 @routes_blueprint.route('/generar-reporte/<int:cotizacion_id>', methods=['GET'])
 def generar_reporte(cotizacion_id):
@@ -793,23 +820,25 @@ def generar_reporte(cotizacion_id):
         valores_totales = []
         valores_unitarios = []
 
-        for i, cantidad in enumerate(cantidades):
-            if i < len(resúmenes_costos):
-                valor_total_inicial = resúmenes_costos[i].oferta_antes_iva
+    # Reemplazar el formateo original
+    for i, cantidad in enumerate(cantidades):
+        if i < len(resúmenes_costos):
+            valor_total_inicial = resúmenes_costos[i].oferta_antes_iva
 
-                if descuento_porcentaje > 0:
-                    valor_total_incrementado = valor_total_inicial / (1 - descuento_porcentaje)
-                else:
-                    valor_total_incrementado = valor_total_inicial
-
-                subtotal += valor_total_incrementado
-                valor_unitario = valor_total_incrementado / float(cantidad) if float(cantidad) > 0 else 0
-
-                valores_totales.append(locale.format_string("$ %d", valor_total_incrementado, grouping=True))
-                valores_unitarios.append(locale.format_string("$ %.2f", valor_unitario, grouping=True))
+            if descuento_porcentaje > 0:
+                valor_total_incrementado = valor_total_inicial / (1 - descuento_porcentaje)
             else:
-                valores_totales.append("$ 0")
-                valores_unitarios.append("$ 0.00")
+                valor_total_incrementado = valor_total_inicial
+
+            subtotal += valor_total_incrementado
+            valor_unitario = valor_total_incrementado / float(cantidad) if float(cantidad) > 0 else 0
+
+            # Usar la nueva función format_precio para formatear los valores
+            valores_totales.append(format_precio(valor_total_incrementado))
+            valores_unitarios.append(format_precio(valor_unitario))
+        else:
+            valores_totales.append("$ 0.00")
+            valores_unitarios.append("$ 0.00")
 
         # Definir un estilo de párrafo más pequeño para la tabla interna
         small_style = ParagraphStyle(
@@ -834,9 +863,21 @@ def generar_reporte(cotizacion_id):
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ]))
 
-        item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
+        # Obtener items_cotizados
+        items_cotizados = producto_cotizado.items
+
+        # Obtener items_temporales si existen
+        items_temporales = ItemTemporal.query.filter_by(producto_id=producto_cotizado.id).all()  # Asegúrate que tienes un producto_id en ItemTemporal si necesitas filtrar por esto
+
+        # Combinar descripciones
+        item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in items_cotizados if Items.query.get(item_cotizado.item_id)]
         items_description = "//".join(item_names) if item_names else "No se especifican items."
-        
+
+        # Agregar items_temporales a la descripción
+        if items_temporales:
+            temporal_descriptions = [item.descripcion for item in items_temporales]
+            items_description += "//" + "//".join(temporal_descriptions)  # Combina las descripciones
+
         # Cambiar el tamaño de la fuente para la descripción de los materiales
         materials_style = ParagraphStyle(
             'MaterialsStyle',
@@ -845,7 +886,7 @@ def generar_reporte(cotizacion_id):
             fontSize=7,  # Ajusta el tamaño de fuente aquí
             textColor=colors.black
         )
-        
+
         items_paragraph = Paragraph(items_description, materials_style)  # Aplica el nuevo estilo
 
         producto_descripcion = Paragraph(producto_cotizado.descripcion)
@@ -1200,12 +1241,11 @@ def generar_op(cotizacion_id):
         ('TEXTCOLOR', (0, 0), (-1, 0), '#FFFFFF'),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),  # Cambiar a 7
-        ('BOX', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del borde
-        ('GRID', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del grid
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOX', (0, 0), (-1, -1), 0.5, '#000000'),
+        ('GRID', (0, 0), (-1, -1), 0.5, '#000000'),
     ]))
     elements.append(header_table)
-
 
     # Detalle de Productos
     item_counter = 1
@@ -1229,9 +1269,9 @@ def generar_op(cotizacion_id):
             ('BACKGROUND', (0, 0), (-1, 0), '#e0e0e0'),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 9),  # Cambiar a 7
-            ('BOX', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del borde
-            ('GRID', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del grid
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOX', (0, 0), (-1, -1), 0.5, '#000000'),
+            ('GRID', (0, 0), (-1, -1), 0.5, '#000000'),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ]))
         elements.append(product_table)
@@ -1242,26 +1282,38 @@ def generar_op(cotizacion_id):
             ["Material", "Unidad", "Cantidad"]
         ]
 
-        item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
-        item_units = [Items.query.get(item_cotizado.item_id).unidad for item_cotizado in producto_cotizado.items if Items.query.get(item_cotizado.item_id)]
-        item_quantities = [item_cotizado.cantidad for item_cotizado in producto_cotizado.items]
 
-        for name, unit, quantity in zip(item_names, item_units, item_quantities):
-            items_data.append([name, unit, quantity])
 
-        items_table = Table(items_data, colWidths=[4*inch, 3*inch, 1*inch])
-        items_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), '#00A859'),
-            ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 9),  # Cambiar a 7
-            ('BOX', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del borde
-            ('GRID', (0, 0), (-1, -1), 0.5, '#000000'),  # Reducir el grosor del grid
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ]))
-        elements.append(items_table)
-        elements.append(Spacer(1, 12))  # Espacio después de la tabla de materiales
+        items = producto_cotizado.items
+        for item_cotizado in items:
+            item_info = Items.query.get(item_cotizado.item_id)
+            if item_info:
+
+                items_data.append([item_info.nombre, item_info.unidad, item_cotizado.cantidad])
+
+        # Obtener items_temporales y verificarlos
+        items_temporales = ItemTemporal.query.filter_by(producto_id=producto_cotizado.id).all()
+        for item_temporal in items_temporales:
+
+            items_data.append([item_temporal.descripcion, item_temporal.unidad, item_temporal.cantidad])
+
+
+
+        # Crear la tabla de items solo si hay datos
+        if len(items_data) > 1:  # Si hay más de una fila (la primera fila es el encabezado)
+            items_table = Table(items_data, colWidths=[4*inch, 3*inch, 1*inch])
+            items_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), '#00A859'),
+                ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('BOX', (0, 0), (-1, -1), 0.5, '#000000'),
+                ('GRID', (0, 0), (-1, -1), 0.5, '#000000'),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ]))
+            elements.append(items_table)
+            elements.append(Spacer(1, 12))  # Espacio después de la tabla de materiales
 
         item_counter += 1
 
@@ -1297,9 +1349,9 @@ def generar_op(cotizacion_id):
 # <-------------------------------------------------------- Ruta para generar Requisición ------------------------------------------------------------------------------------------------->
 
 # Función para formatear números
-def formatear_numero(valor):
-    # Formatear con puntos como separadores de miles
-    return "{:,.0f}".format(valor).replace(",", ".")
+def formatear_numero(numero):
+    """Función para formatear números con punto como separador de miles y coma como separador decimal."""
+    return "{:,.2f}".format(numero).replace(',', 'X').replace('.', ',').replace('X', '.')
 
 @routes_blueprint.route('/generar-requisicion/<int:cotizacion_id>', methods=['GET'])
 def generar_requisicion(cotizacion_id):
@@ -1472,36 +1524,64 @@ def generar_requisicion(cotizacion_id):
             ["Material", "Unidad", "Cantidad", "Valor Unit", "Precio Total"]
         ]
 
+        # Inicializar total_precio_total para cada producto
+        total_precio_total = 0
+
+        # Obtener items_cotizados y depurarlos
+        print(f"Producto Cotizado ID: {producto_cotizado.id}")
         for item_cotizado in producto_cotizado.items:
-            item_nombre = Items.query.get(item_cotizado.item_id).nombre
-            item_unidad = Items.query.get(item_cotizado.item_id).unidad
-            cantidad = item_cotizado.cantidad
-            precio_total = item_cotizado.total_item
+            item_info = Items.query.get(item_cotizado.item_id)
+            if item_info:
+                item_nombre = item_info.nombre
+                item_unidad = item_info.unidad
+                cantidad = item_cotizado.cantidad
+                precio_total = item_cotizado.total_item
 
-            # Calcular valor_unit y formatear precio_total
-            valor_unit = precio_total / cantidad if cantidad != 0 else 0
-            precio_total_formateado = formatear_numero(precio_total)
-            valor_unit_formateado = formatear_numero(valor_unit)
+                # Calcular valor_unit y formatear precio_total
+                valor_unit = precio_total / cantidad if cantidad != 0 else 0
+                precio_total_formateado = formatear_numero(precio_total)
+                valor_unit_formateado = formatear_numero(valor_unit)
 
-            items_data.append([item_nombre, item_unidad, cantidad, valor_unit_formateado, precio_total_formateado])
-            total_precio_total += precio_total  # Acumular el total
+                print(f"Item: {item_nombre}, Cantidad: {cantidad}, Valor Unit: {valor_unit_formateado}, Precio Total: {precio_total_formateado}")
+                items_data.append([item_nombre, item_unidad, cantidad, valor_unit_formateado, precio_total_formateado])
+                total_precio_total += precio_total  # Acumular el total
+
+        # Obtener items_temporales y depurarlos
+        items_temporales = ItemTemporal.query.filter_by(producto_id=producto_cotizado.id).all()
+        for item_temporal in items_temporales:
+            precio_unitario = item_temporal.precio / item_temporal.cantidad if item_temporal.cantidad > 0 else 0
+            print(f"Item Temporal: {item_temporal.descripcion}, Unidad: {item_temporal.unidad}, Cantidad: {item_temporal.cantidad}, Precio Unitario: {precio_unitario}")
+
+            # Agregar a la tabla los valores de descripción, unidad, cantidad, precio unitario y precio total
+            items_data.append([
+                item_temporal.descripcion,            # Descripción
+                item_temporal.unidad,                 # Unidad
+                item_temporal.cantidad,               # Cantidad
+                formatear_numero(precio_unitario),    # Precio unitario
+                formatear_numero(item_temporal.precio) # Precio total
+            ])
+
+            # Acumular el precio total de los items temporales
+            total_precio_total += item_temporal.precio
 
         # Añadir fila de total a la tabla de ítems
-        items_data.append(["", "", "", " Total", formatear_numero(total_precio_total)])
+        items_data.append(["", "", "", "Total", formatear_numero(total_precio_total)])
 
-        items_table = Table(items_data, colWidths=[3*inch, 1*inch, 1*inch, 1*inch, 1*inch])
-        items_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), '#E09834'),
-            ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('BOX', (0, 0), (-1, -1), 1, '#000000'),
-            ('GRID', (0, 0), (-1, -1), 1, '#000000'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ]))
-        elements.append(items_table)
-        elements.append(Spacer(1, 12))
+        # Crear la tabla de items solo si hay datos
+        if len(items_data) > 1:  # Si hay más de una fila (la primera fila es el encabezado)
+            items_table = Table(items_data, colWidths=[3*inch, 1*inch, 1*inch, 1*inch, 1*inch])
+            items_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), '#E09834'),
+                ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 8),
+                ('BOX', (0, 0), (-1, -1), 1, '#000000'),
+                ('GRID', (0, 0), (-1, -1), 1, '#000000'),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ]))
+            elements.append(items_table)
+            elements.append(Spacer(1, 12))
 
         item_counter += 1
 

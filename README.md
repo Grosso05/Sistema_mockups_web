@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Version 6.0.1) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version Deploy 3) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 25 de octubre de 2024, 12:00 pm
+
+Cambios Recientes
+v6.0.3
+
+En esta nueva version incluimos mejoras  y correcion total del buscador de items, los permios y redirecciones del sidebar
+
 
 # Fecha de lanzamiento: 18 de octubre de 2024, 2:15 pm
 

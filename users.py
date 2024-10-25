@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for,flash,session
-from flask_login import login_required, login_user
+from flask_login import current_user, login_required, login_user
 from models import Users, UsersRol, db  # Importa las clases de modelos y la configuración de la base de datos
 import bcrypt
 from utils import roles_required
@@ -16,7 +16,7 @@ def listar_usuarios():
         Users.user_email,
         UsersRol.descripcion  # Incluye el nombre del rol
     ).all()
-    return render_template('listar_usuarios.html', usuarios=usuarios)
+    return render_template('listar_usuarios.html', usuarios=usuarios,user_rol=current_user.user_rol)
 
 
 #ruta del formulario para crear usuarios
@@ -45,7 +45,7 @@ def crear_usuario():
 
         return redirect(url_for('users.listar_usuarios'))  # Redirigir a la página principal después de registrar al usuario
 
-    return render_template('crear_usuario.html')
+    return render_template('crear_usuario.html',user_rol=current_user.user_rol)
 
 #ruta para editar el formulario de usuarios
 
@@ -98,18 +98,20 @@ def login():
             session['username'] = user.user_name
             session['userlastname'] = user.user_last_name
             session['usermail'] = user.user_email
-            session['userlink']= user.user_link
+            session['userlink'] = user.user_link
             session['user_id'] = user.user_id  # Guardar el ID del usuario en la sesión
 
+            # Redirección según el rol del usuario
             if user.user_rol == 1:
                 return redirect(url_for('routes.admin'))  # Redirige al panel de administrador si el rol es 1
-            elif user.user_rol == 2:
-                return redirect(url_for('routes.user'))  # Redirige al panel de usuario si el rol es 2
+            elif user.user_rol in [2, 3]:  # Permite acceso para roles 2 y 3
+                return redirect(url_for('routes.user'))  # Redirige al panel de usuario si el rol es 2 o 3
         else:
             # Credenciales inválidas, muestra un mensaje de error
             return render_template('login.html', error='Credenciales inválidas')
 
     return render_template('login.html')
+
 
 #Ruta para la salida del usuario
 @users_blueprint.route('/logout')

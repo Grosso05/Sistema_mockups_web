@@ -16,7 +16,7 @@ def bool_func(value):
 
 @customers_blueprint.route('/customers.listar_clientes', methods=['GET'])
 @login_required
-@roles_required(1)
+@roles_required(1, 2, 3)  # Permitir acceso a roles 1, 2 y 3
 def listar_clientes():
     try:
         clientes = Customers.query.all()  # Obtener todos los clientes de la base de datos
@@ -30,12 +30,14 @@ def listar_clientes():
         print("Consulta SQL generada por SQLAlchemy:")
         print(consulta_sql)
 
-        return render_template('listar_clientes.html', clientes=clientes)
+        # Renderizar la plantilla y pasar el user_rol
+        return render_template('listar_clientes.html', clientes=clientes, user_rol=current_user.user_rol)
 
     except Exception as e:
         # Manejo de errores
         print(f"Error: {e}")
         return render_template('error.html', error=e)
+
 
 #ruta para listar clientes desde el lado de vendedores
 

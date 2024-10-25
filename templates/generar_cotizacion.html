@@ -223,9 +223,15 @@
         <hr class="sidebar-divider">
         <ul class="list-unstyled components">
             <li>
-                <a href="{{ url_for('routes.admin') }}">
-                    <i class="fas fa-home"></i> Inicio
-                </a>
+                {% if user_rol == 1 %}
+                    <a href="{{ url_for('routes.admin') }}">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                {% elif user_rol == 2 or user_rol == 3 %}
+                    <a href="{{ url_for('routes.user') }}">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                {% endif %}
             </li>
             <div class="sidebar-header">
 
@@ -780,7 +786,7 @@
                                         <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
                                             <div>
                                                 <h4>Seleccionar Ítems</h4>
-                                                <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems">
+                                                <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems" style="display:none;">
                         
                                                 <div id="seleccion-items-${nuevoNumeroProducto}"></div>
                                                 <div id="paginacion-items-${nuevoNumeroProducto}"></div>
@@ -1304,8 +1310,11 @@ function agregarItemAlProducto(item, itemNumber) {
         }
     }
 
-    function cargarItemsProducto(productoId, itemNumber, pagina, busqueda) {
-        fetch(`/items_por_producto/${productoId}?pagina=${pagina}&busqueda=${busqueda}`)
+    function cargarItemsProducto(productoId, itemNumber, pagina) {
+        const buscador = document.getElementById(`buscar-item-${itemNumber}`);
+        buscador.style.display = 'none'; // Ocultar el buscador
+    
+        fetch(`/items_por_producto/${productoId}?pagina=${pagina}`)
             .then(response => response.json())
             .then(data => {
                 const items = data.items;
@@ -1320,18 +1329,18 @@ function agregarItemAlProducto(item, itemNumber) {
                     <thead>
                         <tr>
                             <th>Seleccionar</th>
-                            <th class="oculto">Grupo</th> <!-- Añadir la clase aquí -->
+                            <th class="oculto">Grupo</th>
                             <th>Descripción</th>
                             <th>Unidad</th>
                             <th>Precio</th>
-                            <th class="oculto">Tipo</th> 
+                            <th class="oculto">Tipo</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${items.map(item => `
                             <tr>
                                 <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
-                                <td class="oculto">${item.categoria}</td> <!-- Aplicar clase aquí -->
+                                <td class="oculto">${item.categoria}</td>
                                 <td>${item.descripcion}</td>
                                 <td>${item.unidad}</td>
                                 <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
@@ -1342,6 +1351,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 `;
                 seleccionItemsContainer.appendChild(table);
     
+                // Actualizar paginación
                 paginacionContainer.innerHTML = '';
                 const maxPagesToShow = 5;
                 const half = Math.floor(maxPagesToShow / 2);
@@ -1358,12 +1368,12 @@ function agregarItemAlProducto(item, itemNumber) {
                 if (pagina > 1) {
                     const firstButton = document.createElement('button');
                     firstButton.textContent = '<<';
-                    firstButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, 1, busqueda));
+                    firstButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, 1));
                     paginacionContainer.appendChild(firstButton);
     
                     const prevButton = document.createElement('button');
                     prevButton.textContent = '<';
-                    prevButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, pagina - 1, busqueda));
+                    prevButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, pagina - 1));
                     paginacionContainer.appendChild(prevButton);
                 }
     
@@ -1371,27 +1381,21 @@ function agregarItemAlProducto(item, itemNumber) {
                     const button = document.createElement('button');
                     button.textContent = i;
                     button.disabled = i === pagina;
-                    button.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, i, busqueda));
+                    button.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, i));
                     paginacionContainer.appendChild(button);
                 }
     
                 if (pagina < totalPaginas) {
                     const nextButton = document.createElement('button');
                     nextButton.textContent = '>';
-                    nextButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, pagina + 1, busqueda));
+                    nextButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, pagina + 1));
                     paginacionContainer.appendChild(nextButton);
     
                     const lastButton = document.createElement('button');
                     lastButton.textContent = '>>';
-                    lastButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, totalPaginas, busqueda));
+                    lastButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, totalPaginas));
                     paginacionContainer.appendChild(lastButton);
                 }
-    
-                const buscador = document.getElementById(`buscar-item-${itemNumber}`);
-                buscador.addEventListener('input', debounce(() => {
-                    const busqueda = buscador.value;
-                    cargarItemsProducto(productoId, itemNumber, 1, busqueda);
-                }, 300));
             });
     }
     
@@ -1653,8 +1657,9 @@ function agregarItemAlProducto(item, itemNumber) {
         
         
         function formatearNumero(numero) {
-            return numero.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return numero.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
+        
 
 
         
@@ -1669,7 +1674,6 @@ function agregarItemAlProducto(item, itemNumber) {
     }
     
     
-
     function eliminarItemSeleccionado(button) {
         const fila = button.closest('tr');
         const itemNumber = fila.closest('tbody').id.split('-')[1];
@@ -1696,112 +1700,123 @@ function agregarItemAlProducto(item, itemNumber) {
 
     function verTodosItems(itemNumber, pagina, busqueda) {
         if (isLoading) return; // Evitar que se realicen búsquedas adicionales mientras se está cargando
-        
+    
         isLoading = true;
-        
+    
         const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
         const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
         const buscador = document.getElementById(`buscar-item-${itemNumber}`);
-        
+    
+        // Mostrar el buscador al ver todos los items
+        buscador.style.display = 'block'; // Mostrar el buscador
+    
         // Mostrar animación de carga
         seleccionItemsContainer.innerHTML = '<div class="loading">Cargando...</div>';
         seleccionItemsContainer.classList.add('loading-active'); // Añadir clase de carga
-        
+    
         fetch(`/todos_los_items?pagina=${pagina}&busqueda=${busqueda}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                return response.json();
+            })
             .then(data => {
                 const items = data.items;
                 const totalPaginas = data.totalPaginas;
-        
-                // Usar setTimeout para retraso artificial
-                setTimeout(() => {
-                    // Limpiar animación de carga
-                    seleccionItemsContainer.innerHTML = '';
-                    seleccionItemsContainer.classList.remove('loading-active'); // Quitar clase de carga
-                    
-                    // Mostrar resultados
-                    const table = document.createElement('table');
-                    table.innerHTML = `
-                        <thead>
+    
+                // Limpiar animación de carga
+                seleccionItemsContainer.innerHTML = '';
+                seleccionItemsContainer.classList.remove('loading-active'); // Quitar clase de carga
+                
+                // Mostrar resultados en la tabla
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Seleccionar</th>
+                            <th class="oculto">Grupo</th>
+                            <th>Descripción</th>
+                            <th>Unidad</th>
+                            <th>Precio</th>
+                            <th class="oculto">Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
                             <tr>
-                                <th>Seleccionar</th>
-                                <th class="oculto">Grupo</th>
-                                <th>Descripción</th>
-                                <th>Unidad</th>
-                                <th>Precio</th>
-                                <th class="oculto">Tipo</th>
+                                <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
+                                <td class="oculto">${item.categoria || 'N/A'}</td>
+                                <td>${item.descripcion}</td>
+                                <td>${item.unidad}</td>
+                                <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
+                                <td class="oculto">${item.tipo || 'N/A'}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            ${items.map(item => `
-                                <tr>
-                                    <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
-                                    <td class="oculto">${item.categoria}</td>
-                                    <td>${item.descripcion}</td>
-                                    <td>${item.unidad}</td>
-                                    <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
-                                    <td class="oculto">${item.tipo}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    `;
-                    seleccionItemsContainer.appendChild(table);
-        
-                    // Actualizar paginación
-                    paginacionContainer.innerHTML = '';
-                    const maxPagesToShow = 5;
-                    const half = Math.floor(maxPagesToShow / 2);
-                    let startPage = Math.max(1, pagina - half);
-                    let endPage = Math.min(totalPaginas, pagina + half);
-        
-                    if (pagina - half < 1) {
-                        endPage = Math.min(totalPaginas, endPage + (half - pagina + 1));
-                    }
-                    if (pagina + half > totalPaginas) {
-                        startPage = Math.max(1, startPage - (pagina + half - totalPaginas));
-                    }
-        
-                    if (pagina > 1) {
-                        const firstButton = document.createElement('button');
-                        firstButton.textContent = '<<';
-                        firstButton.addEventListener('click', () => verTodosItems(itemNumber, 1, busqueda));
-                        paginacionContainer.appendChild(firstButton);
-        
-                        const prevButton = document.createElement('button');
-                        prevButton.textContent = '<';
-                        prevButton.addEventListener('click', () => verTodosItems(itemNumber, pagina - 1, busqueda));
-                        paginacionContainer.appendChild(prevButton);
-                    }
-        
-                    for (let i = startPage; i <= endPage; i++) {
-                        const button = document.createElement('button');
-                        button.textContent = i;
-                        button.disabled = i === pagina;
-                        button.addEventListener('click', () => verTodosItems(itemNumber, i, busqueda));
-                        paginacionContainer.appendChild(button);
-                    }
-        
-                    if (pagina < totalPaginas) {
-                        const nextButton = document.createElement('button');
-                        nextButton.textContent = '>';
-                        nextButton.addEventListener('click', () => verTodosItems(itemNumber, pagina + 1, busqueda));
-                        paginacionContainer.appendChild(nextButton);
-        
-                        const lastButton = document.createElement('button');
-                        lastButton.textContent = '>>';
-                        lastButton.addEventListener('click', () => verTodosItems(itemNumber, totalPaginas, busqueda));
-                        paginacionContainer.appendChild(lastButton);
-                    }
-        
-                    // Configurar el evento de búsqueda
-                    buscador.addEventListener('input', debounce(() => {
-                        const busqueda = buscador.value;
-                        verTodosItems(itemNumber, 1, busqueda);
-                    }, 500));
-        
-                    isLoading = false; // Rehabilitar búsqueda
-                }, 1300); // Retraso de 2 segundos
+                        `).join('')}
+                    </tbody>
+                `;
+                seleccionItemsContainer.appendChild(table);
+    
+                // Actualizar paginación
+                paginacionContainer.innerHTML = '';
+                const maxPagesToShow = 5;
+                const half = Math.floor(maxPagesToShow / 2);
+                let startPage = Math.max(1, pagina - half);
+                let endPage = Math.min(totalPaginas, pagina + half);
+    
+                if (pagina - half < 1) {
+                    endPage = Math.min(totalPaginas, endPage + (half - pagina + 1));
+                }
+                if (pagina + half > totalPaginas) {
+                    startPage = Math.max(1, startPage - (pagina + half - totalPaginas));
+                }
+    
+                if (pagina > 1) {
+                    const firstButton = document.createElement('button');
+                    firstButton.textContent = '<<';
+                    firstButton.addEventListener('click', () => verTodosItems(itemNumber, 1, busqueda));
+                    paginacionContainer.appendChild(firstButton);
+    
+                    const prevButton = document.createElement('button');
+                    prevButton.textContent = '<';
+                    prevButton.addEventListener('click', () => verTodosItems(itemNumber, pagina - 1, busqueda));
+                    paginacionContainer.appendChild(prevButton);
+                }
+    
+                for (let i = startPage; i <= endPage; i++) {
+                    const button = document.createElement('button');
+                    button.textContent = i;
+                    button.disabled = i === pagina;
+                    button.addEventListener('click', () => verTodosItems(itemNumber, i, busqueda));
+                    paginacionContainer.appendChild(button);
+                }
+    
+                if (pagina < totalPaginas) {
+                    const nextButton = document.createElement('button');
+                    nextButton.textContent = '>';
+                    nextButton.addEventListener('click', () => verTodosItems(itemNumber, pagina + 1, busqueda));
+                    paginacionContainer.appendChild(nextButton);
+    
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = '>>';
+                    lastButton.addEventListener('click', () => verTodosItems(itemNumber, totalPaginas, busqueda));
+                    paginacionContainer.appendChild(lastButton);
+                }
+    
+                isLoading = false; // Rehabilitar búsqueda
+            })
+            .catch(error => {
+                console.error('Error fetching items:', error);
+                seleccionItemsContainer.innerHTML = '<div class="error">Error al cargar los ítems.</div>'; // Mostrar error
+                isLoading = false; // Rehabilitar búsqueda
             });
+    
+        // Asignar el evento de búsqueda solo una vez
+        if (!buscador.dataset.eventBound) {
+            buscador.addEventListener('input', debounce(() => {
+                const busqueda = buscador.value;
+                verTodosItems(itemNumber, 1, busqueda);
+            }, 1000));
+            buscador.dataset.eventBound = true; // Marcar el evento como asignado
+        }
     }
 
 

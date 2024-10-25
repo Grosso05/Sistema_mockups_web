@@ -1,3 +1,4 @@
+#uod
 import datetime
 import os
 from sqlite3 import IntegrityError
@@ -23,6 +24,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from flask import jsonify, request
+from sqlalchemy import func
+
 
 
 import locale
@@ -44,25 +48,26 @@ def index():
 def admin():
     if current_user.user_rol != 1:  # Verifica si el rol del usuario es igual a 1 (ID del rol de administrador)
         return redirect(url_for('users.login'))  # Redirige a la página de inicio de sesión u otra página 
-    return render_template('/dashboard_admin.html')
+    return render_template('/dashboard_admin.html',user_rol=current_user.user_rol)
 
 
 
-#ruta para el dashboard de usuario
 @routes_blueprint.route('/routes.user')
 @login_required
-@roles_required(2)
 def user():
-    if current_user.user_rol !=2:
+    if current_user.user_rol not in [2, 3]:
         return render_template(url_for('users.login'))
-    return render_template('dashboard_user.html')
+    return render_template('dashboard_user.html', user_rol=current_user.user_rol)
 
 #Ruta para generar catalogo del lado del administrador
 @routes_blueprint.route('/routes.generar_catalogo')
 @login_required
-@roles_required(1)
+@roles_required(1, 2, 3)  # Permitir acceso a roles 1, 2 y 3
 def generar_catalogo():
-    return render_template('generar_catalogoregistrado.html')
+    # Obtener el rol del usuario actual
+    user_rol = current_user.user_rol
+    return render_template('generar_catalogoregistrado.html', user_rol=current_user.user_rol)
+
 
 #ruta para generar catalogo del lado del usuario
 @routes_blueprint.route('/routes.generar_catalogouser')
@@ -136,22 +141,21 @@ def get_porcentajes(producto_id):
 @routes_blueprint.route('/items_por_producto/<int:producto_id>')
 def items_por_producto(producto_id):
     pagina = request.args.get('pagina', 1, type=int)
-    busqueda = request.args.get('busqueda', '', type=str)
-    items_por_pagina = 20
+    items_por_pagina = 20  # Cambia esto a 10 según lo mencionado
 
     query = Items.query \
         .join(ItemsPorProducto, ItemsPorProducto.item_idFK == Items.item_id) \
         .outerjoin(ItemProveedores, (ItemProveedores.item_id == Items.item_id) & (ItemProveedores.tipo_proveedor == 1)) \
         .filter(ItemsPorProducto.producto_idFK == producto_id)
-    
-    if busqueda:
-        query = query.filter(Items.nombre.ilike(f'%{busqueda}%'))
-    
+
+    # Contar el total de ítems y calcular el total de páginas
     total_items = query.count()
     total_paginas = (total_items // items_por_pagina) + (1 if total_items % items_por_pagina > 0 else 0)
-    
+
+    # Paginación
     items = query.paginate(page=pagina, per_page=items_por_pagina).items
 
+    # Crear la respuesta JSON con los ítems encontrados
     items_json = [{
         'id': item.item_id,
         'descripcion': item.nombre,
@@ -168,18 +172,16 @@ def items_por_producto(producto_id):
 
 @routes_blueprint.route('/todos_los_items')
 def todos_los_items():
-    pagina = request.args.get('pagina', 1, type=int)
-    busqueda = request.args.get('busqueda', '', type=str)
-    items_por_pagina = 20
+    pagina = request.args.get('pagina', 1, type=int)  # Obtener la página actual
+    busqueda = request.args.get('busqueda', '', type=str)  # Obtener el término de búsqueda
+    items_por_pagina = 20  # Número de ítems por página
 
-    # Crear la consulta con uniones externas
-    query = Items.query \
-        .outerjoin(ItemProveedores, (ItemProveedores.item_id == Items.item_id) & (ItemProveedores.tipo_proveedor == 1)) \
-        .outerjoin(PrecioEscalonado, (PrecioEscalonado.item_id == Items.item_id) & (PrecioEscalonado.id_proveedor == ItemProveedores.id_proveedor))
-    
+    # Crear la consulta base para la tabla Items
+    query = Items.query
+
     # Filtrar por búsqueda si se proporciona
     if busqueda:
-        query = query.filter(Items.nombre.ilike(f'%{busqueda}%'))
+        query = query.filter(Items.nombre.ilike(f'%{busqueda}%'))  # Usar LIKE para búsqueda
 
     # Contar el total de ítems y calcular el total de páginas
     total_items = query.count()
@@ -188,41 +190,25 @@ def todos_los_items():
     # Paginación
     items = query.paginate(page=pagina, per_page=items_por_pagina).items
 
+    # Crear la respuesta JSON con los ítems encontrados
     items_json = []
     for item in items:
+        # Buscar el proveedor con tipo_proveedor = 1 para obtener el precio
         proveedor = next((prov for prov in item.itemproveedores if prov.tipo_proveedor == 1), None)
+        item_precio = None
+        
         if proveedor:
-            if item.tiene_precios_escalonados:
-                precios_escalonados = [pe for pe in item.precio_escalonado if pe.id_proveedor == proveedor.id_proveedor]
-                precios_escalonados = sorted(precios_escalonados, key=lambda pe: pe.min_cantidad)
-                item_precio = None  # Los precios escalonados reemplazarán al precio fijo
-            else:
-                precios_escalonados = []
-                item_precio = proveedor.precio
-            
-            items_json.append({
-                'id': item.item_id,
-                'descripcion': item.nombre,
-                'categoria': item.categoria.CATEGORIA_NOMBRE,
-                'unidad': item.unidad,
-                'tipo': item.tipo,
-                'precio': locale.format_string("%.2f", item_precio, grouping=True) if item_precio else 'SIN PRECIO',
-                'precios_escalonados': [{
-                    'min_cantidad': pe.min_cantidad,
-                    'max_cantidad': pe.max_cantidad,
-                    'precio_unitario': locale.format_string("%.2f", pe.precio_unitario, grouping=True)
-                } for pe in precios_escalonados]
-            })
-        else:
-            items_json.append({
-                'id': item.item_id,
-                'descripcion': item.nombre,
-                'categoria': item.categoria.CATEGORIA_NOMBRE,
-                'unidad': item.unidad,
-                'tipo': item.tipo,
-                'precio': 'SIN PRECIO',
-                'precios_escalonados': []
-            })
+            item_precio = proveedor.precio  # Obtener el precio del proveedor
+
+        # Agregar el ítem al JSON
+        items_json.append({
+            'id': item.item_id,
+            'descripcion': item.nombre,
+            'categoria': item.categoria.CATEGORIA_NOMBRE if item.categoria else None,  # Manejar relación
+            'unidad': item.unidad,
+            'tipo': item.tipo,
+            'precio': locale.format_string("%.2f", item_precio, grouping=True) if item_precio else 'SIN PRECIO',
+        })
 
     return jsonify({
         'items': items_json,
@@ -564,7 +550,7 @@ def listar_cotizaciones():
         # Manejar otros roles o casos de error si es necesario
         cotizaciones = []
 
-    return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones)
+    return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones,user_rol=current_user.user_rol)
 
 
 #ruta para editar la cotizacion
@@ -678,10 +664,15 @@ def format_precio(precio):
     if precio is None:
         return "$ 0.00"
     try:
+        # Asegurarse de que el locale esté configurado correctamente
+        locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')
+        
+        # Formatear el precio utilizando el locale
         precio = float(precio)
-        # Formatear el precio como string con separadores
-        formatted = f"{precio:,.2f}"  # Esto da el formato "1,234.56"
-        return f"${formatted.replace(',', 'X').replace('.', ',').replace('X', '.')}"  # Cambiar a "$ 1.234,56"
+        formatted = locale.currency(precio, grouping=True)
+        
+        return formatted  # Esto ya te devuelve el formato correcto "$ 1.234,56"
+    
     except (ValueError, TypeError):
         return "$ 0.00"  # Retornar "$ 0.00" si hay un error
 

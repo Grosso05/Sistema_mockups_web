@@ -32,27 +32,32 @@
 
 
 
-<div class="sidebar">
-
-    <div class="close-button" onclick="toggleSidebar()">X</div> 
+<div class="sidebar collapsed">
+    <div class="close-button" onclick="closeSidebar()">X</div>
 
     <div class="logo">
-        <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Your Logo" class="logo">
+        <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Logo_innova" class="logo">
     </div>
     <hr class="sidebar-divider">
     <ul class="list-unstyled components">
         <li>
-            <a href="{{ url_for('routes.admin') }}">
-                <i class="fas fa-home"></i> Inicio
-            </a>
+            {% if user_rol == 1 %}
+                <a href="{{ url_for('routes.admin') }}">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            {% elif user_rol == 2 or user_rol == 3 %}
+                <a href="{{ url_for('routes.user') }}">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            {% endif %}
         </li>
-
-
-
         
+        <div class="sidebar-header">
+        {% if user_rol == 1 %}
         <li class="dropdown">
-            <a  class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
-                <i class="fas fa-users"></i> Gestion de Usuarios
+            <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
+                <i class="fas fa-users"></i> Gestión de Usuarios
+                <i class="fas fa-chevron-down"></i>
             </a>
             <ul id="sub-components-1" class="list-unstyled sub-components">
                 <li>
@@ -67,12 +72,12 @@
                 </li>
             </ul>
         </li>
+        {% endif %}
+
         <li>
             <a href="{{ url_for('customers.listar_clientes') }}">
-                <i class="fas fa-handshake"></i> Gestion de Clientes
+                <i class="fas fa-handshake"></i> Gestión de Clientes
             </a>
-        </li>
-        <li>
         </li>
 
         <li>
@@ -82,8 +87,9 @@
         </li>
 
         <li class="dropdown">
-            <a  class="dropdown-toggle" onclick="toggleDropdown('sub-components-2')">
-                <i class="fas fa-receipt"></i> Gestion de Cotizaciones
+            <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-2')">
+                <i class="fas fa-receipt"></i> Gestión de Cotizaciones
+                <i class="fas fa-chevron-down"></i>
             </a>
             <ul id="sub-components-2" class="list-unstyled sub-components">
                 <li>
@@ -93,7 +99,7 @@
                 </li>
                 <li>
                     <a href="{{ url_for('routes.generar_cotizacion') }}">
-                        <i class="fas fa-plus"></i> Crear Cotizacion
+                        <i class="fas fa-plus"></i> Crear Cotización
                     </a>
                 </li>
             </ul>
@@ -101,8 +107,7 @@
 
         <div class="navbar_logout">
             <a href="{{ url_for('users.logout') }}">Cerrar sesión</a>
-          </div>
-
+        </div>
     </ul>
 </div>
 

@@ -31,9 +31,8 @@
 
 </head>
 
-<div class="sidebar">
-
-    <div class="close-button" onclick="toggleSidebar()">X</div> 
+<div class="sidebar collapsed">
+    <div class="close-button" onclick="closeSidebar()">X</div> 
 
     <div class="logo">
         <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Logo_innova" class="logo">
@@ -41,46 +40,76 @@
     <hr class="sidebar-divider">
     <ul class="list-unstyled components">
         <li>
-            <a href="{{ url_for('routes.admin') }}">
-                <i class="fas fa-home"></i> Inicio
-            </a>
+            {% if user_rol == 1 %}
+                <a href="{{ url_for('routes.admin') }}">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            {% elif user_rol == 2 or user_rol == 3 %}
+                <a href="{{ url_for('routes.user') }}">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            {% endif %}
         </li>
+        
+        <div class="sidebar-header">
+            {% if user_rol == 1 %}
+            <li class="dropdown">
+                <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
+                    <i class="fas fa-users"></i> Gestión de Usuarios
+                    <i class="fas fa-chevron-down"></i> 
+                </a>
+                <ul id="sub-components-1" class="list-unstyled sub-components">
+                    <li>
+                        <a href="{{ url_for('users.listar_usuarios') }}">
+                            <i class="fas fa-eye"></i> Ver Usuarios
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('users.crear_usuario') }}">
+                            <i class="fas fa-user-plus"></i> Crear Usuario
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            {% endif %}
+            
+            <li>
+                <a href="{{ url_for('customers.listar_clientes') }}">
+                    <i class="fas fa-handshake"></i> Gestión de Clientes
+                </a>
+            </li>
 
-        <li>
-            <a href="{{ url_for('customers.listar_clientes') }}">
-                <i class="fas fa-handshake"></i> Gestion de Clientes
-            </a>
-        </li>
-        <li>
-        </li>
+            <li>
+                <a href="{{ url_for('routes.generar_catalogo') }}">
+                    <i class="fas fa-brush"></i> Generar Catalogo
+                </a>
+            </li>
 
-        <li>
-            <a href="{{ url_for('routes.generar_catalogo') }}">
-                <i class="fas fa-brush"></i> Generar Catalogo
-            </a>
-        </li>
+            <li class="dropdown">
+                <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-2')">
+                    <i class="fas fa-receipt"></i> Gestión de Cotizaciones
+                    <i class="fas fa-chevron-down"></i> 
+                </a>
+                <ul id="sub-components-2" class="list-unstyled sub-components">
+                    <li>
+                        <a href="{{ url_for('routes.listar_cotizaciones') }}">
+                            <i class="fas fa-eye"></i> Ver Cotizaciones
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('routes.generar_cotizacion') }}">
+                            <i class="fas fa-plus"></i> Crear Cotización
+                        </a>
+                    </li>
+                </ul>
+            </li>
 
-        <li class="dropdown">
-            <a  class="dropdown-toggle" onclick="toggleDropdown('sub-components-2')">
-                <i class="fas fa-receipt"></i> Gestion de Cotizaciones
-            </a>
-            <ul id="sub-components-2" class="list-unstyled sub-components">
-                <li>
-                    <a href="{{ url_for('routes.listar_cotizaciones') }}">
-                        <i class="fas fa-eye"></i> Ver Cotizaciones
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('routes.generar_cotizacion') }}">
-                        <i class="fas fa-plus"></i> Crear Cotizacion
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <div class="navbar_logout">
-            <a href="{{ url_for('users.logout') }}">Cerrar sesión</a>
-          </div>
+            <div class="navbar_logout">
+                <a href="{{ url_for('users.logout') }}">Cerrar sesión</a>
+            </div>
+        </div>
+    </ul>
+</div>
 
     </ul>
 </div>

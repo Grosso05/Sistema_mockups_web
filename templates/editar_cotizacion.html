@@ -438,7 +438,7 @@
 
 // Función para agrupar ítems por tipo
 function agruparItemsPorTipo(items) {
-    const tipos = ['Materia Prima', 'Servicios', 'Mano de Obra e Instalación', 'Transportes', 'Consumibles'];
+    const tipos = ['Materia Prima', 'Servicios', 'Mano de Obra e Instalacion', 'Transportes', 'Consumibles'];
     const itemsPorTipo = {};
 
     tipos.forEach(tipo => {
@@ -580,6 +580,7 @@ function agregarProducto(producto, items) {
     <p id="utilidad-${producto.producto_id}">Utilidad: 0 <span id="porcentaje-utilidad-${producto.producto_id}">(0%)</span></p>
     <input type="number" id="utilidadSeleccionada-${producto.producto_id}" placeholder="El porcentaje mínimo es: " onchange="actualizarTotalProducto(${producto.producto_id})" style="width: 250px; height: 25px;">
     <p id="oferta-antes-iva-${producto.producto_id}">Oferta Antes De IVA: 0</p>
+    <p id="precio-unitario-venta-${producto.producto_id}" style="color: #00b04f;">Precio Unitario De Venta: 0</p>
     <p id="iva-${producto.producto_id}">IVA: 0</p>
     <p style="color: #00b04f;" id="valor-oferta-${producto.producto_id}">Valor Oferta Impuestos Incluidos: 0</p>
 `;
@@ -919,6 +920,7 @@ function agregarProducto(producto, items) {
                                 </thead>
                                 <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
                                     <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
+
                                     <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
                                     <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
                                     <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
@@ -963,6 +965,7 @@ function agregarProducto(producto, items) {
                                     <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
                                     <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})">
                                     <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+                                    <p id="precio-unitario-venta-${nuevoNumeroProducto}-${index}" style="color: #00b04f;">Precio Unitario De Venta: 0</p>
                                     <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
                                     <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
                                 </div>
@@ -2213,7 +2216,7 @@ function agregarItemAlProducto(item, itemNumber) {
     
 
     // Llamada para actualizar todos los resúmenes de costos cuando se modifiquen los items
-    function actualizarResumenDeCostos(productoId) {
+    function actualizarResumenDeCostos(productoId, cantidadUnidades, index) {
         const productoElement = document.getElementById(`producto-${productoId}`);
         if (productoElement) {
             // Obtén los datos necesarios para el cálculo
@@ -2225,19 +2228,31 @@ function agregarItemAlProducto(item, itemNumber) {
             const ofertaAntesIVA = calcularOfertaAntesIVA(productoId);
             const iva = calcularIVA(productoId);
             const valorOferta = calcularValorOferta(productoId);
-    
+            const precioUnitarioVenta = ofertaAntesIVA / cantidadUnidades; // Cálculo del precio unitario de venta
+            
             // Actualiza el resumen de costos
-            const resumenCostos = document.querySelector(`#resumen-costos-${productoId}`);
+            const resumenCostos = document.querySelector(`#resumen-costos-${productoId}-${index}`);
             if (resumenCostos) {
-                resumenCostos.querySelector(`#costo-directo-${productoId}`).textContent = `Costo Directo: ${costoDirecto}`;
-                resumenCostos.querySelector(`#costo-unitario-${productoId}`).textContent = `Costo Directo Unitario: ${costoUnitario}`;
-                resumenCostos.querySelector(`#administracion-${productoId}`).textContent = `Administración: ${administracion}`;
-                resumenCostos.querySelector(`#imprevistos-${productoId}`).textContent = `Imprevistos: ${imprevistos}`;
-                resumenCostos.querySelector(`#utilidad-${productoId}`).textContent = `Utilidad: ${utilidad}`;
-                resumenCostos.querySelector(`#oferta-antes-iva-${productoId}`).textContent = `Oferta Antes De IVA: ${ofertaAntesIVA}`;
-                resumenCostos.querySelector(`#iva-${productoId}`).textContent = `IVA: ${iva}`;
-                resumenCostos.querySelector(`#valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOferta}`;
+                resumenCostos.querySelector(`#costo-directo-${productoId}-${index}`).textContent = `Costo Directo: ${costoDirecto}`;
+                resumenCostos.querySelector(`#costo-unitario-${productoId}-${index}`).textContent = `Costo Directo Unitario: ${costoUnitario}`;
+                resumenCostos.querySelector(`#administracion-${productoId}-${index}`).textContent = `Administración: ${administracion}`;
+                resumenCostos.querySelector(`#imprevistos-${productoId}-${index}`).textContent = `Imprevistos: ${imprevistos}`;
+                resumenCostos.querySelector(`#utilidad-${productoId}-${index}`).textContent = `Utilidad: ${utilidad}`;
+                resumenCostos.querySelector(`#oferta-antes-iva-${productoId}-${index}`).textContent = `Oferta Antes De IVA: ${ofertaAntesIVA}`;
+                resumenCostos.querySelector(`#iva-${productoId}-${index}`).textContent = `IVA: ${iva}`;
+                resumenCostos.querySelector(`#valor-oferta-${productoId}-${index}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOferta}`;
                 
+                // Actualizar o crear el precio unitario de venta con estilo
+                let precioUnitarioElement = resumenCostos.querySelector(`#precio-unitario-venta-${productoId}-${index}`);
+                if (!precioUnitarioElement) {
+                    // Si el elemento no existe, crearlo
+                    precioUnitarioElement = document.createElement('p');
+                    precioUnitarioElement.id = `precio-unitario-venta-${productoId}-${index}`;
+                    precioUnitarioElement.style.color = '#00b04f'; // Aplicar el color
+                    resumenCostos.appendChild(precioUnitarioElement); // Agregar al DOM
+                }
+                // Actualizar el contenido del Precio Unitario de Venta
+                precioUnitarioElement.textContent = `Precio Unitario De Venta: ${formatearNumero(precioUnitarioVenta)}`;
             }
         }
     }

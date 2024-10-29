@@ -822,6 +822,7 @@
                                                     <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
                                                     <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})" style="width: 250px; height: 25px;">
                                                     <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+                                                    <p id="precio-unitario-venta-${nuevoNumeroProducto}-${index}" style="color: #00b04f;">Precio Unitario De Venta: 0</p>
                                                     <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
                                                     <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
                                                 </div>
@@ -1619,7 +1620,7 @@ function agregarItemAlProducto(item, itemNumber) {
             if (productoElement) {
                 const administracionPorcentaje = parseFloat(productoElement.dataset.administracion);
                 const imprevistosPorcentaje = parseFloat(productoElement.dataset.imprevistos);
-                
+        
                 // Si `nuevoValorUtilidad` es null, sumamos 15 unidades al valor base
                 const utilidadPorcentajeBase = parseFloat(productoElement.dataset.utilidad);
                 const utilidadPorcentaje = nuevoValorUtilidad !== null 
@@ -1634,6 +1635,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 const iva = calcularPorcentaje(ofertaAntesIva, 19);
                 const valorOferta = ofertaAntesIva + iva;
                 const costoUnitario = costoDirecto / cantidadUnidades;
+                const precioUnitarioVenta = ofertaAntesIva / cantidadUnidades; // Calculo del precio unitario por cantidad específica
         
                 // Actualiza el título del resumen de costos
                 const resumenTitulo = document.getElementById(`titulo-resumen-${itemNumber}-${index}`);
@@ -1641,6 +1643,7 @@ function agregarItemAlProducto(item, itemNumber) {
                     resumenTitulo.textContent = `Resumen de costos (${cantidadUnidades})`;
                 }
         
+                // Actualizamos los valores individualmente para cada cantidad
                 document.getElementById(`costo-directo-${itemNumber}-${index}`).textContent = `Costo Directo: ${formatearNumero(costoDirecto)}`;
                 document.getElementById(`costo-unitario-${itemNumber}-${index}`).textContent = `Costo Directo Unitario: ${formatearNumero(costoUnitario)}`;
                 document.getElementById(`administracion-${itemNumber}-${index}`).innerHTML = `Administración: ${formatearNumero(administracion)} <span id="porcentaje-administracion-${itemNumber}-${index}">(${administracionPorcentaje}%)</span>`;
@@ -1649,6 +1652,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 document.getElementById(`oferta-antes-iva-${itemNumber}-${index}`).textContent = `Oferta Antes De IVA: ${formatearNumero(ofertaAntesIva)}`;
                 document.getElementById(`iva-${itemNumber}-${index}`).textContent = `IVA: ${formatearNumero(iva)}`;
                 document.getElementById(`valor-oferta-${itemNumber}-${index}`).textContent = `Valor Oferta Impuestos Incluidos: ${formatearNumero(valorOferta)}`;
+                document.getElementById(`precio-unitario-venta-${itemNumber}-${index}`).textContent = `Precio Unitario De Venta: ${formatearNumero(precioUnitarioVenta)}`; // Actualización del DOM para el precio unitario de venta
             } else {
                 console.error('Error: Elemento del producto no encontrado');
             }

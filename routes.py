@@ -3,6 +3,7 @@ import datetime
 import os
 from sqlite3 import IntegrityError
 import uuid
+from dateutil import parser
 from flask import Blueprint, flash, json, jsonify, render_template, request, redirect, session, url_for,send_file
 from flask_login import login_required, login_user, current_user
 from matplotlib import cm
@@ -26,8 +27,6 @@ from reportlab.platypus import SimpleDocTemplate
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from flask import jsonify, request
 from sqlalchemy import func
-
-
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8') 
@@ -306,7 +305,8 @@ def guardar_cotizacion():
     negociacion = data.get('negociacion') or ''
     
     # Convertir la cadena de fecha y hora a un objeto datetime
-    fecha_cotizacion = datetime.fromisoformat(data['fechaCotizacion']).astimezone(timezone.utc)
+    fecha_cotizacion = parser.parse(data['fechaCotizacion']).astimezone(timezone.utc)
+
 
     # Buscar cotizaciones existentes con el mismo número de negociación
     cotizaciones_existentes = Cotizacion.query.filter_by(negociacion=negociacion).order_by(Cotizacion.version.desc()).all()
@@ -798,6 +798,10 @@ def generar_reporte(cotizacion_id):
 
     descuento_porcentaje = cotizacion.descuento_cotizacion / 100 if cotizacion.descuento_cotizacion else 0
 
+    # Agregar un print para mostrar cuántos productos se encontraron
+    num_productos = len(cotizacion.productos_cotizados)
+    print(f"Número de productos encontrados asociados a la cotización: {num_productos}")
+
     summary_data = []
 
     for producto_cotizado in cotizacion.productos_cotizados:
@@ -811,141 +815,141 @@ def generar_reporte(cotizacion_id):
         valores_totales = []
         valores_unitarios = []
 
-    # Reemplazar el formateo original
-    for i, cantidad in enumerate(cantidades):
-        if i < len(resúmenes_costos):
-            valor_total_inicial = resúmenes_costos[i].oferta_antes_iva
+        # Reemplazar el formateo original
+        for i, cantidad in enumerate(cantidades):
+            if i < len(resúmenes_costos):
+                valor_total_inicial = resúmenes_costos[i].oferta_antes_iva
 
-            if descuento_porcentaje > 0:
-                valor_total_incrementado = valor_total_inicial / (1 - descuento_porcentaje)
+                if descuento_porcentaje > 0:
+                    valor_total_incrementado = valor_total_inicial / (1 - descuento_porcentaje)
+                else:
+                    valor_total_incrementado = valor_total_inicial
+
+                subtotal += valor_total_incrementado
+                valor_unitario = valor_total_incrementado / float(cantidad) if float(cantidad) > 0 else 0
+
+                # Usar la nueva función format_precio para formatear los valores
+                valores_totales.append(format_precio(valor_total_incrementado))
+                valores_unitarios.append(format_precio(valor_unitario))
             else:
-                valor_total_incrementado = valor_total_inicial
+                valores_totales.append("$ 0.00")
+                valores_unitarios.append("$ 0.00")
 
-            subtotal += valor_total_incrementado
-            valor_unitario = valor_total_incrementado / float(cantidad) if float(cantidad) > 0 else 0
+            # Definir un estilo de párrafo más pequeño para la tabla interna
+            small_style = ParagraphStyle(
+                'SmallStyle',
+                parent=styles['Normal'],
+                fontName='Helvetica',
+                fontSize=7.5,  # Ajusta el tamaño de fuente aquí
+                textColor=colors.black
+            )
 
-            # Usar la nueva función format_precio para formatear los valores
-            valores_totales.append(format_precio(valor_total_incrementado))
-            valores_unitarios.append(format_precio(valor_unitario))
-        else:
-            valores_totales.append("$ 0.00")
-            valores_unitarios.append("$ 0.00")
+            # Creamos una lista de filas para las cantidades, valores unitarios y valores totales
+            cantidades_data = [[Paragraph(cantidades[i], small_style), Paragraph(valores_unitarios[i], small_style), Paragraph(valores_totales[i], small_style)] for i in range(len(cantidades))]
 
-        # Definir un estilo de párrafo más pequeño para la tabla interna
-        small_style = ParagraphStyle(
-            'SmallStyle',
-            parent=styles['Normal'],
-            fontName='Helvetica',
-            fontSize=7.5,  # Ajusta el tamaño de fuente aquí
-            textColor=colors.black
-        )
+            # Creamos una tabla interna solo para esas columnas
+            internal_table = Table(cantidades_data, colWidths=[0.6*inch, 0.9*inch, 0.9*inch])
+            internal_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 7.5),  # Ajusta el tamaño de la fuente aquí
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ]))
 
-        # Creamos una lista de filas para las cantidades, valores unitarios y valores totales
-        cantidades_data = [[Paragraph(cantidades[i], small_style), Paragraph(valores_unitarios[i], small_style), Paragraph(valores_totales[i], small_style)] for i in range(len(cantidades))]
+            # Obtener items_cotizados
+            items_cotizados = producto_cotizado.items
 
-        # Creamos una tabla interna solo para esas columnas
-        internal_table = Table(cantidades_data, colWidths=[0.6*inch, 0.9*inch, 0.9*inch])
-        internal_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, -1), colors.white),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 7.5),  # Ajusta el tamaño de la fuente aquí
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ]))
+            # Obtener items_temporales si existen
+            items_temporales = ItemTemporal.query.filter_by(producto_id=producto_cotizado.id).all()  # Asegúrate que tienes un producto_id en ItemTemporal si necesitas filtrar por esto
 
-        # Obtener items_cotizados
-        items_cotizados = producto_cotizado.items
+            # Combinar descripciones
+            item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in items_cotizados if Items.query.get(item_cotizado.item_id)]
+            items_description = "//".join(item_names) if item_names else "No se especifican items."
 
-        # Obtener items_temporales si existen
-        items_temporales = ItemTemporal.query.filter_by(producto_id=producto_cotizado.id).all()  # Asegúrate que tienes un producto_id en ItemTemporal si necesitas filtrar por esto
+            # Agregar items_temporales a la descripción
+            if items_temporales:
+                temporal_descriptions = [item.descripcion for item in items_temporales]
+                items_description += "//" + "//".join(temporal_descriptions)  # Combina las descripciones
 
-        # Combinar descripciones
-        item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in items_cotizados if Items.query.get(item_cotizado.item_id)]
-        items_description = "//".join(item_names) if item_names else "No se especifican items."
+            # Cambiar el tamaño de la fuente para la descripción de los materiales
+            materials_style = ParagraphStyle(
+                'MaterialsStyle',
+                parent=styles['Normal'],
+                fontName='Helvetica',
+                fontSize=7,  # Ajusta el tamaño de fuente aquí
+                textColor=colors.black
+            )
 
-        # Agregar items_temporales a la descripción
-        if items_temporales:
-            temporal_descriptions = [item.descripcion for item in items_temporales]
-            items_description += "//" + "//".join(temporal_descriptions)  # Combina las descripciones
+            items_paragraph = Paragraph(items_description, materials_style)  # Aplica el nuevo estilo
 
-        # Cambiar el tamaño de la fuente para la descripción de los materiales
-        materials_style = ParagraphStyle(
-            'MaterialsStyle',
-            parent=styles['Normal'],
-            fontName='Helvetica',
-            fontSize=7,  # Ajusta el tamaño de fuente aquí
-            textColor=colors.black
-        )
+            producto_descripcion = Paragraph(producto_cotizado.descripcion)
 
-        items_paragraph = Paragraph(items_description, materials_style)  # Aplica el nuevo estilo
+            product_name_paragraph = Paragraph(producto.nombre)
 
-        producto_descripcion = Paragraph(producto_cotizado.descripcion)
+            # Definir la ruta de la imagen desde la base de datos
+            imagen_ruta = producto_cotizado.imagen_ruta  # Asegúrate que este campo está correctamente asignado
 
-        product_name_paragraph = Paragraph(producto.nombre)
+            # Crear un objeto Image
+            if imagen_ruta and os.path.exists(imagen_ruta):  # Verificar que la imagen existe
+                image = Image(imagen_ruta, width=1.1*inch, height=1.2*inch)  # Ajustar el tamaño según sea necesario
+            else:
+                image = Image(DEFAULT_IMAGE_PATH, width=1.1*inch, height=0.5*inch)
 
-        # Definir la ruta de la imagen desde la base de datos
-        imagen_ruta = producto_cotizado.imagen_ruta  # Asegúrate que este campo está correctamente asignado
+            # Modificamos la data de la tabla principal
+            # Definir estilos para los encabezados y el contenido
+            heading_style = ParagraphStyle(
+                'HeadingStyle',
+                parent=styles['Normal'],
+                fontName='Helvetica-Bold',
+                fontSize=8,
+                textColor=colors.HexColor("#0C086D")  # Puedes cambiar el color si lo deseas
+            )
 
-        # Crear un objeto Image
-        if imagen_ruta and os.path.exists(imagen_ruta):  # Verificar que la imagen existe
-            image = Image(imagen_ruta, width=1.1*inch, height=1.2*inch)  # Ajustar el tamaño según sea necesario
-        else:
-            image = Image(DEFAULT_IMAGE_PATH, width=1.1*inch, height=0.5*inch)
+            # Crear un párrafo que combina los elementos con títulos
+            product_info = Paragraph(
+                f"<b>Descripción:</b> {producto_cotizado.descripcion}<br/><br/>"  # Título para la descripción
+                f"<b>Medidas:</b> {producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}",  # Título para las medidas
+                normal_style
+            )
 
-        # Modificamos la data de la tabla principal
-        # Definir estilos para los encabezados y el contenido
-        heading_style = ParagraphStyle(
-            'HeadingStyle',
-            parent=styles['Normal'],
-            fontName='Helvetica-Bold',
-            fontSize=8,
-            textColor=colors.HexColor("#0C086D")  # Puedes cambiar el color si lo deseas
-        )
+            # Crear una tabla que actúe como un contenedor con espacio vacío a la izquierda
+            wrapped_internal_table = Table(
+                [[Spacer(width=10, height=0), internal_table]],  # La tabla interna movida hacia la derecha
+                colWidths=[0*inch, None]  # El primer ancho es el "margen", ajústalo a lo que necesites
+            )
 
-        # Crear un párrafo que combina los elementos con títulos
-        product_info = Paragraph(
-            f"<b>Descripción:</b> {producto_cotizado.descripcion}<br/><br/>"  # Título para la descripción
-            f"<b>Medidas:</b> {producto_cotizado.alto} x {producto_cotizado.ancho} x {producto_cotizado.fondo}",  # Título para las medidas
-            normal_style
-        )
+            # Modificamos la data de la tabla principal
+            data = [
+                str(item_counter),
+                image,  # Imagen del producto
+                product_info,  # Descripción y medidas del producto (sin el nombre)
+                items_paragraph,
+                "",  # Columna vacía para la columna de materiales
+                "",  # Columna vacía para los valores unitarios
+                internal_table   # Columna para los valores totales
+            ]
 
-        # Crear una tabla que actúe como un contenedor con espacio vacío a la izquierda
-        wrapped_internal_table = Table(
-            [[Spacer(width=10, height=0), internal_table]],  # La tabla interna movida hacia la derecha
-            colWidths=[0*inch, None]  # El primer ancho es el "margen", ajústalo a lo que necesites
-        )
+            product_table = Table([data], colWidths=[0.3*inch, 1.3*inch, 1.3*inch, 2.3*inch, 0.6*inch, 0.9*inch])
+            product_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.white),
+                ('ALIGN', (6, 0), (-1, 0), 'RIGHT'),
+                ('RIGHTPADDING', (7, 0), (10, 0), 0),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 6),
+                ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+                ('BOX', (0, 0), (-1, -1), 1, colors.black),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                # Aplicar padding solo a la columna de la tabla interna
+                ('LEFTPADDING', (6, 0), (6, 0), 2),  # Ajusta este valor para mover la tabla un poco a la derecha
+                ('RIGHTPADDING', (6, 0), (6, 0), 0),  # Asegurarnos que no haya relleno a la derecha
+            ]))
 
-        # Modificamos la data de la tabla principal
-        data = [
-            str(item_counter),
-            image,  # Imagen del producto
-            product_info,  # Descripción y medidas del producto (sin el nombre)
-            items_paragraph,
-            "",  # Columna vacía para la columna de materiales
-            "",  # Columna vacía para los valores unitarios
-            internal_table   # Columna para los valores totales
-        ]
+            elements.append(product_table)
+            elements.append(Spacer(1, 1))#
 
-        product_table = Table([data], colWidths=[0.3*inch, 1.3*inch, 1.3*inch, 2.3*inch, 0.6*inch, 0.9*inch])
-        product_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.white),
-            ('ALIGN', (6, 0), (-1, 0), 'RIGHT'),
-            ('RIGHTPADDING', (7, 0), (10, 0), 0),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 6),
-            ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
-            ('BOX', (0, 0), (-1, -1), 1, colors.black),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            # Aplicar padding solo a la columna de la tabla interna
-            ('LEFTPADDING', (6, 0), (6, 0), 2),  # Ajusta este valor para mover la tabla un poco a la derecha
-            ('RIGHTPADDING', (6, 0), (6, 0), 0),  # Asegurarnos que no haya relleno a la derecha
-        ]))
-
-        elements.append(product_table)
-        elements.append(Spacer(1, 1))#
-
-        item_counter += 1
+            item_counter += 1
 
     # Calcular IVA y Total
     if multiple_quantities:

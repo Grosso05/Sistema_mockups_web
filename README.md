@@ -1,11 +1,18 @@
-## Generador de Catálogos Personalizados (Version 6.4.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 6.5.0) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 5 de noviembre de 2024, 11:20 am
+
+Cambios Recientes
+v6.5.0
+
+Ajustes solicitados al resumen de costos ( colores, precio unitario, calculo de utilidad inverso) y ajustes al front. VERSION GLOBAL 2 DESPLOY
 
 # Fecha de lanzamiento: 29 de octubre de 2024, 10:00 am
 
 Cambios Recientes
 v6.4.0
 
-En esta nueva version incluimos correciones a items que no mostraba en edicion, resumen de costos. VERSION 4 DE DEPLOY
+En esta nueva version incluimos correciones a items que no mostraba en edicion, resumen de costos. VERSION 1.2 DE DEPLOY
 
 # Fecha de lanzamiento: 25 de octubre de 2024, 12:00 pm
 

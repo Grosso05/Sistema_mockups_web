@@ -122,6 +122,8 @@
                 <th>Negociación</th>
                 <th>Cliente</th>
                 <th>Proyecto</th>
+                <th>Vendedor</th>
+                <th>Fecha</th>
                 <th>Acciones</th>
             </tr>
             {% for cotizacion in cotizaciones %}
@@ -129,8 +131,9 @@
                 <td>{{ cotizacion.negociacion }} - {{ cotizacion.version }}</td>
                 <td>{{ cotizacion.cliente_cotizacion }}</td>
                 <td>{{ cotizacion.proyecto_cotizacion }}</td>
+                <td>{{ cotizacion.vendedor.user_name }} {{ cotizacion.vendedor.user_last_name }}</td>
+                <td>{{ cotizacion.fecha_cotizacion.strftime('%d/%m/%Y') }}</td>
                 <td>
-
                     <form action="{{ url_for('routes.editar_cotizacion', cotizacion_id=cotizacion.id_cotizacion) }}" method="GET">
                         <button type="submit">Editar</button>
                     </form>
@@ -141,7 +144,7 @@
             </tr>
             {% endfor %}
         </table>
-    </div>
+        
     {% else %}
     <p>No se encontraron cotizaciones para la búsqueda "{{ request.args.get('search') }}"</p>
     {% endif %}

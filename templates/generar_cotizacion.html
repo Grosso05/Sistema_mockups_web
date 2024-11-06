@@ -9,6 +9,11 @@
 
     <style>
 
+        .resumen-costos-container label {
+            color: white;
+        }
+        
+
         button.custom-boton-ver-todos {
             background-color: #4CAF50 !important; /* Usar !important para forzar la aplicación */
         }
@@ -218,7 +223,7 @@
         <div class="close-button" onclick="closeSidebar()">X</div> 
     
         <div class="logo">
-            <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" alt="Logo_innova" class="logo">
+            <img src="{{ url_for('static', filename='images/logo_white.png') }}" alt="Logo_innova" class="logo">
         </div>
         <hr class="sidebar-divider">
         <ul class="list-unstyled components">
@@ -258,10 +263,7 @@
                 </ul>
             </li>
                 {% endif %}
-    
-
-
-                
+                    
             <li>
                 <a href="{{ url_for('customers.listar_clientes') }}">
                     <i class="fas fa-handshake"></i> Gestión de Clientes
@@ -508,18 +510,20 @@
     document.addEventListener('DOMContentLoaded', function() {
         const lineaSelect = document.getElementById('seleccionarLinea');
         const productoSelect = document.getElementById('seleccionarProducto');
-
+    
         // Función para cargar todos los productos
         function cargarTodosLosProductos() {
             fetch('/todos_los_productos') // Asegúrate de que esta ruta devuelva todos los productos en formato JSON
                 .then(response => response.json())
                 .then(productos => {
+                    // Ordenar los productos alfabéticamente por nombre
+                    productos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    
                     productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Reiniciar opciones
                     productos.forEach(producto => {
                         const option = document.createElement('option');
                         option.value = producto.id;
                         option.textContent = producto.nombre;
-                        option.dataset.lineaId = producto.linea_id; // Guardamos el ID de la línea en un data attribute
                         productoSelect.appendChild(option);
                     });
                 })
@@ -802,32 +806,67 @@
                                         <!-- Botón para mostrar el formulario -->
 
                         
-                                        <!-- Formulario para agregar ítems temporales -->
-                                        <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
-                                            <h4>Agregar Componente Temporal</h4>
-                                            <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
-                                            <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
-                                            <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
-                                            <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Componente Temporal</button>
-                                        </div>
+                                    <!-- Formulario para agregar ítems temporales -->
+                                    <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
+                                        <h4>Agregar Componente Temporal</h4>
+                                        <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
+                                        <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
+                                        <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
+                                        <input type="text" id="nuevo-item-proveedor-${nuevoNumeroProducto}" placeholder="Proveedor del Ítem"> <!-- Nuevo campo para el proveedor -->
+                                        <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Componente Temporal</button>
+                                    </div>
+
                         
-                                        <div class="resumen-costos-container">
-                                            ${valoresCantidad.map((valor, index) => `
-                                                <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
-                                                    <h4>Resumen de Costos (${valor})</h4>
-                                                    <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
-                                                    <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
-                                                    <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                                    <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                                    <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                                    <input type="number" id="utilidadSeleccionada-${nuevoNumeroProducto}-${index}" placeholder="El porcentaje mínimo es: ${porcentajes.utilidad}" onchange="actualizarTotalProducto(${nuevoNumeroProducto})" style="width: 250px; height: 25px;">
-                                                    <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
-                                                    <p id="precio-unitario-venta-${nuevoNumeroProducto}-${index}" style="color: #00b04f;">Precio Unitario De Venta: 0</p>
-                                                    <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
-                                                    <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+                                    <div class="resumen-costos-container">
+                                        ${valoresCantidad.map((valor, index) => `
+                                            <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+                                                <h4>Resumen de Costos (${valor})</h4>
+                                                <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
+                                                <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
+                                                <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                                <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                                                <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+
+                                                <!-- Opción 1: Ingresar el porcentaje de utilidad -->
+                                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                                    <label for="utilidadPorcentaje-${nuevoNumeroProducto}-${index}" style="flex: 0 0 150px;">Porcentaje de Utilidad:</label>
+                                                    <input type="number" 
+                                                        id="utilidadPorcentaje-${nuevoNumeroProducto}-${index}" 
+                                                        value="${porcentajes.utilidad + 15}" 
+                                                        onchange="actualizarTotalProducto(${nuevoNumeroProducto}, ${index})"
+                                                        style="width: 150px; height: 25px; margin-left: 2px;" 
+                                                        title="El porcentaje mínimo es: ${porcentajes.utilidad}">
+                                                    <input type="radio" 
+                                                        name="opcionUtilidad-${nuevoNumeroProducto}-${index}" 
+                                                        value="porcentaje" 
+                                                        checked 
+                                                        onclick="cambiarMetodoUtilidad(${nuevoNumeroProducto}, ${index}, 'porcentaje')" 
+                                                        style="margin-left: 20px; width: 15px; height: 15px;"> <!-- Reduce el margen a 2px -->
                                                 </div>
-                                            `).join('')}
-                                        </div>
+
+                                                <!-- Opción 2: Ingresar el valor manualmente -->
+                                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                                    <label for="utilidadValor-${nuevoNumeroProducto}-${index}" style="flex: 0 0 150px;">Valor Manual de Utilidad:</label>
+                                                    <input type="number" 
+                                                        id="utilidadValor-${nuevoNumeroProducto}-${index}" 
+                                                        value="" 
+                                                        onchange="actualizarTotalProducto(${nuevoNumeroProducto}, ${index})"
+                                                        style="width: 150px; height: 25px; margin-left: 2px;" 
+                                                        title="Ingresa un valor manual para la utilidad">
+                                                    <input type="radio" 
+                                                        name="opcionUtilidad-${nuevoNumeroProducto}-${index}" 
+                                                        value="manual" 
+                                                        onclick="cambiarMetodoUtilidad(${nuevoNumeroProducto}, ${index}, 'manual')" 
+                                                        style="margin-left: 20px; width: 15px; height: 15px;"> <!-- Reduce el margen a 2px -->
+                                                </div>
+
+                                                <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+                                                <p id="precio-unitario-venta-${nuevoNumeroProducto}-${index}" style="color: #00b04f;">Precio Unitario De Venta: 0</p>
+                                                <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
+                                                <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
                         
                                         <div class="acciones">
                                             <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
@@ -1150,7 +1189,7 @@ function toggleFormulario(numeroProducto) {
             function agregarItemTemporal(productoId) {
                 const descripcion = document.getElementById(`nuevo-item-descripcion-${productoId}`).value.trim();
                 const precioInput = document.getElementById(`nuevo-item-precio-${productoId}`).value.trim();
-                
+            
                 // Convertir el precio a formato numérico
                 const precio = parseFloat(precioInput.replace(/\./g, '').replace(/,/g, '.'));
             
@@ -1160,20 +1199,23 @@ function toggleFormulario(numeroProducto) {
                 }
             
                 const cantidad = parseInt(document.getElementById(`nuevo-item-cantidad-${productoId}`).value.trim(), 10);
+                
+                // Agregar el proveedor aquí
+                const proveedor = document.getElementById(`nuevo-item-proveedor-${productoId}`).value.trim();
             
-                if (!descripcion || isNaN(precio) || isNaN(cantidad) || cantidad <= 0 || !productoId) {
-                    alert("Por favor, ingrese una descripción, precio, cantidad y seleccione un producto.");
+                if (!descripcion || isNaN(precio) || isNaN(cantidad) || cantidad <= 0 || !productoId || !proveedor) {
+                    alert("Por favor, ingrese una descripción, precio, cantidad, proveedor y seleccione un producto.");
                     return;
                 }
             
-                // Asignar un itemId único temporal (puedes usar un contador o algo similar)
+                // Asignar un itemId único temporal
                 const itemId = Date.now(); // Usar timestamp como identificador único temporal
             
                 // Agregar el ítem al contenedor del producto
                 const contenedor = document.getElementById(`itemsseleccionados-${productoId}`);
             
                 // Generar las celdas de cantidad y total dinámicamente
-                const valoresCantidad = [cantidad]; // Usar la cantidad seleccionada
+                const valoresCantidad = [cantidad];
                 const cantidadCeldas = valoresCantidad.map((valor, i) => 
                     `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${productoId})" style="width: 70px;"></td>`
                 ).join('');
@@ -1191,6 +1233,7 @@ function toggleFormulario(numeroProducto) {
                     <td>${formatearNumero(precio)}</td>
                     ${cantidadCeldas} <!-- Aquí se generan los td de cantidad -->
                     ${totalCeldas}    <!-- Aquí se generan los td de total -->
+                    <td class="oculto">${proveedor}</td> <!-- Campo oculto para el proveedor -->
                     <td class="oculto">Temporal</td>
                     <td><button onclick="eliminarItemTemporal(this, ${itemId}, ${productoId})">Eliminar</button></td>
                 `;
@@ -1200,6 +1243,7 @@ function toggleFormulario(numeroProducto) {
                 // Actualizar total del producto
                 actualizarTotalProducto(productoId);
             }
+            
             
             
             
@@ -1486,7 +1530,8 @@ function agregarItemAlProducto(item, itemNumber) {
             actualizarTotalProducto(itemNumber);
         });
     
-        mostrarNotificacion('Ítems agregados correctamente.', 'success');
+        alert('Ítems agregados correctamente.', 'success');
+
     }
     
     
@@ -1502,8 +1547,6 @@ function agregarItemAlProducto(item, itemNumber) {
     }
     
     function actualizarTotalProducto(itemNumber) {
-
-        
         const contenedores = [
             document.getElementById(`materiaprima-${itemNumber}`),
             document.getElementById(`consumibles-${itemNumber}`),
@@ -1521,7 +1564,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 filas.forEach(fila => {
                     const precioElement = fila.querySelector('td:nth-child(5)');
                     const cantidadInputs = fila.querySelectorAll('input.cantidad');
-
+    
                     const preciosEscalonados = JSON.parse(fila.getAttribute('data-precios-escalonados') || '[]');
     
                     if (precioElement && cantidadInputs.length > 0) {
@@ -1562,9 +1605,21 @@ function agregarItemAlProducto(item, itemNumber) {
         const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
         cantidadInputs.forEach((input, index) => {
             const cantidadUnidades = parseFloat(input.value) || 1;
-            const utilidadInput = document.getElementById(`utilidadSeleccionada-${itemNumber}-${index}`);
-            const nuevoValorUtilidad = utilidadInput ? parseFloat(utilidadInput.value) || null : null;
-            if (utilidadInput) {
+            
+            // Buscar cuál input de utilidad está activo: porcentaje o valor manual
+            const metodoUtilidad = document.querySelector(`input[name="opcionUtilidad-${itemNumber}-${index}"]:checked`).value;
+    
+            let nuevoValorUtilidad = null;
+    
+            if (metodoUtilidad === 'porcentaje') {
+                const utilidadInputPorcentaje = document.getElementById(`utilidadPorcentaje-${itemNumber}-${index}`);
+                nuevoValorUtilidad = utilidadInputPorcentaje ? parseFloat(utilidadInputPorcentaje.value) || null : null;
+            } else if (metodoUtilidad === 'manual') {
+                const utilidadInputValor = document.getElementById(`utilidadValor-${itemNumber}-${index}`);
+                nuevoValorUtilidad = utilidadInputValor ? parseFloat(utilidadInputValor.value) || null : null;
+            }
+    
+            if (nuevoValorUtilidad !== null) {
                 actualizarTotalesExtras(itemNumber, subtotalPorCantidad[index], nuevoValorUtilidad, cantidadUnidades, index);
             } else {
                 console.warn(`Utilidad seleccionada no encontrada para ${itemNumber}-${index}`);
@@ -1574,7 +1629,7 @@ function agregarItemAlProducto(item, itemNumber) {
     
     // Llamada para actualizar todos los resúmenes de costos cuando se modifiquen los items
     function actualizarResumenDeCostos(productoId) {
-        console.log(`Actualizando resumen de costos para producto ${productoId}`);
+        
         const productoElement = document.getElementById(`producto-${productoId}`);
         if (productoElement) {
             const costoDirecto = calcularCostoDirecto(productoId);
@@ -1596,6 +1651,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 resumenCostos.querySelector(`#oferta-antes-iva-${productoId}`).textContent = `Oferta Antes De IVA: ${ofertaAntesIVA}`;
                 resumenCostos.querySelector(`#iva-${productoId}`).textContent = `IVA: ${iva}`;
                 resumenCostos.querySelector(`#valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOferta}`;
+                
             } else {
                 console.log(`No se encontró el resumen de costos para producto ${productoId}`);
             }
@@ -1603,56 +1659,92 @@ function agregarItemAlProducto(item, itemNumber) {
             console.log(`No se encontró el producto para ID ${productoId}`);
         }
     }
-    
-    
-    
-    
-    
-    
+
         
         
         function calcularPorcentaje(valor, porcentaje) {
             return (valor * porcentaje) / 100;
         }
+
+        function calcularPorcentajeDesdeValorManual(costoDirecto, valorUtilidad) {
+            if (costoDirecto > 0) {
+                return (valorUtilidad / costoDirecto) * 100;
+            }
+            return 0; // Evitar división por cero
+        }
         
+        // Calcular el porcentaje desde un valor manual
+function calcularPorcentajeDesdeValorManual(costoDirecto, valorUtilidad) {
+    return (valorUtilidad / costoDirecto) * 100;
+}
+
+// Calcular el valor de la utilidad desde un porcentaje
+function calcularValorDesdePorcentaje(costoDirecto, porcentajeUtilidad) {
+    return (costoDirecto * porcentajeUtilidad) / 100;
+}
+
+
         function actualizarTotalesExtras(itemNumber, costoDirecto, nuevoValorUtilidad = null, cantidadUnidades, index) {
             const productoElement = document.querySelector(`#producto-${itemNumber}`);
             if (productoElement) {
                 const administracionPorcentaje = parseFloat(productoElement.dataset.administracion);
                 const imprevistosPorcentaje = parseFloat(productoElement.dataset.imprevistos);
+                const porcentajeUtilidadMinimo = parseFloat(productoElement.dataset.utilidad); // Porcentaje mínimo de utilidad
         
-                // Si `nuevoValorUtilidad` es null, sumamos 15 unidades al valor base
-                const utilidadPorcentajeBase = parseFloat(productoElement.dataset.utilidad);
-                const utilidadPorcentaje = nuevoValorUtilidad !== null 
-                    ? nuevoValorUtilidad 
-                    : utilidadPorcentajeBase + 15; // Sumamos 15 unidades
+                let utilidadPorcentajeBase = parseFloat(productoElement.dataset.utilidad);
+                let utilidadPorcentaje = utilidadPorcentajeBase;
+                
+                // Verificación y cálculo del porcentaje de utilidad
+                if (nuevoValorUtilidad !== null) {
+                    const opcionUtilidad = document.querySelector(`input[name="opcionUtilidad-${itemNumber}-${index}"]:checked`).value;
         
+                    if (opcionUtilidad === 'manual') {
+                        // Caso de valor manual: recalcular el porcentaje a partir del valor ingresado
+                        utilidadPorcentaje = calcularPorcentajeDesdeValorManual(costoDirecto, nuevoValorUtilidad);
+                        
+                        if (utilidadPorcentaje < porcentajeUtilidadMinimo) {
+                            // Si el porcentaje calculado es menor al mínimo, mostrar alerta y usar el porcentaje mínimo
+                            alert(`El valor ingresado genera una utilidad menor al porcentaje mínimo permitido (${porcentajeUtilidadMinimo}%). Se ajustará al valor mínimo.`);
+                            utilidadPorcentaje = porcentajeUtilidadMinimo;
+                            nuevoValorUtilidad = calcularValorDesdePorcentaje(costoDirecto, utilidadPorcentaje);
+                        }
+                    } else {
+                        // Caso de porcentaje ingresado directamente
+                        utilidadPorcentaje = nuevoValorUtilidad;
+        
+                        if (utilidadPorcentaje < porcentajeUtilidadMinimo) {
+                            // Si el porcentaje ingresado es menor al mínimo, mostrar alerta y ajustar
+                            alert(`El porcentaje de utilidad ingresado es menor al porcentaje mínimo permitido (${porcentajeUtilidadMinimo}%). Se ajustará al mínimo.`);
+                            utilidadPorcentaje = porcentajeUtilidadMinimo;
+                        }
+                    }
+                }
+        
+                // Ahora que tenemos el porcentaje válido, calculamos los valores relacionados
                 const administracion = calcularPorcentaje(costoDirecto, administracionPorcentaje);
                 const imprevistos = calcularPorcentaje(costoDirecto, imprevistosPorcentaje);
                 const utilidad = calcularPorcentaje(costoDirecto, utilidadPorcentaje);
         
+                // Cálculo de la oferta antes de IVA
                 const ofertaAntesIva = costoDirecto + administracion + imprevistos + utilidad;
                 const iva = calcularPorcentaje(ofertaAntesIva, 19);
                 const valorOferta = ofertaAntesIva + iva;
                 const costoUnitario = costoDirecto / cantidadUnidades;
-                const precioUnitarioVenta = ofertaAntesIva / cantidadUnidades; // Calculo del precio unitario por cantidad específica
+                const precioUnitarioVenta = ofertaAntesIva / cantidadUnidades;
         
-                // Actualiza el título del resumen de costos
-                const resumenTitulo = document.getElementById(`titulo-resumen-${itemNumber}-${index}`);
-                if (resumenTitulo) {
-                    resumenTitulo.textContent = `Resumen de costos (${cantidadUnidades})`;
-                }
+                // Sumar los porcentajes
+                const sumaPorcentajes = administracionPorcentaje + imprevistosPorcentaje + utilidadPorcentaje;
         
-                // Actualizamos los valores individualmente para cada cantidad
+                // Actualizar los valores en la interfaz
                 document.getElementById(`costo-directo-${itemNumber}-${index}`).textContent = `Costo Directo: ${formatearNumero(costoDirecto)}`;
                 document.getElementById(`costo-unitario-${itemNumber}-${index}`).textContent = `Costo Directo Unitario: ${formatearNumero(costoUnitario)}`;
                 document.getElementById(`administracion-${itemNumber}-${index}`).innerHTML = `Administración: ${formatearNumero(administracion)} <span id="porcentaje-administracion-${itemNumber}-${index}">(${administracionPorcentaje}%)</span>`;
                 document.getElementById(`imprevistos-${itemNumber}-${index}`).innerHTML = `Imprevistos: ${formatearNumero(imprevistos)} <span id="porcentaje-imprevistos-${itemNumber}-${index}">(${imprevistosPorcentaje}%)</span>`;
-                document.getElementById(`utilidad-${itemNumber}-${index}`).innerHTML = `Utilidad: ${formatearNumero(utilidad)} <span id="porcentaje-utilidad-${itemNumber}-${index}">(${utilidadPorcentaje}%)</span>`;
-                document.getElementById(`oferta-antes-iva-${itemNumber}-${index}`).textContent = `Oferta Antes De IVA: ${formatearNumero(ofertaAntesIva)}`;
+                document.getElementById(`utilidad-${itemNumber}-${index}`).innerHTML = `Utilidad: ${formatearNumero(utilidad)} <span id="porcentaje-utilidad-${itemNumber}-${index}">(${formatearNumero(utilidadPorcentaje)}%)</span>`;
+                document.getElementById(`oferta-antes-iva-${itemNumber}-${index}`).innerHTML = `Oferta Antes De IVA: ${formatearNumero(ofertaAntesIva)} <span style="color: #00b04f;">(${sumaPorcentajes}%)</span>`;
                 document.getElementById(`iva-${itemNumber}-${index}`).textContent = `IVA: ${formatearNumero(iva)}`;
                 document.getElementById(`valor-oferta-${itemNumber}-${index}`).textContent = `Valor Oferta Impuestos Incluidos: ${formatearNumero(valorOferta)}`;
-                document.getElementById(`precio-unitario-venta-${itemNumber}-${index}`).textContent = `Precio Unitario De Venta: ${formatearNumero(precioUnitarioVenta)}`; // Actualización del DOM para el precio unitario de venta
+                document.getElementById(`precio-unitario-venta-${itemNumber}-${index}`).textContent = `Precio Unitario De Venta: ${formatearNumero(precioUnitarioVenta)}`;
             } else {
                 console.error('Error: Elemento del producto no encontrado');
             }
@@ -1660,12 +1752,18 @@ function agregarItemAlProducto(item, itemNumber) {
         
         
         
+        function cambiarMetodoUtilidad(itemNumber, index, metodo) {
+            // Al cambiar el método, recalcular los totales
+            actualizarTotalesExtras(itemNumber, calcularCostoDirecto(itemNumber), null, obtenerCantidadUnidades(itemNumber), index);
+        }
+        
+        
+        
+        
         function formatearNumero(numero) {
             return numero.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
         
-
-
         
     function mostrarNotificacion(mensaje, tipo) {
         const notificacion = document.createElement('div');
@@ -1677,7 +1775,11 @@ function agregarItemAlProducto(item, itemNumber) {
         }, 3000);
     }
     
-    
+    function mostrarNotificacion(itemDescripcion){
+        const notificacion = document.createElement('div');
+
+    }
+
     function eliminarItemSeleccionado(button) {
         const fila = button.closest('tr');
         const itemNumber = fila.closest('tbody').id.split('-')[1];
@@ -1966,7 +2068,8 @@ function agregarItemAlProducto(item, itemNumber) {
                     const itemUnidad = itemRow.querySelector('td:nth-child(4)').innerText.trim();
                     const itemPrecioUnitarioText = itemRow.querySelector('td:nth-child(5)').innerText.trim();
                     const itemCantidad = parseFloat(itemRow.querySelector('input[type="number"]').value.trim());
-                    const itemTotalText = itemRow.querySelector('td.total').innerText.trim();
+                    const itemProveedor = itemRow.querySelector('td:nth-child(8)').innerText.trim(); // Proveedor - corregido a la celda 8
+                    const itemTotalText = itemRow.querySelector('td.total').innerText.trim(); // Total - asegúrate que sea la celda correcta
             
                     // Reemplazar separadores de miles y cambiar coma por punto decimal
                     const itemPrecioUnitario = parseFloat(itemPrecioUnitarioText.replace(/\./g, '').replace(',', '.'));
@@ -1974,16 +2077,19 @@ function agregarItemAlProducto(item, itemNumber) {
             
                     itemsTemporales.push({
                         descripcion: itemDescripcion,
-                        unidad: itemUnidad,  // Asegúrate de capturar la unidad aquí
+                        unidad: itemUnidad,  
                         precioUnitario: itemPrecioUnitario,
                         cantidad: itemCantidad,
                         total: itemTotal,
-                        productoId: parseInt(productoId)  // Asociar item temporal al producto correspondiente
+                        proveedor: itemProveedor, // Proveedor ahora está correcto
+                        productoId: parseInt(productoId)  
                     });
                 });
             });
-    
+            
             formData.append('itemsTemporales', JSON.stringify(itemsTemporales)); // Agregar los items temporales a FormData
+            
+
     
             // Aquí va el nuevo código para ver lo que contiene el FormData
             console.log('Mostrando datos de FormData:');
@@ -2001,7 +2107,7 @@ function agregarItemAlProducto(item, itemNumber) {
                 console.log('Cotización guardada exitosamente:', data);
                 if (data.success) {
                     alert('Cotización guardada con éxito.');
-                    //window.location.href = '/listar_cotizaciones';
+                    window.location.href = '/listar_cotizaciones';
                 } else {
                     alert('Error al guardar la cotización.');
                 }

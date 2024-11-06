@@ -27,8 +27,7 @@ def listar_clientes():
 
         # Verificar la consulta SQL generada por SQLAlchemy
         consulta_sql = Customers.query.statement
-        print("Consulta SQL generada por SQLAlchemy:")
-        print(consulta_sql)
+
 
         # Renderizar la plantilla y pasar el user_rol
         return render_template('listar_clientes.html', clientes=clientes, user_rol=current_user.user_rol)

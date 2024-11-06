@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <title>Editar Usuario</title>
 
     <style>
@@ -62,6 +63,68 @@ input[type="submit"]:hover {
     }
 }
 
+/* Sidebar*/
+
+.sidebar .list-unstyled li a i {
+    margin-right: 10px;
+    color: #fff; /* Color blanco para los iconos */
+}
+
+.sidebar .list-unstyled li a {
+    color: #c8c9ce; /* Color de texto para los enlaces */
+}
+
+.sidebar .list-unstyled li a i {
+    margin-right: 10px;
+    color: #fff;
+}
+
+.sidebar .list-unstyled li a i {
+    margin-right: 10px;
+    color: #fff; /* Color blanco para los iconos */
+}
+
+.sidebar .sub-components li {
+    margin-left: 40px; /* Ajusta este valor según sea necesario */
+}
+
+.sidebar .sub-components li a {
+    font-size: 16px; /* Ajusta el tamaño de la fuente */
+    color: #e0e0e0; /* Color de texto más claro */
+}
+
+.sidebar-divider {
+    border-top: 1px solid #fff; /* Línea blanca entre categorías */
+}
+
+.sidebar-header {
+    padding: 10px 15px;
+    background-color: #777777;
+    border-bottom: 1px solid #ccc; /* Add a border to the bottom of the sidebar header */
+    padding: 10px 0; /* Add padding to the sidebar header */
+    text-align:justify ;
+}
+
+.sidebar-header h6 {
+    color: #fff; /* Color blanco */
+    font-size: 18px; /* Tamaño de fuente más grande */
+    text-align: center; /* Centrar el texto */
+    margin: 10px 0; /* Ajustar el margen si es necesario */
+}
+
+.sidebar {
+    position: fixed;
+    top: 0px; 
+    bottom: 0;
+    left: 0;
+    width: 250px;
+    z-index: 1;
+    background-color: #777777;
+    padding-top: 20px;
+    overflow-y: auto;
+    padding: 20px;
+  }
+
 
     </style>
 
@@ -70,7 +133,88 @@ input[type="submit"]:hover {
 
     {%include 'navbar.html'%}
 
-    {% include 'sidebar.html' %}
+    <div class="sidebar collapsed">
+        <div class="close-button" onclick="closeSidebar()">X</div> 
+    
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/logo_white.png') }}" alt="Logo_innova" class="logo">
+        </div>
+        <hr class="sidebar-divider">
+        <ul class="list-unstyled components">
+            <li>
+                {% if user_rol == 1 %}
+                    <a href="{{ url_for('routes.admin') }}">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                {% elif user_rol == 2 or user_rol == 3 %}
+                    <a href="{{ url_for('routes.user') }}">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                {% endif %}
+            </li>
+            <div class="sidebar-header">
+
+    
+            {% if user_rol == 1 %}
+            <li class="dropdown">
+                <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-1')">
+                    <i class="fas fa-users"></i> Gestión de Usuarios
+                    <i class="fas fa-chevron-down"></i> 
+                </a>
+                <ul id="sub-components-1" class="list-unstyled sub-components">
+                    <li>
+                        <a href="{{ url_for('users.listar_usuarios') }}">
+                            <i class="fas fa-eye"></i> Ver Usuarios
+                        </a>
+                   
+                    </li>
+                     <li>
+                    <li>
+                        <a href="{{ url_for('users.crear_usuario') }}">
+                            <i class="fas fa-user-plus"></i> Crear Usuario
+                        </a>
+                    </li>
+                </ul>
+            </li>
+                {% endif %}
+                    
+            <li>
+                <a href="{{ url_for('customers.listar_clientes') }}">
+                    <i class="fas fa-handshake"></i> Gestión de Clientes
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('routes.generar_catalogo') }}">
+                    <i class="fas fa-brush"></i> Generar Catalogo
+                </a>
+            </li>
+    
+            <li class="dropdown">
+                <a class="dropdown-toggle" onclick="toggleDropdown('sub-components-2')">
+                    <i class="fas fa-receipt"></i> Gestión de Cotizaciones
+                    <i class="fas fa-chevron-down"></i> 
+                </a>
+                <ul id="sub-components-2" class="list-unstyled sub-components">
+                    <li>
+                        <a href="{{ url_for('routes.listar_cotizaciones') }}">
+                            <i class="fas fa-eye"></i> Ver Cotizaciones
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('routes.generar_cotizacion') }}">
+                            <i class="fas fa-plus"></i> Crear Cotización
+                        </a>
+                    </li>
+                </ul>
+            </li>
+    
+            <div class="navbar_logout">
+                <a href="{{ url_for('users.logout') }}">Cerrar sesión</a>
+            </div>
+        </ul>
+    </div>
+
             <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
                 <h2>Editar Usuarios</h2>
 
@@ -84,7 +228,12 @@ input[type="submit"]:hover {
                     <label for="user_password">Constraseña:</label>
                     <input type="password" id="user_password" name="user_password" value="{{ user.user_password }}">
                     <label for="user_rol">Rol:</label>
-                    <input type="text" id="user_rol" name="user_rol" value="{{ user.user_rol }}">
+                    <select id="user_rol" name="user_rol">
+                        {% for rol in roles %}
+                            <option value="{{ rol.id }}" {% if user.user_rol == rol.id %}selected{% endif %}>
+                                {{ rol.descripcion }}
+                            </option>
+                        {% endfor %}
                     <input type="submit" value="Save">
                 </form>
 
@@ -93,7 +242,47 @@ input[type="submit"]:hover {
     </div>
 
     {% include 'footer.html' %}
+    <script>
 
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const content = document.querySelector('main'); // Selecciona el contenedor principal
+    
+            if (sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
+                content.style.marginLeft = '250px'; // Ajusta el margen izquierdo del contenido
+                content.style.width = 'calc(100% - 250px)'; // Ajusta el ancho del contenido en función del ancho del sidebar expandido
+            } else {
+                sidebar.classList.add('collapsed');
+                content.style.marginLeft = '0'; // Restaura el margen izquierdo del contenido
+                content.style.width = '100%'; // Restaura el ancho del contenido al 100%
+            }
+        }
+    
+        function closeSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const content = document.querySelector('main'); // Selecciona el contenedor principal
+    
+            sidebar.classList.add('collapsed');
+            content.style.marginLeft = '0'; // Restaura el margen izquierdo del contenido
+            content.style.width = '100%'; // Restaura el ancho del contenido al 100%
+        }
+    
+        function toggleDropdown(id) {
+            var dropdown = document.getElementById(id);
+            var icon = event.currentTarget.querySelector('i.fas.fa-chevron-down, i.fas.fa-chevron-up');
+        
+            if (dropdown.style.display === "block") {
+                dropdown.style.display = "none";
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                dropdown.style.display = "block";
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        }
+    </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>

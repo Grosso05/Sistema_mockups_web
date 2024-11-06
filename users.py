@@ -54,6 +54,10 @@ def crear_usuario():
 @roles_required(1)
 def editar_usuario(user_id):
     user = Users.query.get(user_id)
+    
+    # Obtener todos los roles
+    roles = UsersRol.query.all()
+    # 
     if request.method == 'POST':
         user.user_name = request.form['user_name']
         user.user_last_name = request.form['user_last_name']
@@ -68,7 +72,9 @@ def editar_usuario(user_id):
         user.user_rol = request.form['user_rol']
         db.session.commit()
         return redirect(url_for('users.listar_usuarios'))
-    return render_template('editar_usuario.html', user=user)
+    
+    return render_template('editar_usuario.html', user=user, roles=roles,user_rol=current_user.user_rol)
+
 
 
 #ruta para eliminar usuarios

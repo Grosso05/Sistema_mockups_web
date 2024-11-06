@@ -412,13 +412,15 @@ def guardar_cotizacion():
             if item_temporal.get('productoId') == producto_data['productoId']:  # Asegúrate de que pertenezca al producto correcto
                 nuevo_item_temporal = ItemTemporal(
                     descripcion=item_temporal['descripcion'],
-                    precio=item_temporal['total'],
+                    precio=item_temporal['total'],  # Cambia esto si necesitas almacenar el precio unitario
                     creado_por=data.get('vendedorCotizacion'),
                     producto_id=nuevo_producto_cotizado.id,  # Asociado al producto correcto
                     cantidad=item_temporal['cantidad'],
-                    unidad=item_temporal['unidad']
+                    unidad=item_temporal['unidad'],
+                    proveedor=item_temporal['proveedor']  # Agregar el proveedor aquí
                 )
                 db.session.add(nuevo_item_temporal)
+
 
     # Intentar guardar en la base de datos
     try:
@@ -550,7 +552,8 @@ def listar_cotizaciones():
         # Manejar otros roles o casos de error si es necesario
         cotizaciones = []
 
-    return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones,user_rol=current_user.user_rol)
+    return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones, user_rol=current_user.user_rol)
+
 
 
 #ruta para editar la cotizacion

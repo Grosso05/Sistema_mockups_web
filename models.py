@@ -88,20 +88,23 @@ class Items(db.Model):
 
 class ItemTemporal(db.Model):
     __tablename__ = 'itemtemporal'
+    
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     descripcion = db.Column(db.String(255), nullable=False)  
     precio = db.Column(db.Float, nullable=False)
     creado_por = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    producto_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=True)  # Agregado
-    cantidad = db.Column(db.Integer, nullable=True)  # Agregado
-    unidad = db.Column(db.String(50), nullable=True)  # Agregado
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto_cotizado.id'), nullable=True)  
+    cantidad = db.Column(db.Integer, nullable=True)  
+    unidad = db.Column(db.String(50), nullable=True)  
     aprobado = db.Column(db.Boolean, default=False)
+    proveedor = db.Column(db.String(500), nullable=False)  # Agregado
 
     # Definir la relación con Users
     creado_por_usuario = db.relationship('Users', backref='items_temporales')
 
     def __repr__(self):
-        return f"<ItemTemporal {self.descripcion}>"
+        return f"<ItemTemporal {self.descripcion}, Proveedor: {self.proveedor}>"
+
 
 
 

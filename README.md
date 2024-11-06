@@ -1,6 +1,6 @@
 ## Generador de Catálogos Personalizados (Version 6.5.0) desarrollada por: Brayan Grosso
 
-# Fecha de lanzamiento: 5 de noviembre de 2024, 11:20 am
+# Fecha de lanzamiento: 6 de noviembre de 2024, 8:35 am
 
 Cambios Recientes
 v6.5.0

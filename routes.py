@@ -862,19 +862,23 @@ def generar_reporte(cotizacion_id):
             ]))
 
             # Obtener items_cotizados
+
             items_cotizados = producto_cotizado.items
 
-            # Obtener items_temporales si existen
-            items_temporales = ItemTemporal.query.filter_by(producto_id=producto_cotizado.id).all()  # Asegúrate que tienes un producto_id en ItemTemporal si necesitas filtrar por esto
+            # Filtrar los items_cotizados excluyendo aquellos con item_id entre 1845 y 1854
+            items_filtrados = [item_cotizado for item_cotizado in items_cotizados if not (1845 <= item_cotizado.item_id <= 1854)]
 
-            # Combinar descripciones
-            item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in items_cotizados if Items.query.get(item_cotizado.item_id)]
+            # Obtener items_temporales si existen
+            items_temporales = ItemTemporal.query.filter_by(producto_id=producto_cotizado.id).all()
+
+            # Combinar descripciones para los items filtrados
+            item_names = [Items.query.get(item_cotizado.item_id).nombre for item_cotizado in items_filtrados if Items.query.get(item_cotizado.item_id)]
             items_description = "//".join(item_names) if item_names else "No se especifican items."
 
             # Agregar items_temporales a la descripción
             if items_temporales:
                 temporal_descriptions = [item.descripcion for item in items_temporales]
-                items_description += "//" + "//".join(temporal_descriptions)  # Combina las descripciones
+                items_description += "//" + "//".join(temporal_descriptions)
 
             # Cambiar el tamaño de la fuente para la descripción de los materiales
             materials_style = ParagraphStyle(
@@ -885,7 +889,7 @@ def generar_reporte(cotizacion_id):
                 textColor=colors.black
             )
 
-            items_paragraph = Paragraph(items_description, materials_style)  # Aplica el nuevo estilo
+            items_paragraph = Paragraph(items_description, materials_style) 
 
             producto_descripcion = Paragraph(producto_cotizado.descripcion)
 

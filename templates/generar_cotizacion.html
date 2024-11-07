@@ -1530,9 +1530,14 @@ function agregarItemAlProducto(item, itemNumber) {
             actualizarTotalProducto(itemNumber);
         });
     
+        // Deseleccionar todos los checkboxes seleccionados
+        itemsSeleccionados.forEach(itemCheckbox => {
+            itemCheckbox.checked = false;
+        });
+    
         alert('Ítems agregados correctamente.', 'success');
-
     }
+    
     
     
     
@@ -2107,7 +2112,7 @@ function calcularValorDesdePorcentaje(costoDirecto, porcentajeUtilidad) {
                 console.log('Cotización guardada exitosamente:', data);
                 if (data.success) {
                     alert('Cotización guardada con éxito.');
-                    window.location.href = '/listar_cotizaciones';
+                    //window.location.href = '/listar_cotizaciones';
                 } else {
                     alert('Error al guardar la cotización.');
                 }

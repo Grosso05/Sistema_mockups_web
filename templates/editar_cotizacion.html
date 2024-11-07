@@ -417,24 +417,23 @@
     return maxId;
 }
 
- const productosCotizados = {{ productos_cotizados | tojson }};
- const itemsCotizados = {{ items_cotizados | tojson }};
- const resumenCostos = {{ resumen_costos | tojson }};
- console.log(productosCotizados);
- console.log(itemsCotizados);
- console.log(resumenCostos);
- 
+const productosCotizados = {{ productos_cotizados | tojson }};
+const itemsCotizados = {{ items_cotizados | tojson }};
+const resumenCostos = {{ resumen_costos | tojson }};
+console.log(productosCotizados);
+console.log(itemsCotizados);
+console.log(resumenCostos);
 
- document.addEventListener('DOMContentLoaded', function() {
-    // Asignar los datos a variables globales
-    const productosCotizados = {{ productos_cotizados | tojson }};
-    const itemsCotizados = {{ items_cotizados | tojson }};
-    const resumenCostos = {{ resumen_costos | tojson }};
-    
-    // Llamar a la función para actualizar el contenedor al cargar la página
-    productosCotizados.forEach(producto => agregarProducto(producto, itemsCotizados, resumenCostos));
+document.addEventListener('DOMContentLoaded', function() {
+    // Recorremos cada producto cotizado
+    productosCotizados.forEach(producto => {
+        // Filtrar los ítems que correspondan al producto actual
+        const itemsDelProducto = itemsCotizados.filter(item => item.producto_cotizado_id === producto.id);
+
+        // Llamar a la función para agregar el producto y sus ítems filtrados
+        agregarProducto(producto, itemsDelProducto, resumenCostos);
+    });
 });
-
 
 // Función para agrupar ítems por tipo
 function agruparItemsPorTipo(items) {
@@ -466,35 +465,16 @@ function mostrarItems(items) {
                 // Calcular total
                 const total = precioUnitario * cantidad;  
 
-                // Total en formato que puedes guardar en la base de datos
-                const totalParaBD = total.toFixed(3).replace(',', '.'); // Asegúrate de usar punto
-                /*
-                // Imprimir para depuración
-                console.log(`Total para BD: ${totalParaBD}`);
-
-                
-
-                // Imprimir valores para depuración
-                console.log(`Item ID: ${item.item_id}`);
-                console.log(`Precio Unitario (formato original): ${item.precio_unitario}`);
-                console.log(`Precio Unitario (convertido): ${precioUnitario}`);
-                console.log(`Cantidad: ${cantidad}`);
-                console.log(`Total sin formatear: ${total}`);
-*/
-                // Formatear el total con punto decimal usando configuración es-CO
-    // Formatear el total con punto decimal usando configuración en-US
-    const totalFormateado = total.toLocaleString('en-US', {
-        minimumFractionDigits: 3,
-        maximumFractionDigits: 3,
-    });
-
-                // Imprimir el total formateado para verificación
-                console.log(`Total formateado: ${totalFormateado}`);
+                // Formatear el total
+                const totalFormateado = total.toLocaleString('en-US', {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3,
+                });
 
                 html += `
                     <tr>
-                        <td>${item.item_id}</td>
-                        <td>${item.grupo}</td>
+                        <td class="oculto">${item.item_id}</td>
+                        <td class ="oculto">${item.grupo}</td>
                         <td>${item.descripcion}</td>
                         <td>${item.unidad}</td>
                         <td>${precioUnitario.toFixed(3)}</td>
@@ -514,6 +494,36 @@ function mostrarItems(items) {
 
     return html;
 }
+
+// Función para agregar un producto con sus ítems
+function agregarProducto(producto, items, resumenCostos) {
+    // Aquí puedes crear la estructura HTML para cada producto y mostrar sus ítems
+    const htmlItems = mostrarItems(items);
+
+    const contenedor = document.getElementById('contenedor-productos');
+    contenedor.innerHTML += `
+        <div class="producto">
+            <h3>${producto.nombre}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Descripción</th>
+                        <th>Unidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${htmlItems}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
 
 // Función para agregar un producto al DOM de forma organizada
 function agregarProducto(producto, items) {
@@ -544,8 +554,8 @@ function agregarProducto(producto, items) {
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Grupo</th>
+                    <th class="oculto">ID</th>
+                    <th class ="oculto">Grupo</th>
                     <th>Descripción</th>
                     <th>Unidad</th>
                     <th>Precio Unitario</th>
@@ -780,6 +790,7 @@ function agregarProducto(producto, items) {
         document.getElementById(`iva-${productoId}`).textContent = `IVA: ${iva.toFixed(3)}`;
         document.getElementById(`valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOfertaConImpuestos.toFixed(3)}`;
     }
+    
 
     // Evento para cuando el usuario cambie el valor de la utilidad
     function validarUtilidad(input, productoId) {

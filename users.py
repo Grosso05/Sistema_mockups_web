@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for,flash,session
 from flask_login import current_user, login_required, login_user
-from models import Users, UsersRol, db  # Importa las clases de modelos y la configuración de la base de datos
+from models import Lineas, Productos, Users, UsersRol, db  # Importa las clases de modelos y la configuración de la base de datos
 import bcrypt
 from utils import roles_required
 users_blueprint = Blueprint('users', __name__)
@@ -9,14 +9,44 @@ users_blueprint = Blueprint('users', __name__)
 @login_required
 @roles_required(1)
 def listar_usuarios():
+    # Obtener filtros desde la solicitud GET
+    filter_name = request.args.get('filterName', '')
+    filter_last_name = request.args.get('filterLastName', '')
+    filter_email = request.args.get('filterEmail', '')
+    filter_role = request.args.get('filterRole', '')
+    filter_id_min = request.args.get('filterIdMin', '')
+    filter_id_max = request.args.get('filterIdMax', '')
+
+    # Construir la consulta con filtros
     usuarios = Users.query.join(UsersRol).add_columns(
         Users.user_id,
         Users.user_name,
         Users.user_last_name,
         Users.user_email,
-        UsersRol.descripcion  # Incluye el nombre del rol
-    ).all()
-    return render_template('listar_usuarios.html', usuarios=usuarios,user_rol=current_user.user_rol)
+        UsersRol.descripcion
+    )
+    
+    if filter_name:
+        usuarios = usuarios.filter(Users.user_name.ilike(f"%{filter_name}%"))
+    if filter_last_name:
+        usuarios = usuarios.filter(Users.user_last_name.ilike(f"%{filter_last_name}%"))
+    if filter_email:
+        usuarios = usuarios.filter(Users.user_email.ilike(f"%{filter_email}%"))
+    if filter_role:
+        usuarios = usuarios.filter(UsersRol.descripcion.ilike(f"%{filter_role}%"))
+    if filter_id_min:
+        usuarios = usuarios.filter(Users.user_id >= int(filter_id_min))
+    if filter_id_max:
+        usuarios = usuarios.filter(Users.user_id <= int(filter_id_max))
+
+    usuarios = usuarios.all()
+
+    # Obtener todos los roles para el select
+    roles = UsersRol.query.all()
+    
+    return render_template('listar_usuarios.html', usuarios=usuarios, roles=roles, user_rol=current_user.user_rol)
+
+
 
 
 #ruta del formulario para crear usuarios

@@ -10,6 +10,46 @@
 
     <style>
 
+        .cotizaciones-search-container {
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cotizaciones-search-container form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .cotizaciones-search-container form input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .cotizaciones-search-container form button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .cotizaciones-search-container form button:hover {
+            background-color: #7BC9E2;
+        }
+        
+        .cotizaciones-search-container form input[type="date"] {
+            padding: 6px;
+        }
+        
+
         .table-container {
             max-height: 400px; /* Ajusta esta altura según tus necesidades */
             overflow-y: auto;
@@ -29,7 +69,6 @@
 
         /* Centrar el formulario a la derecha */
         .cotizaciones-search-container {
-            display: flex;
             justify-content: flex-end; /* Alinea a la derecha */
             margin-bottom: 20px; /* Espacio debajo de la barra de búsqueda */
         }
@@ -48,7 +87,7 @@
         .cotizaciones-search-button {
             padding: 10px 20px;
             font-size: 16px;
-            background-color: #007bff;
+            background-color: #7BC9E2;
             color: white;
             border: none;
             border-radius: 5px;
@@ -108,47 +147,105 @@
 
 <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
     <h1>Lista de Cotizaciones</h1>
+
+
     <div class="cotizaciones-search-container">
         <form method="GET" action="{{ url_for('routes.listar_cotizaciones') }}">
-            <input type="text" name="search" placeholder="Buscar por Negociación" value="{{ request.args.get('search', '') }}" class="cotizaciones-search-input">
-            <button type="submit" class="cotizaciones-search-button">Buscar</button>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
+                <div>
+                    <label for="search">Negociación:</label>
+                    <input type="text" name="search" id="search" placeholder="Buscar por Negociación" value="{{ request.args.get('search', '') }}" class="cotizaciones-search-input">
+                </div>
+
+
+                <div>
+                    <label for="cliente">Cliente:</label>
+                    <input type="text" name="cliente" id="cliente" placeholder="Buscar por Cliente" value="{{ request.args.get('cliente', '') }}" class="cotizaciones-search-input">
+                </div>
+
+
+                <div>
+                    <label for="proyecto">Proyecto:</label>
+                    <input type="text" name="proyecto" id="proyecto" placeholder="Buscar por Proyecto" value="{{ request.args.get('proyecto', '') }}" class="cotizaciones-search-input">
+                </div>
+
+
+                <div>
+                    <label for="vendedor">Vendedor:</label>
+                    <select name="vendedor" id="vendedor" class="cotizaciones-search-input">
+                        <option value="">Todos los usuarios</option>
+                        {% for v in vendedores %}
+                        <option value="{{ v.user_id }}" {% if request.args.get('vendedor') == v.user_id %}selected{% endif %}>
+                            {{ v.user_name }} {{ v.user_last_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+
+
+                <div>
+                    <label for="fecha_inicio">Fecha Inicio:</label>
+                    <input type="date" name="fecha_inicio" id="fecha_inicio" value="{{ request.args.get('fecha_inicio', '') }}" class="cotizaciones-search-input">
+                </div>
+
+                <div>
+                    <label for="fecha_fin">Fecha Fin:</label>
+                    <input type="date" name="fecha_fin" id="fecha_fin" value="{{ request.args.get('fecha_fin', '') }}" class="cotizaciones-search-input">
+                </div>
+            </div>
+
+
+            <div style="margin-top: 10px;">
+                <button type="submit" class="cotizaciones-search-button">Filtrar</button>
+                <button type="reset" onclick="resetFilters()">Restablecer</button>
+            </div>
         </form>
     </div>
+
+
 
     {% if cotizaciones %}
     <div class="table-container">
         <table>
-            <tr>
-                <th>Negociación</th>
-                <th>Cliente</th>
-                <th>Proyecto</th>
-                <th>Vendedor</th>
-                <th>Fecha</th>
-                <th>Acciones</th>
-            </tr>
-            {% for cotizacion in cotizaciones %}
-            <tr>
-                <td>{{ cotizacion.negociacion }} - {{ cotizacion.version }}</td>
-                <td>{{ cotizacion.cliente_cotizacion }}</td>
-                <td>{{ cotizacion.proyecto_cotizacion }}</td>
-                <td>{{ cotizacion.vendedor.user_name }} {{ cotizacion.vendedor.user_last_name }}</td>
-                <td>{{ cotizacion.fecha_cotizacion.strftime('%d/%m/%Y') }}</td>
-                <td>
-                    <form action="{{ url_for('routes.editar_cotizacion', cotizacion_id=cotizacion.id_cotizacion) }}" method="GET">
-                        <button type="submit">Editar</button>
-                    </form>
-                    <button onclick="window.location.href='/generar-reporte/{{ cotizacion.id_cotizacion }}'">Generar Cotizacion</button>
-                    <button onclick="window.location.href='/generar-op/{{ cotizacion.id_cotizacion }}'">Generar OP</button>
-                    <button onclick="window.location.href='/generar-requisicion/{{ cotizacion.id_cotizacion }}'">Generar Requisicion</button>
-                </td>
-            </tr>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th>Negociación</th>
+                    <th>Cliente</th>
+                    <th>Proyecto</th>
+                    <th>Vendedor</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cotizacion in cotizaciones %}
+                <tr>
+                    <td>{{ cotizacion.negociacion }} - {{ cotizacion.version }}</td>
+                    <td>{{ cotizacion.cliente_cotizacion }}</td>
+                    <td>{{ cotizacion.proyecto_cotizacion }}</td>
+                    <td>{{ cotizacion.vendedor.user_name }} {{ cotizacion.vendedor.user_last_name }}</td>
+                    <td>{{ cotizacion.fecha_cotizacion.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <form action="{{ url_for('routes.editar_cotizacion', cotizacion_id=cotizacion.id_cotizacion) }}" method="GET">
+                            <button type="submit">Editar</button>
+                        </form>
+                        <button onclick="window.location.href='/generar-reporte/{{ cotizacion.id_cotizacion }}'">Generar Cotización</button>
+                        <button onclick="window.location.href='/generar-op/{{ cotizacion.id_cotizacion }}'">Generar OP</button>
+                        <button onclick="window.location.href='/generar-requisicion/{{ cotizacion.id_cotizacion }}'">Generar Requisición</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
-        
+    </div>
     {% else %}
-    <p>No se encontraron cotizaciones para la búsqueda "{{ request.args.get('search') }}"</p>
+    <p>No se encontraron cotizaciones para los filtros aplicados.</p>
     {% endif %}
 </main>
+
+
 
         </div>
     </div>
@@ -156,6 +253,11 @@
     {% include 'footer.html' %}
 
     <script>
+
+        function resetFilters() {
+            window.location.href = "{{ url_for('routes.listar_cotizaciones') }}";
+        }
+        
         $(document).ready(function() {
             $('#generate-op-btn').on('click', function() {
                 // Aquí reemplaza 123 con el ID real de la cotización

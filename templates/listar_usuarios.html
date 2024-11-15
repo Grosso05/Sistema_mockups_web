@@ -10,6 +10,43 @@
 
     <style>
 
+        form {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        form input, form select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        form button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        form button:hover {
+            background-color: #0056b3;
+        }
+        
+
+        
+
         h1{
 
             margin-top: 50px;
@@ -58,30 +95,82 @@
 
 <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
     <h1>Lista de Usuarios</h1>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Email</th>
-            <th>Rol</th> <!-- Nueva columna para el rol -->
-            <th>Acciones</th>
-        </tr>
-        {% for usuario in usuarios %}
-        <tr>
-            <td>{{ usuario.user_id }}</td>
-            <td>{{ usuario.user_name }}</td>
-            <td>{{ usuario.user_last_name }}</td>
-            <td>{{ usuario.user_email }}</td>
-            <td>{{ usuario.descripcion }}</td> <!-- Mostrar el nombre del rol -->
-            <td>
-                <button onclick="editarUsuario('{{ usuario.user_id }}')">Editar</button>
-                <button onclick="eliminarUsuario('{{ usuario.user_id }}')">Eliminar</button>
-            </td>
-        </tr>
-        {% endfor %}
+
+    <!-- 
+    <form id="filterForm" style="margin-bottom: 20px;">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div>
+                <label for="filterIdMin">ID (min):</label>
+                <input type="number" id="filterIdMin" name="filterIdMin" min="0">
+            </div>
+
+            <div>
+                <label for="filterIdMax">ID (max):</label>
+                <input type="number" id="filterIdMax" name="filterIdMax" min="0">
+            </div>
+
+            <div>
+                <label for="filterName">Nombre:</label>
+                <input type="text" id="filterName" name="filterName">
+            </div>
+
+            <div>
+                <label for="filterLastName">Apellido:</label>
+                <input type="text" id="filterLastName" name="filterLastName">
+            </div>
+
+            <div>
+                <label for="filterEmail">Email:</label>
+                <input type="text" id="filterEmail" name="filterEmail">
+            </div>
+
+            <div>
+                <label for="filterRole">Rol:</label>
+                <select id="filterRole" name="filterRole">
+                    <option value="">Todos los Roles</option>
+                    {% for rol in roles %}
+                        <option value="{{ rol.descripcion }}">{{ rol.descripcion }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <button type="button" onclick="applyFilters()">Filtrar</button>
+            <button type="reset" onclick="resetFilters()">Restablecer</button>
+        </div>
+    </form>
+-->
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr class="user-row">
+                <td>{{ usuario.user_id }}</td>
+                <td>{{ usuario.user_name }}</td>
+                <td>{{ usuario.user_last_name }}</td>
+                <td>{{ usuario.user_email }}</td>
+                <td>{{ usuario.descripcion }}</td>
+                <td>
+                    <button onclick="editarUsuario('{{ usuario.user_id }}')">Editar</button>
+                    <button onclick="eliminarUsuario('{{ usuario.user_id }}')">Eliminar</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 </main>
+
+
         </div>
     </div>
 
@@ -112,6 +201,51 @@
         });
     }
 }
+
+function applyFilters() {
+    var idMinFilter = document.getElementById('filterIdMin').value;
+    var idMaxFilter = document.getElementById('filterIdMax').value;
+    var nameFilter = document.getElementById('filterName').value.toLowerCase();
+    var lastNameFilter = document.getElementById('filterLastName').value.toLowerCase();
+    var emailFilter = document.getElementById('filterEmail').value.toLowerCase();
+    var roleFilter = document.getElementById('filterRole').value.toLowerCase();
+
+    // Obtener todas las filas de usuarios
+    var rows = document.querySelectorAll('.user-row');
+    
+    rows.forEach(function(row) {
+        var id = parseInt(row.cells[0].textContent);
+        var name = row.cells[1].textContent.toLowerCase();
+        var lastName = row.cells[2].textContent.toLowerCase();
+        var email = row.cells[3].textContent.toLowerCase();
+        var role = row.cells[4].textContent.toLowerCase();
+
+        // Verificar si la fila coincide con los filtros
+        var matchesId = (!idMinFilter || id >= idMinFilter) && (!idMaxFilter || id <= idMaxFilter);
+        var matchesName = name.includes(nameFilter);
+        var matchesLastName = lastName.includes(lastNameFilter);
+        var matchesEmail = email.includes(emailFilter);
+        var matchesRole = role.includes(roleFilter);
+
+        // Mostrar u ocultar la fila según los filtros
+        if (matchesId && matchesName && matchesLastName && matchesEmail && matchesRole) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function resetFilters() {
+    // Restablecer los filtros y mostrar todas las filas
+    document.getElementById('filterForm').reset();
+    var rows = document.querySelectorAll('.user-row');
+    rows.forEach(function(row) {
+        row.style.display = '';
+    });
+}
+
+
 
         </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>

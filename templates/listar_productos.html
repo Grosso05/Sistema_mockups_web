@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Productos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_admin.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+    {% include 'sidebar.html' %}
+
+    <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+        <h1>Lista de Productos</h1>
+
+        <!-- Filtros -->
+        <form id="filterForm" method="GET" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div>
+                    <label for="search">Nombre del Producto:</label>
+                    <input type="text" id="search" name="search" value="{{ request.args.get('search', '') }}">
+                </div>
+                <div>
+                    <label for="linea">Línea:</label>
+                    <select id="linea" name="linea">
+                        <option value="">Todas las Líneas</option>
+                        {% for linea in lineas %}
+                            <option value="{{ linea.linea_id }}" {% if linea.linea_id == request.args.get('linea', '')|int %}selected{% endif %}>{{ linea.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+            </div>
+
+
+
+            <div style="margin-top: 10px;">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </div>
+        </form>
+
+                        <!-- Botón para crear nuevo producto -->
+    <div style="margin-bottom: 5px;margin-left:85%;margin-top:-3%;">
+        <a href="{{ url_for('routes.crear_producto') }}" class="btn btn-success">Crear Nuevo Producto</a>
+    </div>
+
+        <!-- Tabla de productos -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Línea</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in productos.items %}
+                    <tr>
+                        <td>{{ producto.producto_id }}</td>
+                        <td>{{ producto.nombre }}</td>
+                        <td>{{ producto.linea.nombre }}</td>
+                        <td>
+                            <a href="{{ url_for('routes.editar_producto', producto_id=producto.producto_id) }}" class="btn btn-info">Editar</a>
+                    
+                            <form action="{{ url_for('routes.eliminar_producto', producto_id=producto.producto_id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de eliminar este producto?')">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+<!-- Paginación -->
+<div class="pagination justify-content-center mt-4">
+    {% if productos.has_prev %}
+        <a href="{{ url_for('routes.listar_productos', page=productos.prev_num, search=request.args.get('search', ''), linea=request.args.get('linea', '')) }}" class="btn btn-outline-primary mr-2">
+            <i class="fas fa-chevron-left"></i> Anterior
+        </a>
+    {% endif %}
+    
+    <span class="mx-3 align-self-center">Página {{ productos.page }} de {{ productos.pages }}</span>
+    
+    {% if productos.has_next %}
+        <a href="{{ url_for('routes.listar_productos', page=productos.next_num, search=request.args.get('search', ''), linea=request.args.get('linea', '')) }}" class="btn btn-outline-primary ml-2">
+            Siguiente <i class="fas fa-chevron-right"></i>
+        </a>
+    {% endif %}
+</div>
+
+
+    </main>
+
+    {% include 'footer.html' %}
+
+</body>
+</html>

@@ -432,9 +432,7 @@ def guardar_cotizacion():
 
     return jsonify({'success': True})
 
-
-
-
+#raquetazo, chingon, marciano,
 
 @routes_blueprint.route('/guardar-cotizacion-editada', methods=['POST'])
 def guardar_cotizacion_editada():
@@ -517,42 +515,314 @@ def guardar_cotizacion_editada():
     return jsonify({'success': True})
 
 
-
 #Ruta para listar cotizaciones
 
-@routes_blueprint.route('/listar_cotizaciones', methods=['GET', 'POST'])
+@routes_blueprint.route('/listar_cotizaciones', methods=['GET'])
 @login_required
 def listar_cotizaciones():
-    search = request.args.get('search')
-    
-    if current_user.user_rol in [1, 3]:
-        # Rol 1 o 3: Puede ver todas las cotizaciones
-        if search:
-            cotizaciones = Cotizacion.query.filter(
-                Cotizacion.negociacion.ilike(f'%{search}%')
-            ).order_by(Cotizacion.fecha_cotizacion.desc()).all()
-        else:
-            cotizaciones = Cotizacion.query.order_by(
-                Cotizacion.fecha_cotizacion.desc()
-            ).all()
-    
-    elif current_user.user_rol == 2:
-        # Rol 2: Solo puede ver las cotizaciones asociadas a su propio usuario
-        if search:
-            cotizaciones = Cotizacion.query.filter(
-                Cotizacion.negociacion.ilike(f'%{search}%'),
-                Cotizacion.vendedor_cotizacion == current_user.user_id
-            ).order_by(Cotizacion.fecha_cotizacion.desc()).all()
-        else:
-            cotizaciones = Cotizacion.query.filter(
-                Cotizacion.vendedor_cotizacion == current_user.user_id
-            ).order_by(Cotizacion.fecha_cotizacion.desc()).all()
-    
-    else:
-        # Manejar otros roles o casos de error si es necesario
-        cotizaciones = []
+    search = request.args.get('search', '')
+    cliente = request.args.get('cliente', '')
+    vendedor = request.args.get('vendedor', '')
+    proyecto = request.args.get('proyecto', '')
+    fecha_inicio = request.args.get('fecha_inicio', '')
+    fecha_fin = request.args.get('fecha_fin', '')
 
-    return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones, user_rol=current_user.user_rol)
+    query = Cotizacion.query
+
+    if search:
+        query = query.filter(Cotizacion.negociacion.ilike(f'%{search}%'))
+    
+    if cliente:
+        query = query.filter(Cotizacion.cliente_cotizacion.ilike(f'%{cliente}%'))
+    
+    if vendedor:
+        query = query.filter(Cotizacion.vendedor_cotizacion == vendedor)
+    
+    if proyecto:
+        query = query.filter(Cotizacion.proyecto_cotizacion.ilike(f'%{proyecto}%'))
+
+    if fecha_inicio:
+        query = query.filter(Cotizacion.fecha_cotizacion >= fecha_inicio)
+    
+    if fecha_fin:
+        query = query.filter(Cotizacion.fecha_cotizacion <= fecha_fin)
+
+    # Aplicar restricciones de rol para el usuario actual si es necesario
+    if current_user.user_rol == 2:
+        query = query.filter(Cotizacion.vendedor_cotizacion == current_user.user_id)
+
+    cotizaciones = query.order_by(Cotizacion.fecha_cotizacion.desc()).all()
+
+    # Obtener la lista de todos los usuarios
+    vendedores = Users.query.all()
+
+    return render_template('listar_cotizaciones.html', cotizaciones=cotizaciones, vendedores=vendedores, user_rol=current_user.user_rol)
+
+
+
+
+@routes_blueprint.route('/listar_productos', methods=['GET'])
+@login_required
+def listar_productos():
+    search = request.args.get('search', '')
+    linea = request.args.get('linea', '')
+
+    query = Productos.query
+
+    if search:
+        query = query.filter(Productos.nombre.ilike(f'%{search}%'))
+
+    if linea:
+        query = query.filter(Productos.linea_idFK == linea)
+
+    # Si es necesario aplicar restricciones de rol (por ejemplo, si se debe mostrar solo productos de un vendedor)
+    if current_user.user_rol == 2:
+        query = query.filter(Productos.vendedor_id == current_user.user_id)
+
+    productos = query.order_by(Productos.nombre.asc()).paginate(
+        page=request.args.get('page', 1, type=int),
+        per_page=9,
+        error_out=False
+    )
+
+    # Obtener la lista de todas las líneas
+    lineas = Lineas.query.all()
+
+    return render_template('listar_productos.html', productos=productos, lineas=lineas, user_rol=current_user.user_rol)
+
+#ruta para crear productos
+
+@routes_blueprint.route('/crear_producto', methods=['GET', 'POST'])
+@login_required
+def crear_producto():
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        linea_id = request.form.get('linea')
+
+        # Obtener los valores de porcentajes
+        administracion = request.form.get('administracion')
+        imprevistos = request.form.get('imprevistos')
+        utilidad = request.form.get('utilidad')
+
+        # Validar que se haya proporcionado toda la información
+        if not nombre or not linea_id or not administracion or not imprevistos or not utilidad:
+            flash('Todos los campos son obligatorios', 'danger')
+            return redirect(url_for('routes.crear_producto'))
+
+        try:
+            # Crear el nuevo producto
+            nuevo_producto = Productos(nombre=nombre, linea_idFK=linea_id)
+            db.session.add(nuevo_producto)
+            db.session.flush()  # Hacer flush para obtener el producto_id del nuevo producto
+
+            # Crear los porcentajes asociados
+            porcentajes_producto = PorcentajesProducto(
+                id_producto=nuevo_producto.producto_id,
+                administracion=int(administracion),
+                imprevistos=int(imprevistos),
+                utilidad=int(utilidad)
+            )
+            db.session.add(porcentajes_producto)
+
+            # Guardar los cambios
+            db.session.commit()
+
+            flash('Producto creado exitosamente', 'success')
+            return redirect(url_for('routes.listar_productos'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Error al crear el producto: ' + str(e), 'danger')
+            return redirect(url_for('routes.crear_producto'))
+
+    # Si es GET, mostrar las líneas disponibles en el formulario
+    lineas = Lineas.query.all()
+    return render_template('crear_producto.html', lineas=lineas)
+
+
+
+
+#ruta para eliminar productos
+
+
+
+
+@routes_blueprint.route('/eliminar_producto/<int:producto_id>', methods=['POST'])
+@login_required
+def eliminar_producto(producto_id):
+    # Buscar el producto en la base de datos
+    producto = Productos.query.get_or_404(producto_id)
+
+    # Verificar si el usuario tiene el rol adecuado (rol 1 o rol 2)
+    if current_user.user_rol not in [1, 3]:
+        flash('No tienes permiso para eliminar productos.', 'danger')
+        return redirect(url_for('routes.listar_productos'))
+
+    try:
+        # Eliminar el producto
+        db.session.delete(producto)
+        db.session.commit()
+
+        flash('Producto eliminado exitosamente.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al eliminar el producto: {e}', 'danger')
+
+    # Redirigir a la lista de productos
+    return redirect(url_for('routes.listar_productos'))
+
+
+#ruta para editar productos
+
+@routes_blueprint.route('/editar_producto/<int:producto_id>', methods=['GET', 'POST'])
+@login_required
+def editar_producto(producto_id):
+    # Obtener el producto y sus porcentajes asociados
+    producto = Productos.query.get_or_404(producto_id)
+    porcentajes = PorcentajesProducto.query.filter_by(id_producto=producto_id).first()
+
+    # Recuperar todos los items sugeridos con paginación
+    page = request.args.get('page', 1, type=int)  # Página actual
+    items_sugeridos_query = ItemsPorProducto.query.filter_by(producto_idFK=producto_id)
+    
+    # Correcta llamada a paginate, con 'page' y 'per_page' como keyword arguments
+    items_sugeridos_paginated = items_sugeridos_query.paginate(page=page, per_page=10, error_out=False)
+
+    # Obtener los detalles de los items sugeridos
+    items_sugeridos = [item.item for item in items_sugeridos_paginated.items]
+
+    # Recuperar todos los items disponibles (para agregarlos en el modal)
+    all_items = Items.query.all()  # Obtiene todos los items disponibles
+
+    if request.method == 'POST':
+        # Actualizar los datos del producto
+        producto.nombre = request.form['nombre']
+        producto.linea_idFK = request.form['linea_idFK']
+        
+        # Actualizar los porcentajes
+        porcentajes.administracion = request.form['administracion']
+        porcentajes.imprevistos = request.form['imprevistos']
+        porcentajes.utilidad = request.form['utilidad']
+
+        # Guardar los cambios en la base de datos
+        db.session.commit()
+        
+        flash('Producto y porcentajes actualizados correctamente.', 'success')
+        return redirect(url_for('routes.listar_productos'))
+
+    # Obtener las líneas del producto para el select
+    lineas = Lineas.query.all()
+
+    return render_template(
+        'editar_producto.html', 
+        producto=producto, 
+        porcentajes=porcentajes, 
+        lineas=lineas, 
+        items_sugeridos=items_sugeridos, 
+        items_sugeridos_paginated=items_sugeridos_paginated,
+        all_items=all_items  # Pasamos los items disponibles al template
+    )
+
+
+@routes_blueprint.route('/eliminar_item_sugerido/<int:producto_id>/<int:item_id>', methods=['POST'])
+@login_required
+def eliminar_item_sugerido(producto_id, item_id):
+    try:
+        # Buscar la relación del item con el producto
+        item_por_producto = ItemsPorProducto.query.filter_by(producto_idFK=producto_id, item_idFK=item_id).first()
+
+        if item_por_producto:
+            # Eliminar el registro de la base de datos
+            db.session.delete(item_por_producto)
+            db.session.commit()
+            flash('Item sugerido eliminado correctamente.', 'success')
+        else:
+            # Si no se encuentra el item, lanzar un mensaje de error
+            flash('No se encontró el item sugerido o la relación con el producto.', 'danger')
+    
+    except Exception as e:
+        # Si ocurre algún error, hacemos rollback y mostramos el error
+        db.session.rollback()
+        flash(f'Error al eliminar item: {e}', 'danger')
+
+    # Mantener el número de página actual en la redirección
+    page = request.args.get('page', 1, type=int)  # Obtener la página actual
+    return redirect(url_for('routes.editar_producto', producto_id=producto_id, page=page))
+
+@routes_blueprint.route('/agregar_item_sugerido/<int:producto_id>', methods=['GET', 'POST'])
+@login_required
+def agregar_item_sugerido(producto_id):
+    producto = Productos.query.get_or_404(producto_id)
+
+    # Obtener todos los items disponibles
+    items_disponibles = Items.query.all()
+
+    if request.method == 'POST':
+        # Obtener los items seleccionados desde el formulario
+        item_ids = request.form.getlist('items')  # Lista de IDs de items seleccionados
+        
+        # Asociar los items seleccionados al producto
+        for item_id in item_ids:
+            item = Items.query.get(item_id)
+            if item:
+                nuevo_item_sugerido = ItemsPorProducto(producto_idFK=producto_id, item_idFK=item_id)
+                db.session.add(nuevo_item_sugerido)
+
+        try:
+            db.session.commit()
+            flash('Items sugeridos agregados correctamente.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al agregar items: {e}', 'danger')
+
+        return redirect(url_for('routes.editar_producto', producto_id=producto_id))
+
+    return render_template('agregar_item_sugerido.html', producto=producto, items=items_disponibles)
+
+@routes_blueprint.route('/obtener_items', methods=['GET'])
+def obtener_items():
+    try:
+        # Obtener el término de búsqueda y la página desde los parámetros de la URL
+        search_term = request.args.get('search', '').strip()
+        page = int(request.args.get('page', 1))
+        
+        # Validación básica del término de búsqueda
+        if not search_term:
+            return jsonify({'error': 'El término de búsqueda no puede estar vacío'}), 400
+        
+        # Consulta a la base de datos (ajustar según tu modelo)
+        query = Items.query.filter(Items.nombre.ilike(f"%{search_term}%"))
+        
+        # Paginar los resultados
+        items_paginated = query.paginate(page, per_page=10, error_out=False)
+        
+        # Crear una lista de los items que se devolverán
+        items = [{
+            'id': item.id,
+            'text': item.nombre
+        } for item in items_paginated.items]
+        
+        # Respuesta con los items y la información de paginación
+        return jsonify({
+            'items': items,
+            'has_next': items_paginated.has_next
+        })
+    
+    except Exception as e:
+        # Devolver un error si algo falla
+        return jsonify({'error': str(e)}), 500
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (Version deploy 2.0.1) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (v7.0.0) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 15 de noviembre de 2024, 9:10 am
+
+Cambios Recientes
+v 7.0.0
+
+Versión local preparativa para las version 3 de deploy, aca fue implementada la crud de productos.
+
 
 # Fecha de lanzamiento: 7 de noviembre de 2024, 10:47 am
 

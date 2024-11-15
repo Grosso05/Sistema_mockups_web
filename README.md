@@ -1,4 +1,11 @@
-## Generador de Catálogos Personalizados (Version 6.5.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version deploy 2.0.1) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 7 de noviembre de 2024, 10:47 am
+
+Cambios Recientes
+vD 2.0.1
+
+Lanzamiento del parche donde corregimos bugs en editar cotizacion de items duplicados, eliminamos de la cotizacion los "viaticos"
 
 # Fecha de lanzamiento: 6 de noviembre de 2024, 8:35 am
 

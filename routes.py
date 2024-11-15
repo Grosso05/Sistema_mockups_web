@@ -645,19 +645,27 @@ def crear_producto():
 
 
 
-
 @routes_blueprint.route('/eliminar_producto/<int:producto_id>', methods=['POST'])
 @login_required
 def eliminar_producto(producto_id):
     # Buscar el producto en la base de datos
     producto = Productos.query.get_or_404(producto_id)
 
-    # Verificar si el usuario tiene el rol adecuado (rol 1 o rol 2)
+    # Verificar si el usuario tiene el rol adecuado (rol 1 o rol 3)
     if current_user.user_rol not in [1, 3]:
         flash('No tienes permiso para eliminar productos.', 'danger')
         return redirect(url_for('routes.listar_productos'))
 
     try:
+        # Eliminar manualmente los registros en items_por_producto que dependen del producto
+        items_por_producto = ItemsPorProducto.query.filter_by(producto_idFK=producto_id).all()
+        for item in items_por_producto:
+            db.session.delete(item)
+
+        # Eliminar manualmente el registro de porcentajes si existe
+        if producto.porcentajes:
+            db.session.delete(producto.porcentajes)
+        
         # Eliminar el producto
         db.session.delete(producto)
         db.session.commit()
@@ -669,6 +677,10 @@ def eliminar_producto(producto_id):
 
     # Redirigir a la lista de productos
     return redirect(url_for('routes.listar_productos'))
+
+
+
+
 
 
 #ruta para editar productos

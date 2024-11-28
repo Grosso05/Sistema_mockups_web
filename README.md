@@ -1,4 +1,12 @@
-## Generador de Catálogos Personalizados (v7.0.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (v7.0.1) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 15 de noviembre de 2024, 9:30 am
+
+Cambios Recientes
+v 7.0.1
+
+Correcion a la eliminacion de productos, modificamos relaciones, establecimos en cascada.
+
 
 # Fecha de lanzamiento: 15 de noviembre de 2024, 9:10 am
 

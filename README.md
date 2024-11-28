@@ -1,4 +1,10 @@
-## Generador de Catálogos Personalizados (v7.0.1) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (v7.1.0) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 28 de noviembre de 2024, 11:55 am
+Cambios Recientes
+v 7.1.0
+
+en esta version estamos trabajando en la edicion de la cotizacion, actualmente ya nos muestra los valores de la bd ( con el formato en usd), y no muestra todos los productos de la cotizacion. adicional no funcionan los inputs que recalculan la administracion y utilidad
 
 # Fecha de lanzamiento: 15 de noviembre de 2024, 9:30 am
 

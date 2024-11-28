@@ -432,87 +432,93 @@ def guardar_cotizacion():
 
     return jsonify({'success': True})
 
-#raquetazo, chingon, marciano,
+
+
+from datetime import datetime, timezone
 
 @routes_blueprint.route('/guardar-cotizacion-editada', methods=['POST'])
 def guardar_cotizacion_editada():
-    data = request.json
-    print(data)  # Para depuración
+    try:
+        data = request.json
+        print(data)  # Para depuración
 
-    negociacion = data.get('negociacion') or ''  # Obtener el número de negociación
 
-    # Buscar la última cotización con la misma negociación y versión más alta
-    ultima_cotizacion = Cotizacion.query.filter_by(negociacion=negociacion).order_by(Cotizacion.version.desc()).first()
+        fecha_iso = data['fechaCotizacion'].rstrip('Z')  
+        fecha_cotizacion = datetime.fromisoformat(fecha_iso).replace(tzinfo=timezone.utc)
 
-    if ultima_cotizacion:
-        # Incrementar la versión si existe una cotización previa
-        nueva_version = incrementar_version(ultima_cotizacion.version)
-    else:
-        # Si no existe, comenzar con la versión 'a'
-        nueva_version = 'A'
+        negociacion = data.get('negociacion') or ''  # Obtener el número de negociación
 
-    # Crear la nueva cotización con la nueva versión
-    nueva_cotizacion = Cotizacion(
-        fecha_cotizacion=datetime.fromisoformat(data['fechaCotizacion']).astimezone(timezone.utc),
-        cliente_cotizacion=data['clienteCotizacion'],
-        contacto_cotizacion=data['contactoCotizacion'],
-        proyecto_cotizacion=data['proyectoCotizacion'],
-        vendedor_cotizacion=data['vendedorCotizacion'],
-        negociacion=negociacion,
-        forma_de_pago_cotizacion=data['formaPago'],
-        validez_cotizacion=data['validezCotizacion'],
-        descuento_cotizacion=data.get('descuentoCotizacion', 0),
-        iva_seleccionado=data['ivaSeleccionado'],
-        version=nueva_version
-    )
-    db.session.add(nueva_cotizacion)
-    db.session.flush()  # Obtener el ID de la nueva cotización
+        # Buscar la última cotización con la misma negociación y versión más alta
+        ultima_cotizacion = Cotizacion.query.filter_by(negociacion=negociacion).order_by(Cotizacion.version.desc()).first()
 
-    # Guardar productos cotizados
-    for producto_data in data['productos']:
-        cantidades_str = ','.join(map(str, producto_data['cantidadesSeleccionadas']))
+        if ultima_cotizacion:
+            nueva_version = incrementar_version(ultima_cotizacion.version)
+        else:
+            nueva_version = 'A'
 
-        nuevo_producto_cotizado = ProductoCotizado(
-            descripcion=producto_data['descripcion'],
-            alto=producto_data['alto'],
-            ancho=producto_data['ancho'],
-            fondo=producto_data['fondo'],
-            cantidades=cantidades_str,  # Guardar las cantidades como una cadena
-            cotizacion_id=nueva_cotizacion.id_cotizacion,
-            producto_id=producto_data['productoId'],
-            producto_seleccionado_id=producto_data.get('productoSeleccionadoId')
+        nueva_cotizacion = Cotizacion(
+            fecha_cotizacion=fecha_cotizacion,  # Aquí se utiliza la fecha procesada
+            cliente_cotizacion=data['clienteCotizacion'],
+            contacto_cotizacion=data['contactoCotizacion'],
+            proyecto_cotizacion=data['proyectoCotizacion'],
+            vendedor_cotizacion=data['vendedorCotizacion'],
+            negociacion=negociacion,
+            forma_de_pago_cotizacion=data['formaPago'],
+            validez_cotizacion=data['validezCotizacion'],
+            descuento_cotizacion=data.get('descuentoCotizacion', 0),
+            iva_seleccionado=data['ivaSeleccionado'],
+            version=nueva_version
         )
-        db.session.add(nuevo_producto_cotizado)
-        db.session.flush()  # Obtener el ID del producto cotizado
+        db.session.add(nueva_cotizacion)
+        db.session.flush()
 
-        # Guardar los resúmenes de costos asociados a cada producto
-        for resumen in producto_data.get('resúmenesCostos', []):
-            resumen_de_costos = ResumenDeCostos(
-                costo_directo=resumen['costoDirecto'],
-                administracion=resumen['administracion'],
-                imprevistos=resumen['imprevistos'],
-                utilidad=resumen['utilidad'],
-                oferta_antes_iva=resumen['ofertaAntesIva'],
-                iva=resumen['iva'],
-                valor_oferta=resumen['valorOferta'],
-                producto_id=nuevo_producto_cotizado.id
+
+        for producto_data in data['productos']:
+            cantidades_str = ','.join(map(str, producto_data['cantidadesSeleccionadas']))
+
+            nuevo_producto_cotizado = ProductoCotizado(
+                descripcion=producto_data['descripcion'],
+                alto=producto_data['alto'],
+                ancho=producto_data['ancho'],
+                fondo=producto_data['fondo'],
+                cantidades=cantidades_str,
+                cotizacion_id=nueva_cotizacion.id_cotizacion,
+                producto_id=producto_data['productoId'],
+                producto_seleccionado_id=producto_data.get('productoSeleccionadoId')
             )
-            db.session.add(resumen_de_costos)
+            db.session.add(nuevo_producto_cotizado)
+            db.session.flush()
 
-        # Guardar los items cotizados
-        for item_data in producto_data['items']:
-            nuevo_item_cotizado = ItemCotizado(
-                producto_cotizado_id=nuevo_producto_cotizado.id,
-                item_id=item_data['itemId'],
-                cantidad=item_data['itemCantidad'],
-                total_item=item_data['itemTotal']
-            )
-            db.session.add(nuevo_item_cotizado)
+            for resumen in producto_data.get('resúmenesCostos', []):
+                resumen_de_costos = ResumenDeCostos(
+                    costo_directo=resumen['costoDirecto'],
+                    administracion=resumen['administracion'],
+                    imprevistos=resumen['imprevistos'],
+                    utilidad=resumen['utilidad'],
+                    oferta_antes_iva=resumen['ofertaAntesIva'],
+                    iva=resumen['iva'],
+                    valor_oferta=resumen['valorOferta'],
+                    producto_id=nuevo_producto_cotizado.id
+                )
+                db.session.add(resumen_de_costos)
 
-    # Confirmar los cambios en la base de datos
-    db.session.commit()
+            for item_data in producto_data['items']:
+                nuevo_item_cotizado = ItemCotizado(
+                    producto_cotizado_id=nuevo_producto_cotizado.id,
+                    item_id=item_data['itemId'],
+                    cantidad=item_data['itemCantidad'],
+                    total_item=item_data['itemTotal']
+                )
+                db.session.add(nuevo_item_cotizado)
 
-    return jsonify({'success': True})
+        db.session.commit()
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        print(f"Error: {str(e)}") 
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 
 #Ruta para listar cotizaciones
@@ -920,6 +926,7 @@ def editar_cotizacion(cotizacion_id):
 
     # Consulta la lista de vendedores con user_rol 1 o 2
     vendedores = Users.query.filter(Users.user_rol.in_([1, 2])).all()
+
 
     return render_template(
         'editar_cotizacion.html',

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Cotizacion</title>
@@ -541,10 +542,22 @@ function mostrarItems(items) {
         }
 
 
-        const costoDirecto = parseFloat(resumen.costo_directo.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const administracion = parseFloat(resumen.administracion.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const imprevistos = parseFloat(resumen.imprevistos.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const utilidad = parseFloat(resumen.utilidad.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        // Convertir valores a números para realizar cálculos
+        const costoDirectoNum = parseFloat(resumen.costo_directo.replace(/,/g, ""));
+        const administracionNum = parseFloat(resumen.administracion.replace(/,/g, ""));
+        const imprevistosNum = parseFloat(resumen.imprevistos.replace(/,/g, ""));
+        const utilidadNum = parseFloat(resumen.utilidad.replace(/,/g, ""));
+
+        // Cálculo de porcentajes
+        const porcentajeAdministracion = ((administracionNum / costoDirectoNum) * 100).toFixed(2);
+        const porcentajeImprevistos = ((imprevistosNum / costoDirectoNum) * 100).toFixed(2);
+        const porcentajeUtilidad = ((utilidadNum / costoDirectoNum) * 100).toFixed(2);
+
+        // Formatear valores con formato de moneda
+        const costoDirecto = costoDirectoNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        const administracion = administracionNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        const imprevistos = imprevistosNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        const utilidad = utilidadNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
         const ofertaAntesIVA = parseFloat(resumen.oferta_antes_iva.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
         const iva = parseFloat(resumen.iva.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
         const valorOferta = parseFloat(resumen.valor_oferta.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
@@ -594,11 +607,11 @@ function mostrarItems(items) {
         resumenContainer.innerHTML = `
             <h4>Resumen de Costos</h4>
             <p id="costo-directo-${producto.id}">Costo Directo: ${costoDirecto}</p>
-            <p id="administracion-${producto.id}">Administración: ${administracion} <span id="porcentaje-administracion-${producto.id}">(${resumen.porcentaje_administracion}%)</span></p>
-            <p id="imprevistos-${producto.id}">Imprevistos: ${imprevistos} <span id="porcentaje-imprevistos-${producto.id}">(${resumen.porcentaje_imprevistos}%)</span></p>
-            <p id="utilidad-${producto.id}">Utilidad: ${utilidad} <span id="porcentaje-utilidad-${producto.id}">(${resumen.porcentaje_utilidad}%)</span></p>
+            <p id="administracion-${producto.id}">Administración: ${administracion} <span id="porcentaje-administracion-${producto.id}">(${porcentajeAdministracion}%)</span></p>
+            <p id="imprevistos-${producto.id}">Imprevistos: ${imprevistos} <span id="porcentaje-imprevistos-${producto.id}">(${porcentajeImprevistos}%)</span></p>
+            <p id="utilidad-${producto.id}">Utilidad: ${utilidad} <span id="porcentaje-utilidad-${producto.id}">(${porcentajeUtilidad}%)</span></p>
             <p id="oferta-antes-iva-${producto.id}">Oferta Antes De IVA: ${ofertaAntesIVA}</p>
-            <p id="precio-unitario-venta-${producto.id}" style="color: #00b04f;">Precio Unitario De Venta: ${resumen.precio_unitario_venta}</p>
+            <p id="precio-unitario-venta-${producto.id}" style="color: #00b04f;">Precio Unitario De Venta: ${resumen.precio_unitario_venta || 'N/A'}</p>
             <p id="iva-${producto.id}">IVA: ${iva}</p>
             <p style="color: #00b04f;" id="valor-oferta-${producto.id}">Valor Oferta Impuestos Incluidos: ${valorOferta}</p>
         `;

@@ -119,7 +119,7 @@ def todos_los_productos():
         productos_json.append({
             'id': producto.producto_id,
             'nombre': producto.nombre,
-            'linea_id': producto.linea_idFK,  # Asegúrate de devolver también la línea asociada al producto
+            'linea_id': producto.linea_idFK, 
             'items': items_json
         })
     return jsonify(productos_json)
@@ -140,7 +140,7 @@ def get_porcentajes(producto_id):
 @routes_blueprint.route('/items_por_producto/<int:producto_id>')
 def items_por_producto(producto_id):
     pagina = request.args.get('pagina', 1, type=int)
-    items_por_pagina = 20  # Cambia esto a 10 según lo mencionado
+    items_por_pagina = 20  
 
     query = Items.query \
         .join(ItemsPorProducto, ItemsPorProducto.item_idFK == Items.item_id) \
@@ -307,7 +307,6 @@ def guardar_cotizacion():
     # Convertir la cadena de fecha y hora a un objeto datetime
     fecha_cotizacion = parser.parse(data['fechaCotizacion']).astimezone(timezone.utc)
 
-
     # Buscar cotizaciones existentes con el mismo número de negociación
     cotizaciones_existentes = Cotizacion.query.filter_by(negociacion=negociacion).order_by(Cotizacion.version.desc()).all()
 
@@ -408,7 +407,7 @@ def guardar_cotizacion():
         # Procesar items temporales si existen para este producto
         items_temporales = json.loads(data.get('itemsTemporales', '[]'))
         for item_temporal in items_temporales:
-            # Asociar los items temporales solo con el producto actual
+            # Asociacr los items temporales solo con el producto actual
             if item_temporal.get('productoId') == producto_data['productoId']:  # Asegúrate de que pertenezca al producto correcto
                 nuevo_item_temporal = ItemTemporal(
                     descripcion=item_temporal['descripcion'],
@@ -933,14 +932,14 @@ def editar_cotizacion(cotizacion_id):
         cotizacion=cotizacion.to_dict(),
         fecha_cotizacion=cotizacion_fecha,
         productos_cotizados=productos_data,
-        items_cotizados=items_cotizados,  # Ahora los ítems tienen el campo 'tipo'
+        items_cotizados=items_cotizados,  
         resumen_costos=resumen_costos,
         vendedores=vendedores,
         user_rol=user_rol,
         lineas=lineas
     )
 
-
+ 
 
 # Definir las dimensiones de las imágenes
 encabezado_width = 612.07 #21,59
@@ -963,10 +962,10 @@ def format_precio(precio):
         precio = float(precio)
         formatted = locale.currency(precio, grouping=True)
         
-        return formatted  # Esto ya te devuelve el formato correcto "$ 1.234,56"
+        return formatted  
     
     except (ValueError, TypeError):
-        return "$ 0.00"  # Retornar "$ 0.00" si hay un error
+        return "$ 0.00"  
 
 @routes_blueprint.route('/generar-reporte/<int:cotizacion_id>', methods=['GET'])
 def generar_reporte(cotizacion_id):

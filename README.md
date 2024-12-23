@@ -1,4 +1,10 @@
-## Generador de Catálogos Personalizados (v7.1.0) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (v7.2.0) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 23 de diciembre de 2024, 12:01 pm
+Cambios Recientes
+v 7.2.0
+
+En esta versión estamos trabajando en la edicion de la cotizacion, actualmente ya llama los valores reales del resumen de costos, nos falta realizar el calculo de los porcentajes, y corregir la funcion para actualizar los valores al realizar algun cambio. adicional tampoco están los input de utilidad ni administracion
 
 # Fecha de lanzamiento: 28 de noviembre de 2024, 11:55 am
 Cambios Recientes

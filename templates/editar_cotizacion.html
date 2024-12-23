@@ -541,13 +541,13 @@ function mostrarItems(items) {
         }
 
 
-        const costoDirecto = parseFloat(resumen.costo_directo).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const administracion = parseFloat(resumen.administracion).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const imprevistos = parseFloat(resumen.imprevistos).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const utilidad = parseFloat(resumen.utilidad).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const ofertaAntesIVA = parseFloat(resumen.oferta_antes_iva).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const iva = parseFloat(resumen.iva).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const valorOferta = parseFloat(resumen.valor_oferta).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        const costoDirecto = parseFloat(resumen.costo_directo.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        const administracion = parseFloat(resumen.administracion.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        const imprevistos = parseFloat(resumen.imprevistos.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        const utilidad = parseFloat(resumen.utilidad.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        const ofertaAntesIVA = parseFloat(resumen.oferta_antes_iva.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        const iva = parseFloat(resumen.iva.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+        const valorOferta = parseFloat(resumen.valor_oferta.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
 
         // Crear contenido HTML dinámico para el producto
         nuevoProducto.innerHTML = `

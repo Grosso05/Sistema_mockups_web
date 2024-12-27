@@ -390,7 +390,7 @@
                 </div>
             </div>
             
-            <!-- Sección Izquierda -->
+            <!-- Sección Derecha -->
             <div class="seccion-izquierda flex-item">
                 <h2>Productos</h2>
                 <div class="item-descripcion-container">
@@ -444,26 +444,26 @@
 
     function toggleSidebar() {
         const sidebar = document.querySelector('.sidebar');
-        const content = document.querySelector('main'); // Selecciona el contenedor principal
+        const content = document.querySelector('main'); 
 
         if (sidebar.classList.contains('collapsed')) {
             sidebar.classList.remove('collapsed');
-            content.style.marginLeft = '250px'; // Ajusta el margen izquierdo del contenido
-            content.style.width = 'calc(100% - 250px)'; // Ajusta el ancho del contenido en función del ancho del sidebar expandido
+            content.style.marginLeft = '250px'; 
+            content.style.width = 'calc(100% - 250px)'; 
         } else {
             sidebar.classList.add('collapsed');
-            content.style.marginLeft = '0'; // Restaura el margen izquierdo del contenido
-            content.style.width = '100%'; // Restaura el ancho del contenido al 100%
+            content.style.marginLeft = '0'; 
+            content.style.width = '100%'; 
         }
     }
 
     function closeSidebar() {
         const sidebar = document.querySelector('.sidebar');
-        const content = document.querySelector('main'); // Selecciona el contenedor principal
+        const content = document.querySelector('main'); 
 
         sidebar.classList.add('collapsed');
-        content.style.marginLeft = '0'; // Restaura el margen izquierdo del contenido
-        content.style.width = '100%'; // Restaura el ancho del contenido al 100%
+        content.style.marginLeft = '0'; 
+        content.style.width = '100%'; 
     }
 
     function toggleDropdown(id) {
@@ -482,14 +482,14 @@
     }
 
 
-    // Obtener la fecha actual en formato YYYY-MM-DD
+    
     const today = new Date().toISOString().slice(0, 10);
 
-    // Establecer la fecha actual como valor por defecto
+    
     document.getElementById('fecha_cotizacion').value = today;
 
 
-    // Funciones para el formulario de cotizacion
+  
     
     document.getElementById('toggleDatosBtn').addEventListener('click', function() {
         const formularioCotizacion = document.getElementById('formulario-cotizacion');
@@ -504,21 +504,21 @@
         formularioCotizacion.style.display= 'flex';
     });
 
-    //funcion para evento de seleccion de linea
+    
 
     document.addEventListener('DOMContentLoaded', function() {
         const lineaSelect = document.getElementById('seleccionarLinea');
         const productoSelect = document.getElementById('seleccionarProducto');
     
-        // Función para cargar todos los productos
+        
         function cargarTodosLosProductos() {
-            fetch('/todos_los_productos') // Asegúrate de que esta ruta devuelva todos los productos en formato JSON
+            fetch('/todos_los_productos') 
                 .then(response => response.json())
                 .then(productos => {
-                    // Ordenar los productos alfabéticamente por nombre
+                    
                     productos.sort((a, b) => a.nombre.localeCompare(b.nombre));
     
-                    productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Reiniciar opciones
+                    productoSelect.innerHTML = '<option value="">Seleccionar</option>'; 
                     productos.forEach(producto => {
                         const option = document.createElement('option');
                         option.value = producto.id;
@@ -531,18 +531,18 @@
                 });
         }
 
-    // Función para cargar productos filtrados por línea
+    
     function cargarProductosPorLinea(lineaId) {
         if (lineaId) {
             fetch(`/productos_por_linea/${lineaId}`)
                 .then(response => response.json())
                 .then(productos => {
-                    productoSelect.innerHTML = '<option value="">Seleccionar</option>'; // Reiniciar opciones
+                    productoSelect.innerHTML = '<option value="">Seleccionar</option>'; 
                     productos.forEach(producto => {
                         const option = document.createElement('option');
                         option.value = producto.id;
                         option.textContent = producto.nombre;
-                        option.dataset.lineaId = producto.linea_id; // Guardamos el ID de la línea en un data attribute
+                        option.dataset.lineaId = producto.linea_id; 
                         productoSelect.appendChild(option);
                     });
                 })
@@ -550,37 +550,35 @@
                     console.error(`Error al cargar productos para la línea ${lineaId}:`, error);
                 });
         } else {
-            // Si no se selecciona ninguna línea, cargar todos los productos
+            
             cargarTodosLosProductos();
         }
     }
 
-    // Cargar todos los productos al cargar la página
+    
     cargarTodosLosProductos();
 
-    // Evento para cuando se cambia la selección de línea
+    
     lineaSelect.addEventListener('change', function() {
         const lineaId = this.value;
         cargarProductosPorLinea(lineaId);
     });
 
-    // Evento para cuando se cambia la selección de producto
+    
     productoSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const lineaId = selectedOption.dataset.lineaId;
 
         if (lineaId) {
-            // Actualizar la selección de línea sin disparar el evento 'change' nuevamente
+            
             if (lineaSelect.value !== lineaId) {
                 lineaSelect.value = lineaId;
-                // Opcional: Si deseas filtrar los productos al actualizar la línea automáticamente
-                // cargarProductosPorLinea(lineaId);
+
             }
         }
     });
 });
     
-    //funcion que consulta los porcentajes de cada producto en el backend
 
     function cargarPorcentajesProducto() {
         const productoId = document.getElementById('seleccionarProducto').value;
@@ -595,14 +593,13 @@
                 })
                 .then(porcentajes => {
                     if (!porcentajes.error) {
-                        // Guardar los porcentajes en el objeto del producto seleccionado
+
                         const productoElement = document.querySelector(`#producto-${productoId}`);
                         if (productoElement) {
                             productoElement.dataset.administracion = porcentajes.administracion;
                             productoElement.dataset.imprevistos = porcentajes.imprevistos;
                             productoElement.dataset.utilidad = porcentajes.utilidad;
     
-                            // Establecer el valor mínimo en el input de utilidad
                             const inputUtilidad = document.getElementById('utilidadSeleccionada');
                             
                             inputUtilidad.placeholder = `El porcentaje mínimo es cargarPorcentajesProducto: ${porcentajes.utilidad}`;
@@ -616,17 +613,15 @@
 
     let valoresCantidad = [];
 
-    // Función para actualizar los valores de los inputs
+
     function actualizarValoresCantidad() {
         const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
-        valoresCantidad = Array.from(cantidadInputs).map(input => parseInt(input.value, 10) || 1); // Default to 1 if NaN
+        valoresCantidad = Array.from(cantidadInputs).map(input => parseInt(input.value, 10) || 1); 
     }
     
-    // Añadir eventos para actualizar los valores
     document.getElementById('btnAgregarCantidad').addEventListener('click', function() {
         const cantidadContainer = document.getElementById('cantidadUnidades');
     
-        // Crear nuevo input
         const newInput = document.createElement('input');
         newInput.type = 'number';
         newInput.className = 'cantidad-input';
@@ -635,7 +630,7 @@
         newInput.value = '1';
         cantidadContainer.appendChild(newInput);
     
-        // Actualizar los valores
+
         actualizarValoresCantidad();
     });
     
@@ -643,14 +638,13 @@
         const cantidadContainer = document.getElementById('cantidadUnidades');
         const cantidadInputs = document.querySelectorAll('#cantidadUnidades .cantidad-input');
     
-        // Eliminar el último input si hay más de uno
+
         if (cantidadInputs.length > 1) {
             cantidadContainer.removeChild(cantidadInputs[cantidadInputs.length - 1]);
             actualizarValoresCantidad();
         }
     });
     
-    // Actualizar valores al cambiar inputs
     document.addEventListener('input', function(event) {
         if (event.target.classList.contains('cantidad-input')) {
             actualizarValoresCantidad();
@@ -660,9 +654,9 @@
 
     let itemNumber = 0;
     let numerosEliminados = [];
-    let temporalItemID = 1; // ID inicial para ítems temporales, será decreciente
+    let temporalItemID = 1; 
 
-    const productosContainer = document.getElementById('productos-container'); // Define en el ámbito global
+    const productosContainer = document.getElementById('productos-container'); 
 
     function generarCabeceras() {
         const cantidadHeader = valoresCantidad.map(valor => `<th>Cantidad (${valor})</th>`).join('');
@@ -679,14 +673,14 @@
         const cantidadInput = document.querySelector('.cantidad-input');
         
         const descripcion = descripcionInput.value.trim();
-        const productoId = productoSelect.value;  // ID del producto seleccionado desde el select
+        const productoId = productoSelect.value;  
         const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
         
         const alto = altoInput.value.trim();
         const ancho = anchoInput.value.trim();
         let fondo = fondoInput.value.trim();
     
-        // Verificar si fondo es null o está vacío
+        
         if (fondo === null || fondo === "") {
             fondo = "0";
         }
@@ -701,25 +695,25 @@
         let nuevoNumeroProducto;
     
         if (numerosEliminados.length > 0) {
-            nuevoNumeroProducto = numerosEliminados.shift(); // Reutilizar el número más bajo disponible
+            nuevoNumeroProducto = numerosEliminados.shift(); 
         } else {
-            nuevoNumeroProducto = ++itemNumber; // Incrementar el número de producto
+            nuevoNumeroProducto = ++itemNumber; 
         }
     
-        // Crear el nuevo producto
+        
         const nuevoProducto = document.createElement('div');
         nuevoProducto.className = 'producto';
         nuevoProducto.id = `producto-${nuevoNumeroProducto}`;
     
-        // Generar las cabeceras dinámicas usando el arreglo valoresCantidad
+        
         const { cantidadHeader, totalHeader } = generarCabeceras();
     
-        // Crear el h4 que muestra las cantidades seleccionadas
+        
         const cantidadesSeleccionadasHTML = valoresCantidad.map((valor, index) => 
             `<h4>Cantidad seleccionada (${index + 1}): ${valor} unidades</h4>`
         ).join('');
     
-        // Cargar porcentajes desde el backend y almacenarlos en los atributos de data del elemento
+        
         fetch(`/porcentajes/${productoId}`)
             .then(response => response.json())
             .then(porcentajes => {
@@ -727,7 +721,7 @@
                 nuevoProducto.dataset.imprevistos = porcentajes.imprevistos;
                 nuevoProducto.dataset.utilidad = porcentajes.utilidad;
     
-                // Crear el contenido del nuevo producto
+                
                 nuevoProducto.innerHTML = `
                     <div class="producto" id="producto-${nuevoNumeroProducto}" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
                         <div style="flex-grow: 1;">
@@ -759,7 +753,6 @@
                             >
                         </div>
                     </div>
-
                                         ${cantidadesSeleccionadasHTML}
                                         <div class="itemsseleccionados">
                                             <h4>Items Seleccionados</h4>
@@ -888,7 +881,7 @@
                     if (nuevoNumeroProducto < numeroProducto) {
                         productosContainer.insertBefore(nuevoProducto, producto);
                         insertado = true;
-                        return false; // Rompe el bucle forEach
+                        return false; 
                     }
                 });
                 if (!insertado) {

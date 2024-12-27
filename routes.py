@@ -1,32 +1,27 @@
-#uod
 import datetime
 import os
-from sqlite3 import IntegrityError
 import uuid
 from dateutil import parser
 from flask import Blueprint, flash, json, jsonify, render_template, request, redirect, session, url_for,send_file
-from flask_login import login_required, login_user, current_user
+from flask_login import login_required, current_user
 from matplotlib import cm
-from models import Categoria, Cotizacion, ItemCotizado, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db, PrecioEscalonado
+from models import Cotizacion, ItemCotizado, ItemTemporal, Items, ItemsPorProducto, Lineas, PorcentajesProducto, ProductoCotizado, Productos, ResumenDeCostos, Users, ItemProveedores,db
 from utils import roles_required
 import locale
 from datetime import datetime, timezone
 from io import BytesIO
 from flask import send_file
-from reportlab.lib.pagesizes import legal, landscape
+from reportlab.lib.pagesizes import legal
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable, Image
 from flask_login import current_user
 from werkzeug.utils import secure_filename
-from reportlab.platypus import XBox
-from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from flask import jsonify, request
-from sqlalchemy import func
 
 import locale
 locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8') 
@@ -50,13 +45,13 @@ def admin():
     return render_template('/dashboard_admin.html',user_rol=current_user.user_rol)
 
 
-
 @routes_blueprint.route('/routes.user')
 @login_required
 def user():
     if current_user.user_rol not in [2, 3]:
         return render_template(url_for('users.login'))
     return render_template('dashboard_user.html', user_rol=current_user.user_rol)
+
 
 #Ruta para generar catalogo del lado del administrador
 @routes_blueprint.route('/routes.generar_catalogo')
@@ -1395,16 +1390,19 @@ def generar_reporte(cotizacion_id):
 
     # Devolver el archivo PDF
     return send_file(buffer, as_attachment=True, download_name=f"Cotizacion - N {cotizacion.negociacion}.{cotizacion.proyecto_cotizacion}-{cotizacion.cliente_cotizacion}.pdf", mimetype='application/pdf')
-# < ----------------------------------------------------------  Ruta para generar OP ---------------------------------------------------------------------------------------->
+# < -------------------------------------------------------------------------------------------------------------------------------------------------------------------->
+# <--------------------------------------------------------------------------------------------------------------------------------------------------------------------->
+# <------------------------------------------------------------------- Ruta para generar OP ---------------------------------------------------------------------------->
+# < -------------------------------------------------------------------------------------------------------------------------------------------------------------------->
+# <--------------------------------------------------------------------------------------------------------------------------------------------------------------------->
+
+
 
 from io import BytesIO
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Spacer
 from flask import send_file
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 
 @routes_blueprint.route('/generar-op/<int:cotizacion_id>', methods=['GET'])
 def generar_op(cotizacion_id):
@@ -1588,8 +1586,6 @@ def generar_op(cotizacion_id):
             items_data.append([item_temporal.descripcion, item_temporal.unidad, item_temporal.cantidad])
 
 
-
-        # Crear la tabla de items solo si hay datos
         if len(items_data) > 1:  # Si hay más de una fila (la primera fila es el encabezado)
             items_table = Table(items_data, colWidths=[4*inch, 3*inch, 1*inch])
             items_table.setStyle(TableStyle([

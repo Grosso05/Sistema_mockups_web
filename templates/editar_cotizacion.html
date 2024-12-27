@@ -19,6 +19,7 @@
             color: white;
         }
 
+
         .list-unstyled {
             list-style-type: none; /* Elimina los puntos o viñetas */
             padding-left: 0; /* Elimina el padding izquierdo */
@@ -152,7 +153,7 @@
             background-color: #DC0070;
             color: #fff;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 5px; 
             bottom: 12%;
             left: 25%;
         }
@@ -491,7 +492,7 @@ function mostrarItems(items) {
                         <td>${item.descripcion}</td>
                         <td>${item.unidad}</td>
                         <td>${formateador.format(precioUnitario)}</td>
-                        <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="0"></td>
+                        <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="0" style=" width: 30%"></td>
                         <td class="total-item">${formateador.format(total)}</td>
                         <td><button onclick="eliminarItemNuevo(this)">Eliminar</button></td>
                         <td class="oculto">${item.tipo}</td>
@@ -509,206 +510,189 @@ function mostrarItems(items) {
 }
 
 
-    function agregarProducto(producto, items = []) {
+function agregarProducto(producto, items = []) {
+    console.log("Llamando a agregarProducto con:", producto);
+    console.log(`Producto ${producto.id} agregado correctamente.`);
 
 
-        console.log("Llamando a agregarProducto con:", producto);
-        console.log(`Producto ${producto.id} agregado correctamente.`);
+    const administracionPorcentajeMinimo = parseFloat(producto.administracion || 0);
+    const utilidadPorcentajeMinimo = parseFloat(producto.utilidad || 0);
 
-        // Buscar el contenedor adecuado en el DOM
-        const contenedorProductos = document.getElementById("productos-container");
+    // Buscar el contenedor adecuado en el DOM
+    const contenedorProductos = document.getElementById("productos-container");
 
-        // Verificar que el contenedor existe
-        if (!contenedorProductos) {
-            console.error("No se encontró el contenedor con ID 'productos-container' en el DOM.");
-            return;
-        }
+    // Verificar que el contenedor existe
+    if (!contenedorProductos) {
+        console.error("No se encontró el contenedor con ID 'productos-container' en el DOM.");
+        return;
+    }
 
-        // Crear nuevo div para el producto
-        const nuevoProducto = document.createElement("div");
-        nuevoProducto.className = "producto";
-        nuevoProducto.id = `producto-${producto.id}`; // ID basado en producto.id
-        nuevoProducto.setAttribute("data-producto-id", producto.producto_id); // Relación con resumen
+    // Crear nuevo div para el producto
+    const nuevoProducto = document.createElement("div");
+    nuevoProducto.className = "producto";
+    nuevoProducto.id = `producto-${producto.id}`; // ID basado en producto.id
+    nuevoProducto.setAttribute("data-producto-id", producto.producto_id); // Relación con resumen
 
-        // Verificar si `producto.producto_nombre` está disponible
-        const nombreProducto = producto.producto_nombre ? producto.producto_nombre : "Nombre no disponible";
+    // Verificar si `producto.producto_nombre` está disponible
+    const nombreProducto = producto.producto_nombre ? producto.producto_nombre : "Nombre no disponible";
 
-        // Ajustar la lógica para buscar el resumen de costos
-        const resumen = resumenCostos.find(item => item.producto_id === producto.id);
+    // Ajustar la lógica para buscar el resumen de costos
+    const resumen = resumenCostos.find(item => item.producto_id === producto.id);
+    if (!resumen) {
+        console.error(`Resumen no encontrado para el producto con ID ${producto.id}. Verifica las relaciones en la base de datos.`);
+        return;
+    }
 
-        if (!resumen) {
-            console.error(`Resumen no encontrado para el producto con ID ${producto.id}. Verifica las relaciones en la base de datos.`);
-            return;
-        }
+    // Convertir valores a números para realizar cálculos
+    const costoDirectoNum = parseFloat(resumen.costo_directo.replace(/,/g, ""));
+    const administracionNum = parseFloat(resumen.administracion.replace(/,/g, ""));
+    const imprevistosNum = parseFloat(resumen.imprevistos.replace(/,/g, ""));
+    const utilidadNum = parseFloat(resumen.utilidad.replace(/,/g, ""));
 
+    // Cálculo de porcentajes iniciales
+    const porcentajeAdministracion = ((administracionNum / costoDirectoNum) * 100).toFixed(2);
+    const porcentajeImprevistos = ((imprevistosNum / costoDirectoNum) * 100).toFixed(2);
+    const porcentajeUtilidad = ((utilidadNum / costoDirectoNum) * 100).toFixed(2);
 
-        // Convertir valores a números para realizar cálculos
-        const costoDirectoNum = parseFloat(resumen.costo_directo.replace(/,/g, ""));
-        const administracionNum = parseFloat(resumen.administracion.replace(/,/g, ""));
-        const imprevistosNum = parseFloat(resumen.imprevistos.replace(/,/g, ""));
-        const utilidadNum = parseFloat(resumen.utilidad.replace(/,/g, ""));
+    // Formatear valores con formato de moneda
+    const costoDirecto = costoDirectoNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
+    const administracion = administracionNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
+    const imprevistos = imprevistosNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
+    const utilidad = utilidadNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
+    const ofertaAntesIVA = parseFloat(resumen.oferta_antes_iva.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+    const iva = parseFloat(resumen.iva.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+    const valorOferta = parseFloat(resumen.valor_oferta.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
 
-        // Cálculo de porcentajes
-        const porcentajeAdministracion = ((administracionNum / costoDirectoNum) * 100).toFixed(2);
-        const porcentajeImprevistos = ((imprevistosNum / costoDirectoNum) * 100).toFixed(2);
-        const porcentajeUtilidad = ((utilidadNum / costoDirectoNum) * 100).toFixed(2);
+    // Crear contenido HTML dinámico para el producto
+    nuevoProducto.innerHTML = `
+        <h3 contenteditable="true" style="color: #00b04f;" data-producto-seleccionado-id="${producto.producto_seleccionado_id}">
+            Producto ${producto.producto_id}: ${nombreProducto}
+        </h3>
+        <h4 contenteditable="true">Descripción: ${producto.descripcion}</h4>
+        <h4 contenteditable="true">Dimensiones: Alto: ${producto.alto}cm, Ancho: ${producto.ancho}cm, Fondo: ${producto.fondo}cm</h4>
+    `;
 
-        // Formatear valores con formato de moneda
-        const costoDirecto = costoDirectoNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const administracion = administracionNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const imprevistos = imprevistosNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const utilidad = utilidadNum.toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const ofertaAntesIVA = parseFloat(resumen.oferta_antes_iva.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const iva = parseFloat(resumen.iva.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
-        const valorOferta = parseFloat(resumen.valor_oferta.replace(/,/g, "")).toLocaleString("es-CO", { style: "currency", currency: "COP" });
+    // Contenedor para los ítems seleccionados
+    const itemsContainer = document.createElement("div");
+    itemsContainer.className = "items-seleccionados";
+    itemsContainer.innerHTML = `
+        <h4>Items Seleccionados</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th class="oculto">ID</th>
+                    <th class="oculto">Grupo</th>
+                    <th>Descripción</th>
+                    <th>Unidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                    <th class="oculto">Tipo</th>
+                </tr>
+            </thead>
+            <tbody id="itemsseleccionados-${producto.id}">
+                ${items.length > 0 ? mostrarItems(items) : '<tr><td colspan="8">No hay ítems disponibles para este producto.</td></tr>'}
+            </tbody>
+        </table>
+    `;
 
-        // Crear contenido HTML dinámico para el producto
-        nuevoProducto.innerHTML = `
-            <h3 contenteditable="true" style="color: #00b04f;" data-producto-seleccionado-id="${producto.producto_seleccionado_id}">
-                Producto ${producto.producto_id}: ${nombreProducto}
-            </h3>
-            <h4 contenteditable="true">Descripción: ${producto.descripcion}</h4>
-            <h4 contenteditable="true">Dimensiones: Alto: ${producto.alto}cm, Ancho: ${producto.ancho}cm, Fondo: ${producto.fondo}cm</h4>
-        `;
+    // Contenedor para el resumen de costos
+    const resumenContainer = document.createElement("div");
+    resumenContainer.className = "resumen-costos";
+    resumenContainer.setAttribute("data-producto-id", producto.producto_id);
 
-        // Contenedor para los ítems seleccionados
-        const itemsContainer = document.createElement("div");
-        itemsContainer.className = "items-seleccionados";
-        itemsContainer.innerHTML = `
-            <h4>Items Seleccionados</h4>
-            <table>
-                <thead>
-                    <tr>
-                        <th class="oculto">ID</th>
-                        <th class="oculto">Grupo</th>
-                        <th>Descripción</th>
-                        <th>Unidad</th>
-                        <th>Precio Unitario</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
-                        <th>Acciones</th>
-                        <th class="oculto">Tipo</th>
-                    </tr>
-                </thead>
-                <tbody id="itemsseleccionados-${producto.id}">
-                    ${items.length > 0
-                        ? mostrarItems(items) // Esta función debe estar bien definida y manejar la lista de items
-                        : '<tr><td colspan="8">No hay ítems disponibles para este producto.</td></tr>'}
-                </tbody>
-            </table>
-        `;
+    // Insertar valores en el resumen de costos
+    resumenContainer.innerHTML = `
+    <h4>Resumen de Costos</h4>
+    <p id="costo-directo-${producto.id}">Costo Directo: ${costoDirecto}</p>
+    <p id="administracion-${producto.id}">
+        Administración: 
+        <span id="valor-administracion-${producto.id}">${administracion}</span>
+        
+        <input type="number" id="administracionSeleccionada-${producto.id}" value="${porcentajeAdministracion}" 
+            min="${administracionPorcentajeMinimo}" step="0.01" 
+            oninput="actualizarCostoDirecto(${producto.id})" style="width:8%" />
+        % 
+    </p>
+    <p id="imprevistos-${producto.id}">Imprevistos: ${imprevistos} <span>(${porcentajeImprevistos}%)</span></p>
+    <p id="utilidad-${producto.id}">
+        Utilidad:
+        
+        <span id="valor-utilidad-${producto.id}">${utilidad}</span>
+        <input  type="number" id="utilidadSeleccionada-${producto.id}" value="${porcentajeUtilidad}" 
+            min="${utilidadPorcentajeMinimo}" step="0.01" 
+            oninput="actualizarCostoDirecto(${producto.id})" style="width:8%" />
+        % 
+    </p>
+    <p id="oferta-antes-iva-${producto.id}">Oferta Antes De IVA: ${ofertaAntesIVA}</p>
+    <p id="precio-unitario-venta-${producto.id}" style="color: #00b04f;">Precio Unitario De Venta: ${resumen.precio_unitario_venta || 'N/A'}</p>
+    <p id="iva-${producto.id}">IVA: ${iva}</p>
+    <p style="color: #00b04f;" id="valor-oferta-${producto.id}">Valor Oferta Impuestos Incluidos: ${valorOferta}</p>
+`;
 
-        // Contenedor para el resumen de costos
-        const resumenContainer = document.createElement("div");
-        resumenContainer.className = "resumen-costos";
-        resumenContainer.setAttribute("data-producto-id", producto.producto_id);
+    // Contenedor para los botones de acción
+    const accionesContainer = document.createElement('div');
+    accionesContainer.className = 'acciones';
+    accionesContainer.innerHTML = `
+        <button class="confirmar-producto-btn" data-producto-id="${producto.id}">Confirmar Producto</button>
+        <button class="editar-producto-btn" data-producto-id="${producto.id}">Editar Producto</button>
+        <button class="eliminar-producto-btn" data-producto-id="${producto.id}">Eliminar Producto</button>
+        <button class="duplicar-producto-btn" data-producto-id="${producto.id}">Duplicar Producto</button>
+    `;
 
-        // Insertar valores en el resumen de costos
-        resumenContainer.innerHTML = `
-            <h4>Resumen de Costos</h4>
-            <p id="costo-directo-${producto.id}">Costo Directo: ${costoDirecto}</p>
-            <p id="administracion-${producto.id}">Administración: ${administracion} <span id="porcentaje-administracion-${producto.id}">(${porcentajeAdministracion}%)</span></p>
-            <p id="imprevistos-${producto.id}">Imprevistos: ${imprevistos} <span id="porcentaje-imprevistos-${producto.id}">(${porcentajeImprevistos}%)</span></p>
-            <p id="utilidad-${producto.id}">Utilidad: ${utilidad} <span id="porcentaje-utilidad-${producto.id}">(${porcentajeUtilidad}%)</span></p>
-            <p id="oferta-antes-iva-${producto.id}">Oferta Antes De IVA: ${ofertaAntesIVA}</p>
-            <p id="precio-unitario-venta-${producto.id}" style="color: #00b04f;">Precio Unitario De Venta: ${resumen.precio_unitario_venta || 'N/A'}</p>
-            <p id="iva-${producto.id}">IVA: ${iva}</p>
-            <p style="color: #00b04f;" id="valor-oferta-${producto.id}">Valor Oferta Impuestos Incluidos: ${valorOferta}</p>
-        `;
+    // Agregar todos los contenedores al nuevo producto
+    nuevoProducto.appendChild(itemsContainer);
+    nuevoProducto.appendChild(resumenContainer);
+    nuevoProducto.appendChild(accionesContainer);
 
-        // Contenedor para los botones de acción
-        const accionesContainer = document.createElement('div');
-        accionesContainer.className = 'acciones';
-        accionesContainer.innerHTML = `
-            <button class="confirmar-producto-btn" data-producto-id="${producto.id}">Confirmar Producto</button>
-            <button class="editar-producto-btn" data-producto-id="${producto.id}">Editar Producto</button>
-            <button class="eliminar-producto-btn" data-producto-id="${producto.id}">Eliminar Producto</button>
-            <button class="duplicar-producto-btn" data-producto-id="${producto.id}">Duplicar Producto</button>
-        `;
+    // Agregar el nuevo producto al contenedor principal de productos
+    contenedorProductos.appendChild(nuevoProducto);
 
+    // Llamar a la función para cargar los porcentajes usando producto_seleccionado_id
+    cargarPorcentajesProducto(producto.producto_seleccionado_id, porcentajeAdministracion, porcentajeImprevistos, porcentajeUtilidad);
 
-        // Contenedor para la selección de ítems
-        const seleccionItemsContainer = document.createElement('div');
-        seleccionItemsContainer.id = `seleccion-items-container-${producto.producto_id}`;
-        seleccionItemsContainer.style.display = 'none'; // Se ocultará inicialmente hasta que el usuario lo muestre
-        seleccionItemsContainer.innerHTML = `
-            <div>
-                <h4>Seleccionar Ítems</h4>
-                <input type="text" id="buscar-item-${producto.producto_id}" placeholder="Buscar ítems">
-                <div id="seleccion-items-${producto.producto_id}"></div>
-                <div id="paginacion-items-${producto.producto_id}"></div>
-                <div class="botones-container">
-                    <button class="boton-ver-todos custom-boton-ver-todos" onclick="verTodosItems(${producto.producto_id}, 1, '')">Ver Todos los Componentes</button>
-                    <button class="boton-agregar-temporal custom-boton-agregar-temporal" id="toggleFormularioBtn-${producto.producto_id}" onclick="toggleFormulario(${producto.producto_id})">Agregar Componente Temporal</button>
-                    <button class="boton-agregar-seleccionados custom-boton-agregar-seleccionados" onclick="agregarItemsSeleccionadosNuevos(${producto.producto_id})">Agregar Componentes Seleccionados</button>
-                </div>
+    // Función para cargar porcentajes desde la base de datos
+    function cargarPorcentajesProducto(productoSeleccionadoId, porcentajeAdministracion, porcentajeImprevistos, porcentajeUtilidad) {
+        fetch(`/porcentajes/${productoSeleccionadoId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la solicitud: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(porcentajes => {
+                if (!porcentajes.error) {
+                    const productoElement = document.querySelector(`#producto-${producto.producto_id}`);
+                    
+                    // Asignar los porcentajes base desde el JSON
+                    const adminPorcentaje = porcentajes.administracion || porcentajeAdministracion;
+                    const impPorcentaje = porcentajes.imprevistos || porcentajeImprevistos;
+                    const utilPorcentaje = porcentajes.utilidad || porcentajeUtilidad;
 
-            </div>
-        `;
+                    // Asignar porcentajes a los atributos de datos
+                    productoElement.dataset.administracion = adminPorcentaje;
+                    productoElement.dataset.imprevistos = impPorcentaje;
+                    productoElement.dataset.utilidad = utilPorcentaje;
 
-        // Agregar todos los contenedores al nuevo producto
-        nuevoProducto.appendChild(itemsContainer);
-        nuevoProducto.appendChild(seleccionItemsContainer); // Añadir el contenedor de selección de ítems
-        nuevoProducto.appendChild(resumenContainer);
-        nuevoProducto.appendChild(accionesContainer);
+                    // Actualizar porcentajes en el DOM
+                    document.getElementById(`porcentaje-administracion-${productoSeleccionadoId}`).textContent = `(${adminPorcentaje}%)`;
+                    document.getElementById(`porcentaje-imprevistos-${productoSeleccionadoId}`).textContent = `(${impPorcentaje}%)`;
+                    document.getElementById(`porcentaje-utilidad-${productoSeleccionadoId}`).textContent = `(${utilPorcentaje}%)`;
 
-        // Agregar el nuevo producto al contenedor principal de productos
-        const productosContainer = document.getElementById('productos-container');
-        productosContainer.appendChild(nuevoProducto);
-
-        // Llamar a la función para cargar los porcentajes usando producto_seleccionado_id
-        cargarPorcentajesProducto(producto.producto_seleccionado_id);
-
-        // Función para cargar porcentajes desde la base de datos
-        function cargarPorcentajesProducto(productoSeleccionadoId) {
-            fetch(`/porcentajes/${productoSeleccionadoId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error en la solicitud: ' + response.statusText);
+                    // Actualizar el input de utilidad seleccionada
+                    const inputUtilidad = document.getElementById(`utilidadSeleccionada-${productoSeleccionadoId}`);
+                    if (inputUtilidad) {
+                        inputUtilidad.placeholder = `El porcentaje mínimo es: ${utilPorcentaje}`;
+                        inputUtilidad.min = utilPorcentaje;
                     }
-                    return response.json();
-                })
-                .then(porcentajes => {
-                    if (!porcentajes.error) {
-                        const productoElement = document.querySelector(`#producto-${producto.producto_id}`);
-                        
-                        // Verificar si el elemento del producto existe
-                        if (productoElement) {
-                            // Asignar porcentajes a los atributos de datos
-                            productoElement.dataset.administracion = porcentajes.administracion;
-                            productoElement.dataset.imprevistos = porcentajes.imprevistos;
-                            productoElement.dataset.utilidad = porcentajes.utilidad;
-        
-                            // Actualizar porcentajes en el DOM con verificación
-                            const administracionElement = document.getElementById(`porcentaje-administracion-${productoSeleccionadoId}`);
-                            const imprevistosElement = document.getElementById(`porcentaje-imprevistos-${productoSeleccionadoId}`);
-                            const utilidadElement = document.getElementById(`porcentaje-utilidad-${productoSeleccionadoId}`);
-        
-                            // Verificar que los elementos existen antes de modificar su contenido
-                            if (administracionElement) {
-                                administracionElement.textContent = `(${porcentajes.administracion}%)`;
-                            }
-                            if (imprevistosElement) {
-                                imprevistosElement.textContent = `(${porcentajes.imprevistos}%)`;
-                            }
-                            if (utilidadElement) {
-                                utilidadElement.textContent = `(${porcentajes.utilidad}%)`;
-                            }
-        
-                            // Actualizar el input de la utilidad seleccionada
-                            const inputUtilidad = document.getElementById(`utilidadSeleccionada-${productoSeleccionadoId}`);
-                            if (inputUtilidad) {
-                                inputUtilidad.placeholder = `El porcentaje mínimo es: ${porcentajes.utilidad}`;
-                                inputUtilidad.min = porcentajes.utilidad;
-                            }
-        
-                            // Actualizar el costo directo después de cargar los porcentajes
-                            actualizarCostoDirecto(productoSeleccionadoId);
-                        }
-                    }
-                })
-                .catch(error => console.error('Error al cargar porcentajes:', error));
-        }
+                    
+                    // Actualizar el costo directo después de cargar los porcentajes
+                    actualizarCostoDirecto(productoSeleccionadoId);
+                }
+            })
+            .catch(error => console.error('Error al cargar porcentajes:', error));
+    }
     // Aquí puedes mantener la lógica para actualizar los costos, similar a la que ya tienes
     // Función para actualizar el costo directo y validar la utilidad
     function actualizarCostoDirecto(productoId) {
@@ -717,81 +701,51 @@ function mostrarItems(items) {
             console.error(`No se encontró el contenedor del producto con ID producto-${productoId}`);
             return;
         }
-        
-        // Obtener los ítems seleccionados
-        const itemsSeleccionados = nuevoProducto.querySelectorAll(`#itemsseleccionados-${productoId} .total-item`);
-        if (!itemsSeleccionados.length) {
-            console.warn(`No se encontraron ítems seleccionados para el producto ${productoId}`);
-        }
     
-        let costoDirecto = 0;
-    
-        // Iterar sobre los ítems y calcular el costo directo
-        itemsSeleccionados.forEach(item => {
-            const valorItem = item.textContent.trim();
-            const valorNumerico = parseFloat(valorItem.replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(valorNumerico)) {
-                costoDirecto += valorNumerico;
-            } else {
-                console.warn(`El valor "${valorItem}" no es un número válido`);
-            }
-        });
-    
-        // Formatear el costo directo
-        const formatoColombiano = costoDirecto.toLocaleString("es-CO", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        });
-    
-        // Actualizar el costo directo en el DOM
+        // Obtener el costo directo
         const costoDirectoElement = nuevoProducto.querySelector(`#costo-directo-${productoId}`);
-        if (costoDirectoElement) {
-            costoDirectoElement.textContent = `Costo Directo: ${formatoColombiano}`;
-        } else {
-            console.error(`No se encontró el elemento con ID costo-directo-${productoId}`);
-        }
+        let costoDirecto = parseFloat(costoDirectoElement?.textContent.replace(/[^0-9.,]/g, '').replace(/\./g, '').replace(',', '.') || 0);
     
-        // Resto del cálculo con validaciones
+        if (isNaN(costoDirecto)) costoDirecto = 0;
+    
+        // Obtener valores de los inputs
+        const inputAdministracion = document.getElementById(`administracionSeleccionada-${productoId}`);
         const inputUtilidad = document.getElementById(`utilidadSeleccionada-${productoId}`);
-        const utilidadPorcentajeMinimo = parseFloat(nuevoProducto.dataset.utilidad) || 0;
-        const utilidadPorcentaje = parseFloat(inputUtilidad?.value || utilidadPorcentajeMinimo);
+        const administracionPorcentaje = parseFloat(inputAdministracion?.value) || 0;
+        const utilidadPorcentaje = parseFloat(inputUtilidad?.value) || 0;
     
-        const administracionPorcentajeMinimo = parseFloat(nuevoProducto.dataset.administracion || 0);
-        const userRol = {{ user_rol }}; // Variable del backend
-        let administracionPorcentaje = administracionPorcentajeMinimo;
+        // Validaciones de porcentajes mínimos
+        const administracionMin = parseFloat(inputAdministracion.dataset.min) || 0;
+        const utilidadMin = parseFloat(inputUtilidad.dataset.min) || 0;
     
-        if (userRol === 1 || userRol === 3) {
-            const inputAdministracion = document.getElementById(`administracionSeleccionada-${productoId}`);
-            administracionPorcentaje = parseFloat(inputAdministracion?.value || administracionPorcentajeMinimo);
+        if (administracionPorcentaje < administracionMin) {
+            inputAdministracion.value = administracionMin;
+            return alert(`El porcentaje mínimo de administración es ${administracionMin}%`);
+        }
+        if (utilidadPorcentaje < utilidadMin) {
+            inputUtilidad.value = utilidadMin;
+            return alert(`El porcentaje mínimo de utilidad es ${utilidadMin}%`);
         }
     
-        const imprevistosPorcentaje = parseFloat(nuevoProducto.dataset.imprevistos || 0);
-    
-        // Calcular valores finales
+        // Calcular nuevos valores
         const administracionValor = (costoDirecto * administracionPorcentaje) / 100;
-        const imprevistosValor = (costoDirecto * imprevistosPorcentaje) / 100;
         const utilidadValor = (costoDirecto * utilidadPorcentaje) / 100;
+        const imprevistosValor = (costoDirecto * (parseFloat(nuevoProducto.dataset.imprevistos) || 0)) / 100;
+    
         const ofertaAntesIVA = costoDirecto + administracionValor + imprevistosValor + utilidadValor;
         const iva = ofertaAntesIVA * 0.19;
         const valorOfertaConImpuestos = ofertaAntesIVA + iva;
     
-        // Actualizar los valores en el DOM con validación
-        const actualizarElemento = (id, texto) => {
-            const elemento = document.getElementById(id);
-            if (elemento) {
-                elemento.textContent = texto;
-            } else {
-                console.error(`No se encontró el elemento con ID ${id}`);
-            }
-        };
+        // Actualizar el DOM con los nuevos valores
+        document.getElementById(`valor-administracion-${productoId}`).textContent = administracionValor.toLocaleString("es-CO");
+        document.getElementById(`valor-utilidad-${productoId}`).textContent = utilidadValor.toLocaleString("es-CO");
+        document.getElementById(`oferta-antes-iva-${productoId}`).textContent = `Oferta Antes De IVA: ${ofertaAntesIVA.toLocaleString("es-CO")}`;
+        document.getElementById(`iva-${productoId}`).textContent = `IVA: ${iva.toLocaleString("es-CO")}`;
+        document.getElementById(`valor-oferta-${productoId}`).textContent = `Valor Oferta Impuestos Incluidos: ${valorOfertaConImpuestos.toLocaleString("es-CO")}`;
+    }
+
+
     
-        actualizarElemento(`administracion-${productoId}`, `Administración: ${administracionValor.toLocaleString("es-CO")} (${administracionPorcentaje}%)`);
-        actualizarElemento(`imprevistos-${productoId}`, `Imprevistos: ${imprevistosValor.toLocaleString("es-CO")} (${imprevistosPorcentaje}%)`);
-        actualizarElemento(`utilidad-${productoId}`, `Utilidad: ${utilidadValor.toLocaleString("es-CO")} (${utilidadPorcentaje}%)`);
-        actualizarElemento(`oferta-antes-iva-${productoId}`, `Oferta Antes De IVA: ${ofertaAntesIVA.toLocaleString("es-CO")}`);
-        actualizarElemento(`iva-${productoId}`, `IVA: ${iva.toLocaleString("es-CO")}`);
-        actualizarElemento(`valor-oferta-${productoId}`, `Valor Oferta Impuestos Incluidos: ${valorOfertaConImpuestos.toLocaleString("es-CO")}`);
-    }   
     
 
     // Evento para cuando el usuario cambie el valor de la utilidad
@@ -916,8 +870,7 @@ cantidadInputs.forEach(input => {
                         <h3 contenteditable="true" style="color: #00b04f;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3>
                         <h4 contenteditable="true">Descripción: ${descripcion}</h4>
                         <h4 contenteditable="true">Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo}</h4>
-                        
-        
+                                
                         <!-- Añadimos el productoId con un nombre diferente -->
                         <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
     
@@ -1060,7 +1013,7 @@ cantidadInputs.forEach(input => {
                                             actualizarTotalProducto(nuevoNumeroProducto, nuevoValorUtilidad);
                                         } else {
                                             alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
-                                            this.value = ''; // Limpiar el campo para forzar un valor válido
+                                            this.value = ''; 
                                         }
                                     }
                                 }

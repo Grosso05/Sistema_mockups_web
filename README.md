@@ -1,4 +1,10 @@
-## Generador de Catálogos Personalizados (Version 7.1.3) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 7.1.4) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 27 de diciembre de 2024, 7:23 Am
+Cambios Recientes
+v 7.1.4
+
+En esta version trabajamos en el resumen de costos, actualmente cuenta con inputs de utilidad y administracion. queda pendiente la funcion para actualizar el resumen de costos con todos los cambios incluidos los inputs
 
 # Fecha de lanzamiento: 23 de diciembre de 2024, 12:20 pm
 Cambios Recientes

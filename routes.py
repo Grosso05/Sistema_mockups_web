@@ -76,14 +76,26 @@ def generar_catalogouser():
 @routes_blueprint.route('/generar_cotizacion')
 @login_required
 def generar_cotizacion():
+    # Obtener las líneas desde la base de datos
     lineas = Lineas.query.all()
+    # Convertir las líneas a un formato serializable
+    lineas_serializadas = [{'linea_id': linea.linea_id, 'nombre': linea.nombre} for linea in lineas]
+
+    # Obtener los productos y serializarlos a un formato adecuado
     productos = Productos.query.all()
-    
-    # Obtener todos los vendedores
+    productos_serializados = [{'id': producto.producto_id, 'nombre': producto.nombre, 'linea_id': producto.linea_idFK} for producto in productos]
+
     vendedores = Users.query.all()
     
     user_rol = current_user.user_rol if current_user.is_authenticated else None
-    return render_template('generar_cotizacion.html', lineas=lineas, productos=productos, vendedores=vendedores, user_rol=user_rol, logged_user=current_user)
+    
+    # Pasar las líneas y productos serializados al frontend como una lista JSON
+    return render_template('generar_cotizacion.html', 
+                           lineas=lineas_serializadas, 
+                           productos=productos_serializados, 
+                           vendedores=vendedores, 
+                           user_rol=user_rol, 
+                           logged_user=current_user)
 
 
 @routes_blueprint.route('/productos_por_linea/<int:linea_id>')

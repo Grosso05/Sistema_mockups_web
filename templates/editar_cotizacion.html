@@ -492,7 +492,7 @@ function mostrarItems(items) {
                         <td>${item.descripcion}</td>
                         <td>${item.unidad}</td>
                         <td>${formateador.format(precioUnitario)}</td>
-                        <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="0" style=" width: 30%"></td>
+                        <td><input type="number" class="cantidad-item" data-precio="${precioUnitario}" value="${cantidad}" min="0" style=" width: 45%"></td>
                         <td class="total-item">${formateador.format(total)}</td>
                         <td><button onclick="eliminarItemNuevo(this)">Eliminar</button></td>
                         <td class="oculto">${item.tipo}</td>

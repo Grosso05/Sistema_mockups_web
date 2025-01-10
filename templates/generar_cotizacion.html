@@ -9,6 +9,53 @@
 
     <style>
 
+        .producto {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .producto h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        textarea {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 14px;
+            resize: none;
+        }
+
+        .centrado {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px; /* Espaciado superior opcional */
+        }
+        
+        #btnCrearVacio {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #00b04f, #007b33); /* Deja este estilo si te gusta */
+            transition: background 0.3s ease, transform 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Opcional */
+        }
+
+        
+
         .resumen-costos-container label {
             color: white;
         }
@@ -392,13 +439,21 @@
             
             <!-- Sección Derecha -->
 
+            <div id="productos-cotizacion" class="productos-cotizacion">
+                <h2 style="text-align: center;">Productos de la Cotización</h2>
+                <div id="productos-container" class="grid-container"></div>
+
+            </div>
+            
+            <div id="boton-crear-container" class="centrado">
+                <button id="btnCrearVacio">Agregar Producto</button>
+            </div>
+            
+            
         </section>
     
-        <div id="productos-cotizacion" class="productos-cotizacion">
-            <h2 style="text-align: center;">Productos de la Cotización</h2>
-            <button id="btnCrearVacio" style="margin-bottom: 10px;">Agregar Producto Vacío</button>
-            <div id="productos-container"></div>
-        </div>
+
+        
     </main>
 
 <script>
@@ -466,10 +521,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Variables de productos
-let itemNumber = 0;
-let numerosEliminados = [];
-let temporalItemID = 1;
+let itemNumber = 0; // Número global de productos
+let productosDinamicos = []; // Cambiado el nombre a productosDinamicos para evitar conflicto
+let productosEliminados = []; // Lista para almacenar los productos eliminados
 const productosContainer = document.getElementById('productos-container');
+let temporalItemID = 1;
 let valoresCantidad = [];
 
 // Función para cargar productos por línea
@@ -541,16 +597,311 @@ function cargarPorcentajesProducto() {
     }
 }
 
+document.getElementById('productos-container').addEventListener('click', function (event) {
+    // Delegación de evento para el botón de agregar cantidad
+    if (event.target.classList.contains('btnAgregarCantidad')) {
+        const cantidadContainer = event.target.closest('.cantidad-container');
+        agregarCantidad(cantidadContainer);
+    }
+    // Delegación de evento para el botón de eliminar cantidad
+    else if (event.target.classList.contains('btnEliminarCantidad')) {
+        const cantidadContainer = event.target.closest('.cantidad-container');
+        eliminarCantidad(cantidadContainer);
+    }
+});
+
+document.getElementById('btnCrearVacio').addEventListener('click', function () {
+    if (lineas.length === 0) {
+        console.error('Las líneas aún no han sido cargadas');
+        return;
+    }
+
+    // Usamos el primer número disponible de los eliminados, si no hay ninguno, incrementamos itemNumber
+    let nuevoItemNumber = productosEliminados.length > 0 ? productosEliminados.shift() : ++itemNumber;
+
+    const nuevoProducto = document.createElement('div');
+    nuevoProducto.className = 'producto';
+    nuevoProducto.id = `producto-${nuevoItemNumber}`;
+    nuevoProducto.style.marginBottom = '15px';
+    nuevoProducto.style.border = '1px solid #ccc';
+    nuevoProducto.style.padding = '10px';
+    nuevoProducto.style.borderRadius = '5px';
+
+    // Crear el contenido dinámico del producto
+    nuevoProducto.innerHTML = `
+    <!-- Título del producto -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+        <h3 contenteditable="true" style="margin: 0;">Producto ${nuevoItemNumber}</h3>
+    </div>
+    
+    <!-- Información básica del producto -->
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; width: 100%; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+        <!-- Descripción -->
+        <textarea contenteditable="true" style="flex: 1; width: 18%; resize: none; height: 50px; margin: 0;" placeholder="Descripción"></textarea>
+        
+        <!-- Medidas -->
+        <div style="display: flex; gap: 5px; align-items: center; flex: 1; width: 18%; justify-content: space-evenly;">
+            <div>
+                <label>Alto:</label>
+                <input type="number" placeholder="0" style="width: 60px;">
+            </div>
+            <div>
+                <label>Ancho:</label>
+                <input type="number" placeholder="0" style="width: 60px;">
+            </div>
+            <div>
+                <label>Fondo:</label>
+                <input type="number" placeholder="0" style="width: 60px;">
+            </div>
+        </div>
+
+        <!-- Cantidades -->
+        <div class="cantidad-container" style="display: flex; align-items: center; gap: 5px; flex: 1; width: 18%;">
+            <label>Cantidad:</label>
+            <input type="number" class="cantidad-input" name="cantidadUnidades" min="1" value="1" style="width: 60px;">
+            <button class="btnAgregarCantidad" type="button" style="padding: 5px;">+</button>
+            <button class="btnEliminarCantidad" type="button" style="padding: 5px;">-</button>
+        </div>
+
+        <!-- Selects -->
+        <div style="display: flex; flex-direction: column; gap: 5px; align-items: center; flex: 1; width: 18%;">
+            <select class="linea-select" style="width: 90%;">
+                <option value="">Seleccionar Línea</option>
+                ${lineas.map(linea => `<option value="${linea.linea_id}">${linea.nombre}</option>`).join('')}
+            </select>
+            <select class="producto-select" style="width: 90%;">
+                <option value="">Seleccionar Producto</option>
+            </select>
+        </div>
+
+        <!-- Botones -->
+        <div class="acciones" style="display: flex; flex-direction: column; gap: 5px; align-items: center; flex: 1; width: 18%;">
+            <button class="editar-producto-btn" data-producto-id="${nuevoItemNumber}" style="background-color: orange; color: white; border: none; padding: 5px 10px; border-radius: 4px;">Editar</button>
+            <button class="confirmar-producto-btn" data-producto-id="${nuevoItemNumber}" style="background-color: green; color: white; border: none; padding: 5px 10px; border-radius: 4px;">Confirmar</button>
+            <button class="eliminar-producto-btn" data-producto-id="${nuevoItemNumber}" style="background-color: red; color: white; border: none; padding: 5px 10px; border-radius: 4px;">Eliminar</button>
+            <button class="duplicar-producto-btn" data-producto-id="${nuevoItemNumber}" style="background-color: blue; color: white; border: none; padding: 5px 10px; border-radius: 4px;">Duplicar</button>
+        </div>
+    </div>
+
+    <!-- Contenido expandible -->
+    <div class="contenido-expandible" id="contenido-expandible-${nuevoItemNumber}" style="display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
+        <!-- Items seleccionados -->
+        <div class="items-seleccionados">
+            <h4>Items Seleccionados</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Descripción</th>
+                        <th>Unidad</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsseleccionados-${nuevoItemNumber}">
+                    <!-- Aquí se cargarán los ítems seleccionados -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+`;
+
+
+document.addEventListener('click', function (event) {
+    const target = event.target;
+
+    // Verificar si el botón "Confirmar" fue clickeado
+    if (target.matches('.confirmar-producto-btn')) {
+        const productoId = target.dataset.productoId;
+        const producto = document.getElementById(`producto-${productoId}`);
+        const textarea = producto.querySelector('textarea');
+
+        console.log('Confirmar Producto:', productoId); // Depuración
+        textarea.setAttribute('readonly', true);
+        alert(`Producto ${productoId} confirmado.`);
+    } 
+    // Verificar si el botón "Editar" fue clickeado
+    else if (target.matches('.editar-producto-btn')) {
+        const productoId = target.dataset.productoId;
+        const producto = target.closest('.producto'); // Buscar el contenedor más cercano que tenga la clase .producto
+        const textarea = producto.querySelector('textarea');
+        const contenidoExpandible = producto.querySelector('.contenido-expandible'); // Buscar el contenido expandible correspondiente
+        const selectProducto = producto.querySelector('.producto-select'); // Buscar el select de producto
+
+        const selectedProductoId = selectProducto.value;
+
+        // Verificar si no se ha seleccionado un producto
+        if (!selectedProductoId) {
+            alert('Por favor, selecciona un producto antes de editar.');
+            return; // No permitir la edición si no hay producto seleccionado
+        }
+
+        console.log('Editar Producto:', productoId); // Depuración
+        // Hacer el textarea editable
+        textarea.removeAttribute('readonly');
+        alert(`Producto ${productoId} editable.`);
+
+        // Alternar la visibilidad del contenido expandible
+        if (contenidoExpandible) {
+            if (contenidoExpandible.style.display === "none" || contenidoExpandible.style.display === "") {
+                contenidoExpandible.style.display = "block"; // Mostrar el contenido expandible
+                console.log(`Contenido expandible para Producto ${productoId} mostrado.`); // Depuración
+            } else {
+                contenidoExpandible.style.display = "none"; // Ocultar el contenido expandible
+                console.log(`Contenido expandible para Producto ${productoId} oculto.`); // Depuración
+            }
+        }
+    } 
+    // Verificar si el botón "Eliminar" fue clickeado
+    else if (target.matches('.eliminar-producto-btn')) {
+        const productoId = target.dataset.productoId;
+        const confirmacion = confirm(`¿Estás seguro de eliminar el producto ${productoId}?`);
+        if (confirmacion) {
+            const producto = document.getElementById(`producto-${productoId}`);
+            producto.remove(); // Eliminar el producto del DOM
+            alert(`Producto ${productoId} eliminado.`);
+        }
+    }
+});
+
+// Escuchar cambios en el select de producto
+document.addEventListener('change', function (event) {
+    if (event.target.matches('.producto-select')) {
+        const selectProducto = event.target;
+        const productoId = selectProducto.closest('.producto').id.split('-')[1]; // Obtener el id del producto
+
+        const selectedProductoId = selectProducto.value;
+        if (selectedProductoId) {
+            // Si hay un producto seleccionado, cargar los ítems sugeridos
+            cargarItemsSugeridos(productoId, selectedProductoId);
+        } else {
+            // Si no hay producto seleccionado, limpiar los ítems
+            const tbody = document.querySelector(`#itemsseleccionados-${productoId}`);
+            tbody.innerHTML = ''; // Limpiar la tabla de ítems
+        }
+    }
+});
+
+// Función para cargar ítems sugeridos dinámicamente desde el backend
+function cargarItemsSugeridos(productoId, selectedProductoId) {
+    const tbody = document.querySelector(`#itemsseleccionados-${productoId}`);
+    if (tbody.children.length > 0) return; // Si ya hay ítems, no recargar.
+
+    // Hacer la solicitud al backend
+    fetch(`/items_por_producto/${selectedProductoId}`)
+        .then(response => {
+            if (!response.ok) throw new Error(`Error al cargar ítems para el producto ${selectedProductoId}`);
+            return response.json();
+        })
+        .then(data => {
+            const { items } = data;
+
+            // Renderizar los ítems en la tabla
+            items.forEach(item => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.descripcion}</td>
+                    <td>${item.unidad}</td>
+                    <td>${item.precio}</td>
+                    <td>
+                        <input type="number" value="1" min="1" style="width: 60px;">
+                    </td>
+                    <td>${item.precio}</td>
+                    <td><button class="btnAgregar" data-item-id="${item.id}">Agregar</button></td>
+                `;
+                tbody.appendChild(fila);
+            });
+
+            console.log(`Cargados ${items.length} ítems para el producto ${selectedProductoId}`);
+        })
+        .catch(error => {
+            console.error(`Error cargando ítems: ${error.message}`);
+        });
+}
+
+
+
+
+
+    // Evento para cargar productos según la línea seleccionada
+    const lineaSelect = nuevoProducto.querySelector('.linea-select');
+    const productoSelect = nuevoProducto.querySelector('.producto-select');
+
+    lineaSelect.addEventListener('change', function () {
+        const selectedLineaId = this.value;
+        cargarProductosPorLinea(selectedLineaId, productoSelect);
+    });
+
+    productoSelect.addEventListener('change', function () {
+        const selectedProductoId = this.value;
+        if (!selectedProductoId) {
+            lineaSelect.value = ''; // Si no se selecciona un producto, limpiar el select de líneas
+            return;
+        }
+
+        const producto = productosDinamicos.find(producto => producto.id == selectedProductoId);
+        if (producto) {
+            lineaSelect.value = producto.linea_id; // Seleccionar automáticamente la línea correspondiente
+        }
+    });
+
+    // Cargar todos los productos inicialmente
+    cargarTodosLosProductos(productoSelect);
+
+    // Agregar el producto al contenedor
+    productosContainer.appendChild(nuevoProducto);
+
+    // Mover el botón "Agregar Producto Vacío" al final de todos los productos
+    actualizarBotonCrearProducto();
+
+    // Agregar el producto a la lista de productos
+    productosDinamicos.push({ id: nuevoItemNumber, producto: nuevoProducto });
+});
+
+// Función para eliminar el producto del array
+function eliminarProducto(productoId) {
+    productosDinamicos = productosDinamicos.filter(producto => producto.id !== productoId);
+    productosEliminados.push(productoId);  // Agregar el ID a la lista de eliminados
+    productosEliminados.sort((a, b) => a - b);  // Asegurarnos de que estén ordenados
+}
+
+// Función para actualizar el botón "Agregar Producto"
+function actualizarBotonCrearProducto() {
+    const productosContainer = document.getElementById('productos-container');
+    const btnCrearVacio = document.getElementById('btnCrearVacio');
+    productosContainer.after(btnCrearVacio); // Mover el botón justo después del contenedor de productos
+    btnCrearVacio.style.display = 'block';
+}
+
+actualizarBotonCrearProducto();
+
+// Función para actualizar los valores de cantidad
+function actualizarValoresCantidad(container) {
+    const cantidadInputs = container.querySelectorAll('.cantidad-input');
+    const valoresCantidad = Array.from(cantidadInputs).map(input => parseInt(input.value, 10) || 1);
+    console.log('Valores de cantidad:', valoresCantidad); // Puedes manejar estos valores según sea necesario
+}
+
 // Función para manejar el clic en el botón de agregar cantidad
 function agregarCantidad(cantidadContainer) {
-    const newInput = document.createElement('input');
-    newInput.type = 'number';
-    newInput.className = 'cantidad-input';
-    newInput.name = 'cantidadUnidades';
-    newInput.min = '1';
-    newInput.value = '1';
-    cantidadContainer.insertBefore(newInput, cantidadContainer.querySelector('.btnAgregarCantidad'));
-    actualizarValoresCantidad(cantidadContainer);
+    const cantidadInputs = cantidadContainer.querySelectorAll('.cantidad-input');
+    
+    // Verificar que no haya más de 5 inputs
+    if (cantidadInputs.length < 5) {
+        const newInput = document.createElement('input');
+        newInput.type = 'number';
+        newInput.className = 'cantidad-input';
+        newInput.name = 'cantidadUnidades';
+        newInput.min = '1';
+        newInput.value = '1';
+        cantidadContainer.insertBefore(newInput, cantidadContainer.querySelector('.btnAgregarCantidad'));
+        actualizarValoresCantidad(cantidadContainer);
+    } else {
+        alert('No puedes agregar más de 5 cantidades.');
+    }
 }
 
 // Función para manejar el clic en el botón de eliminar cantidad
@@ -562,141 +913,6 @@ function eliminarCantidad(cantidadContainer) {
     }
 }
 
-// Crear producto dinámicamente
-document.getElementById('btnCrearVacio').addEventListener('click', function () {
-    if (lineas.length === 0) {
-        console.error('Las líneas aún no han sido cargadas');
-        return;
-    }
-
-    itemNumber++;
-    const nuevoProducto = document.createElement('div');
-    nuevoProducto.className = 'producto';
-    nuevoProducto.id = `producto-${itemNumber}`;
-    nuevoProducto.style.marginBottom = '15px';
-    nuevoProducto.style.border = '1px solid #ccc';
-    nuevoProducto.style.padding = '10px';
-    nuevoProducto.style.borderRadius = '5px';
-
-    // Crear los selects de línea y producto
-    const productoSelect = document.createElement('select');
-    const lineaSelect = document.createElement('select');
-    lineaSelect.innerHTML = '<option value="">Seleccionar Línea</option>';
-    productoSelect.innerHTML = '<option value="">Seleccionar Producto</option>';
-
-    // Añadir las opciones de línea cuando se carguen las líneas
-    lineaSelect.innerHTML += lineas.map(linea => `<option value="${linea.linea_id}">${linea.nombre}</option>`).join('');
-
-    // Añadir los campos al nuevo producto
-    nuevoProducto.innerHTML = `
-        <h3 contenteditable="true" style="margin: 5px 0;">Producto ${itemNumber}</h3>
-        <textarea contenteditable="true" style="width: 100%; margin-bottom: 5px;" placeholder="Ingrese la descripción"></textarea>
-        <div>
-            <label>Alto (Cm):</label>
-            <input type="number" placeholder="0" class="alto-input" style="width: 60px; margin-right: 10px;">
-            <label>Ancho (Cm):</label>
-            <input type="number" placeholder="0" class="ancho-input" style="width: 60px; margin-right: 10px;">
-            <label>Fondo (Cm):</label>
-            <input type="number" placeholder="0" class="fondo-input" style="width: 60px;">
-        </div>
-        <div id="cantidad-container-${itemNumber}">
-            <label for="cantidadUnidades-${itemNumber}">Cantidad de Unidades:</label>
-            <div id="cantidadUnidades-${itemNumber}" class="cantidad-unidades">
-                <input type="number" class="cantidad-input" name="cantidadUnidades" min="1" value="1" />
-                <button class="btnAgregarCantidad" type="button">+</button>
-                <button class="btnEliminarCantidad" type="button">-</button>
-            </div>
-        </div>
-    `;
-
-    // Añadir selects después de crear los elementos
-    nuevoProducto.appendChild(lineaSelect);
-    nuevoProducto.appendChild(productoSelect);
-
-    // Añadir el producto al contenedor
-    productosContainer.appendChild(nuevoProducto);
-
-    // Mover el botón "Agregar Producto Vacío" al final del último producto
-    moverBotonCrearProducto();
-
-    // Obtener el contenedor de cantidades dinámicamente
-    const cantidadContainer = nuevoProducto.querySelector(`#cantidadUnidades-${itemNumber}`);
-
-    // Asignar eventos a los botones de cantidad
-    cantidadContainer.querySelector('.btnAgregarCantidad').addEventListener('click', function () {
-        agregarCantidad(cantidadContainer);
-    });
-
-    cantidadContainer.querySelector('.btnEliminarCantidad').addEventListener('click', function () {
-        eliminarCantidad(cantidadContainer);
-    });
-
-    cantidadContainer.addEventListener('input', function (event) {
-        if (event.target.classList.contains('cantidad-input')) {
-            actualizarValoresCantidad(cantidadContainer);
-        }
-    });
-
-    // Evento para cargar productos según la línea seleccionada
-    lineaSelect.addEventListener('change', function () {
-        const selectedLineaId = this.value;
-        cargarProductosPorLinea(selectedLineaId, productoSelect);
-    });
-
-    // Evento para seleccionar automáticamente la línea al elegir un producto
-    productoSelect.addEventListener('change', function () {
-        const selectedProductoId = this.value;
-        if (!selectedProductoId) {
-            lineaSelect.value = ''; // Si no se selecciona un producto, limpiar el select de líneas
-            return;
-        }
-
-        const producto = productos.find(producto => producto.id == selectedProductoId);
-        if (producto) {
-            lineaSelect.value = producto.linea_id; // Seleccionar automáticamente la línea correspondiente
-        }
-    });
-
-    // Cargar todos los productos inicialmente
-    cargarTodosLosProductos(productoSelect);
-
-    // Función para eliminar el producto
-    const btnEliminar = document.createElement('button');
-    btnEliminar.textContent = 'Eliminar Producto';
-    btnEliminar.style.marginTop = '10px';
-    btnEliminar.style.color = 'red';
-    btnEliminar.addEventListener('click', function () {
-        productosContainer.removeChild(nuevoProducto);
-        moverBotonCrearProducto(); // Mover el botón después de eliminar el producto
-    });
-    nuevoProducto.appendChild(btnEliminar);
-});
-
-// Función para mover el botón "Agregar Producto Vacío" al final del último producto
-function moverBotonCrearProducto() {
-    const productos = document.querySelectorAll('.producto');
-    const btnCrearVacio = document.getElementById('btnCrearVacio');
-
-    // Mover el botón "Agregar Producto Vacío" al final de la lista de productos
-    if (productos.length > 0) {
-        productos[productos.length - 1].appendChild(btnCrearVacio); // Mover el botón al final del último producto
-    } else {
-        // Si no hay productos, mostrar el botón en la parte superior
-        btnCrearVacio.style.display = 'block';
-    }
-}
-
-// Llamar a la función al cargar para asegurarnos de que el botón esté en la posición correcta al inicio
-moverBotonCrearProducto();
-
-
-
-// Función para actualizar los valores de cantidad
-function actualizarValoresCantidad(container) {
-    const cantidadInputs = container.querySelectorAll('.cantidad-input');
-    const valoresCantidad = Array.from(cantidadInputs).map(input => parseInt(input.value, 10) || 1);
-    console.log('Valores de cantidad:', valoresCantidad); // Puedes manejar estos valores según sea necesario
-}
 
     document.getElementById('btnCrear').addEventListener('click', function() {
         const descripcionInput = document.getElementById('descripcion');
@@ -757,150 +973,165 @@ function actualizarValoresCantidad(container) {
     
                 
                 nuevoProducto.innerHTML = `
-                    <div class="producto" id="producto-${nuevoNumeroProducto}" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                        <div style="flex-grow: 1;">
-                            <h3 contenteditable="true" style="color: #00b04f; margin: 0; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
-                            <h4 contenteditable="true" style="margin: 3px 0;">Descripción: ${descripcion}</h4>
-                            <h4 contenteditable="true" style="margin: 3px 0;">Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
-                        </div>
-                        
-                        <!-- Añadimos el productoId con un nombre diferente -->
-                        <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
+                <div class="producto" id="producto-${nuevoNumeroProducto}" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    <!-- Información del Producto: Título y Descripción -->
+                    <div style="grid-column: span 2;">
+                        <h3 contenteditable="true" style="color: #00b04f; margin: 0; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
+                        <h4 contenteditable="true" style="margin: 3px 0;">Descripción: ${descripcion}</h4>
+                        <h4 contenteditable="true" style="margin: 3px 0;">Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
+                    </div>
+            
+                    <!-- Cargar Imagen -->
+                    <div style="display: flex; align-items: center; justify-content: flex-start;">
+                        <label for="imagen-${nuevoNumeroProducto}" style="font-weight: bold; margin-right: 5px;">Cargar Imagen:</label>
+                        <input 
+                            type="file" 
+                            id="imagen-${nuevoNumeroProducto}" 
+                            name="imagen_producto" 
+                            accept="image/*" 
+                            style="padding: 6px; border: 1px solid #00b04f; border-radius: 4px; cursor: pointer; background-color: #f5f5f5; transition: border-color 0.3s ease;"
+                            onfocus="this.style.borderColor='#007bff';"
+                            onblur="this.style.borderColor='#00b04f';"
+                        >
+                    </div>
+            
+                    <!-- Añadimos el productoId con un nombre diferente -->
+                    <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
+            
+                    <!-- Cantidades -->
+                <div class="cantidad-container" style="display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, auto); gap: 10px;">
+                    <label>Cantidad:</label>
+                    <input type="number" class="cantidad-input" name="cantidadUnidades" min="1" value="1">
+                    <button class="btnAgregarCantidad" type="button">+</button>
+                    <button class="btnEliminarCantidad" type="button">-</button>
+                </div>
 
-                        <!-- Input para cargar imágenes -->
-                        <div style="display: flex; align-items: center; margin-left: 5px;">
-                            <label for="imagen-${nuevoNumeroProducto}" style="font-weight: bold; margin-right: 5px;">Cargar Imagen:</label>
-                            <input 
-                                type="file" 
-                                id="imagen-${nuevoNumeroProducto}" 
-                                name="imagen_producto" 
-                                accept="image/*" 
-                                style="
-                                    padding: 6px; 
-                                    border: 1px solid #00b04f; 
-                                    border-radius: 4px; 
-                                    cursor: pointer; 
-                                    background-color: #f5f5f5; 
-                                    transition: border-color 0.3s ease;"
-                                onfocus="this.style.borderColor='#007bff';"
-                                onblur="this.style.borderColor='#00b04f';"
-                            >
+                    
+                    <!-- Selects: Línea y Producto -->
+                    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; flex: 1; max-width: 25%;">
+                        <select class="linea-select">
+                            <option value="">Seleccionar Línea</option>
+                            <!-- Opciones aquí -->
+                        </select>
+                        <select class="producto-select">
+                            <option value="">Seleccionar Producto</option>
+                            <!-- Opciones aquí -->
+                        </select>
+                    </div>
+                </div>
+            
+                <!-- Items Seleccionados -->
+                <div class="itemsseleccionados">
+                    <h4>Items Seleccionados</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class ="oculto">ID</th>
+                                <th class ="oculto">Grupo</th>
+                                <th>Descripción</th>
+                                <th>Unidad</th>
+                                <th>Precio</th>
+                                ${cantidadHeader}
+                                ${totalHeader}
+                                <th class="oculto">Tipo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
+                            <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
+                            <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
+                            <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
+                            <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
+                            <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
+                        </tbody>
+                    </table>
+                </div>
+            
+                <!-- Botones de acción para mostrar y agregar ítems -->
+                <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
+                    <div>
+                        <h4>Seleccionar Ítems</h4>
+                        <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems" style="display:none;">
+                        <div id="seleccion-items-${nuevoNumeroProducto}"></div>
+                        <div id="paginacion-items-${nuevoNumeroProducto}"></div>
+                        <div class="botones-container">
+                            <button class="boton-ver-todos custom-boton-ver-todos" onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Componentes</button>
+                            <button class="boton-agregar-temporal custom-boton-agregar-temporal" id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Componente Temporal</button>
+                            <button class="boton-agregar-seleccionados custom-boton-agregar-seleccionados" onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Componentes Seleccionados</button>
                         </div>
                     </div>
-                                        ${cantidadesSeleccionadasHTML}
-                                        <div class="itemsseleccionados">
-                                            <h4>Items Seleccionados</h4>
-                                            <table>
-                                                <thead>
-                                                    <tr>
-                                                        <th class ="oculto">ID</th>
-                                                        <th class ="oculto">Grupo</th>
-                                                        <th>Descripción</th>
-                                                        <th>Unidad</th>
-                                                        <th>Precio</th>
-                                                        ${cantidadHeader}
-                                                        ${totalHeader}
-                                                        <th class="oculto">Tipo</th>
-                                                        <th>Acciones</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
-                                                    <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
-                                                    <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
-                                                    <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
-                                                    <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
-                                                    <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
-                                            <div>
-                                                <h4>Seleccionar Ítems</h4>
-                                                <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems" style="display:none;">
-                        
-                                                <div id="seleccion-items-${nuevoNumeroProducto}"></div>
-                                                <div id="paginacion-items-${nuevoNumeroProducto}"></div>
-                                                <div class="botones-container">
-                                            <button class="boton-ver-todos custom-boton-ver-todos" onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Componentes</button>
-                                            <button class="boton-agregar-temporal custom-boton-agregar-temporal" id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Componente Temporal</button>
-                                            <button class="boton-agregar-seleccionados custom-boton-agregar-seleccionados" onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Componentes Seleccionados</button>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                        
-                                        <!-- Botón para mostrar el formulario -->
-
-                        
-                                    <!-- Formulario para agregar ítems temporales -->
-                                    <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
-                                        <h4>Agregar Componente Temporal</h4>
-                                        <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
-                                        <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
-                                        <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
-                                        <input type="text" id="nuevo-item-proveedor-${nuevoNumeroProducto}" placeholder="Proveedor del Ítem"> <!-- Nuevo campo para el proveedor -->
-                                        <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Componente Temporal</button>
-                                    </div>
-
-                        
-                                    <div class="resumen-costos-container">
-                                        ${valoresCantidad.map((valor, index) => `
-                                            <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
-                                                <h4>Resumen de Costos (${valor})</h4>
-                                                <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
-                                                <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
-                                                <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                                <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                                <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-
-                                                <!-- Opción 1: Ingresar el porcentaje de utilidad -->
-                                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                                                    <label for="utilidadPorcentaje-${nuevoNumeroProducto}-${index}" style="flex: 0 0 150px;">Porcentaje de Utilidad:</label>
-                                                    <input type="number" 
-                                                        id="utilidadPorcentaje-${nuevoNumeroProducto}-${index}" 
-                                                        value="${porcentajes.utilidad + 15}" 
-                                                        onchange="actualizarTotalProducto(${nuevoNumeroProducto}, ${index})"
-                                                        style="width: 150px; height: 25px; margin-left: 2px;" 
-                                                        title="El porcentaje mínimo es: ${porcentajes.utilidad}">
-                                                    <input type="radio" 
-                                                        name="opcionUtilidad-${nuevoNumeroProducto}-${index}" 
-                                                        value="porcentaje" 
-                                                        checked 
-                                                        onclick="cambiarMetodoUtilidad(${nuevoNumeroProducto}, ${index}, 'porcentaje')" 
-                                                        style="margin-left: 20px; width: 15px; height: 15px;"> <!-- Reduce el margen a 2px -->
-                                                </div>
-
-                                                <!-- Opción 2: Ingresar el valor manualmente -->
-                                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                                                    <label for="utilidadValor-${nuevoNumeroProducto}-${index}" style="flex: 0 0 150px;">Valor Manual de Utilidad:</label>
-                                                    <input type="number" 
-                                                        id="utilidadValor-${nuevoNumeroProducto}-${index}" 
-                                                        value="" 
-                                                        onchange="actualizarTotalProducto(${nuevoNumeroProducto}, ${index})"
-                                                        style="width: 150px; height: 25px; margin-left: 2px;" 
-                                                        title="Ingresa un valor manual para la utilidad">
-                                                    <input type="radio" 
-                                                        name="opcionUtilidad-${nuevoNumeroProducto}-${index}" 
-                                                        value="manual" 
-                                                        onclick="cambiarMetodoUtilidad(${nuevoNumeroProducto}, ${index}, 'manual')" 
-                                                        style="margin-left: 20px; width: 15px; height: 15px;"> <!-- Reduce el margen a 2px -->
-                                                </div>
-
-                                                <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
-                                                <p id="precio-unitario-venta-${nuevoNumeroProducto}-${index}" style="color: #00b04f;">Precio Unitario De Venta: 0</p>
-                                                <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
-                                                <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                        
-                                        <div class="acciones">
-                                            <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
-                                            <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
-                                            <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
-                                            <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
-                                        </div>
-                `;
+                </div>
+            
+                <!-- Formulario para agregar ítems temporales -->
+                <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
+                    <h4>Agregar Componente Temporal</h4>
+                    <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
+                    <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
+                    <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
+                    <input type="text" id="nuevo-item-proveedor-${nuevoNumeroProducto}" placeholder="Proveedor del Ítem">
+                    <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Componente Temporal</button>
+                </div>
+            
+                <!-- Resumen de Costos -->
+                <div class="resumen-costos-container">
+                    ${valoresCantidad.map((valor, index) => `
+                        <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
+                            <h4>Resumen de Costos (${valor})</h4>
+                            <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
+                            <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
+                            <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                            <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+                            <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
+            
+                            <!-- Opción 1: Ingresar el porcentaje de utilidad -->
+                            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                <label for="utilidadPorcentaje-${nuevoNumeroProducto}-${index}" style="flex: 0 0 150px;">Porcentaje de Utilidad:</label>
+                                <input type="number" 
+                                    id="utilidadPorcentaje-${nuevoNumeroProducto}-${index}" 
+                                    value="${porcentajes.utilidad + 15}" 
+                                    onchange="actualizarTotalProducto(${nuevoNumeroProducto}, ${index})"
+                                    style="width: 150px; height: 25px; margin-left: 2px;" 
+                                    title="El porcentaje mínimo es: ${porcentajes.utilidad}">
+                                <input type="radio" 
+                                    name="opcionUtilidad-${nuevoNumeroProducto}-${index}" 
+                                    value="porcentaje" 
+                                    checked 
+                                    onclick="cambiarMetodoUtilidad(${nuevoNumeroProducto}, ${index}, 'porcentaje')" 
+                                    style="margin-left: 20px; width: 15px; height: 15px;">
+                            </div>
+            
+                            <!-- Opción 2: Ingresar el valor manualmente -->
+                            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                <label for="utilidadValor-${nuevoNumeroProducto}-${index}" style="flex: 0 0 150px;">Valor Manual de Utilidad:</label>
+                                <input type="number" 
+                                    id="utilidadValor-${nuevoNumeroProducto}-${index}" 
+                                    value="" 
+                                    onchange="actualizarTotalProducto(${nuevoNumeroProducto}, ${index})"
+                                    style="width: 150px; height: 25px; margin-left: 2px;" 
+                                    title="Ingresa un valor manual para la utilidad">
+                                <input type="radio" 
+                                    name="opcionUtilidad-${nuevoNumeroProducto}-${index}" 
+                                    value="manual" 
+                                    onclick="cambiarMetodoUtilidad(${nuevoNumeroProducto}, ${index}, 'manual')" 
+                                    style="margin-left: 20px; width: 15px; height: 15px;">
+                            </div>
+            
+                            <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
+                            <p id="precio-unitario-venta-${nuevoNumeroProducto}-${index}" style="color: #00b04f;">Precio Unitario De Venta: 0</p>
+                            <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
+                            <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
+                        </div>
+                    `).join('')}
+                </div>
+            
+                <!-- Acciones del producto -->
+                <div class="acciones">
+                    <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
+                    <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
+                    <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
+                    <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
+                </div>
+            `;
     
                 productosContainer.appendChild(nuevoProducto);
     

@@ -365,24 +365,18 @@ textarea {
     border-radius: 8px;
 }
 
-/* Tablas */
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin-top: 10px;
+.producto {
+    position: relative;
+    z-index: 1; /* Asegura que el producto se coloque por encima de otros elementos si es necesario */
 }
 
-th, td {
-    border: 1px solid #ccc;
-    text-align: left;
-    padding: 10px;
-    color: #333333;
+.contenido-expandible {
+    position: relative;
+    z-index: 2; /* Asegura que el contenido expandible se coloque por encima del producto */
 }
 
-th {
-    background-color: #4caf50;
-    color: #ffffff;
-}
+
+
 
 .item-descripcion-container {
     display: flex;
@@ -547,7 +541,8 @@ th {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 0px;
+    margin-bottom: 10px;
 }
 
 .confirmar-producto-btn,
@@ -578,18 +573,7 @@ th {
     box-shadow: 0 0 5px rgba(0, 128, 0, 0.7);
 }
 
-/* Estilos avanzados para la tabla de productos */
-.tipo-header strong {
-    display: block;
-    text-align: center;
-    background: linear-gradient(135deg, #00b04f, #007b33);
-    padding: 10px;
-    border-radius: 10px;
-    margin: 10px 0;
-    font-size: 1.5em;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
+
 
 /* Estilos avanzados para las notificaciones */
 .notification-container {
@@ -641,48 +625,9 @@ nav {
     border-bottom: 2px solid #00b04f;
 }
 
-/* Estilos avanzados para la tabla de productos cotizados */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
 
-th, td {
-    padding: 1px;
-    text-align: center;
-    border-bottom: 1px solid #444;
-}
 
-th {
-    background: linear-gradient(135deg, #00b04f, #007b33);
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
 
-td {
-    background-color: #1e1e1e;
-    color: #f1f1f1;
-}
-
-table tr:hover {
-    background-color: #2b2b2b;
-}
-
-/* Estilos para los botones */
-button {
-    padding: 10px 20px;
-    margin: 10px 5px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    color: #fff;
-    background: linear-gradient(135deg, #00b04f, #007b33);
-    transition: background 0.3s ease, transform 0.2s;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
 
 .boton-ver-todos.custom-boton-ver-todos {
     background: #2196F3 !important; /* Azul claro */
@@ -731,45 +676,68 @@ button:hover {
     background: linear-gradient(135deg, #26c6da, #00acc1);
 }
 
-/* Estilos avanzados para la sección de selección de ítems */
-.itemsseleccionados {
-    margin-top: 20px;
-    padding: 15px;
-    background: linear-gradient(135deg, #333, #444);
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.itemsseleccionados h4 {
-    color: #00b04f;
-    margin-bottom: 15px;
-}
-
-.itemsseleccionados table {
+/* Estilos básicos para tablas */
+table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 12px; /* Fuente más grande pero compacta */
+    margin-top: 5px;
 }
 
-.itemsseleccionados th, .itemsseleccionados td {
-    padding: 0.3%; /* Puedes mantener este valor o ajustarlo */
-    text-align: left;
-    border-bottom: 1px solid #444;
-    line-height: 1; /* Ajusta el valor según sea necesario */
+thead th {
+    background-color: #f4f4f4;
+    border-bottom: 1px solid #ddd;
+    padding: 0; /* Sin padding */
+    font-weight: bold;
+    font-size: 12px;
 }
 
-
-.itemsseleccionados th {
-    background: linear-gradient(135deg, #00b04f, #007b33);
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+tbody td {
+    border-bottom: 0.5px solid #ddd;
+    padding: 0; /* Sin padding */
+    font-size: 12px;
 }
 
-.itemsseleccionados td {
-    background-color: #1e1e1e;
-    color: #f1f1f1;
+tbody tr {
+    transition: background-color 0.1s;
 }
 
-.itemsseleccionados table tr:hover {
-    background-color: #2b2b2b;
+tbody tr:hover {
+    background-color: #f9f9f9;
 }
 
+/* Alinear contenido dentro de celdas */
+td, th {
+    vertical-align: middle;
+    text-align: center;
+    padding: 0; /* Sin padding */
+    margin: 0; /* Sin margen */
+}
+
+/* Botones dentro de la tabla */
+table button {
+    padding: 3px 6px; /* Botón más ajustado */
+    font-size: 12px; /* Fuente ajustada */
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+table button.btnAgregar {
+    background-color: #4CAF50;
+    color: white;
+}
+
+table button.btnAgregar:hover {
+    background-color: #45a049;
+}
+
+/* Inputs de cantidad */
+table input[type="number"] {
+    width: 45px; /* Ancho aún más pequeño */
+    padding: 0; /* Sin padding */
+    text-align: center;
+    font-size: 12px; /* Fuente ajustada */
+    margin: 0; /* Sin margen */
+    border: 1px solid #ddd; /* Borde fino */
+}

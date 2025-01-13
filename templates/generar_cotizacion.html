@@ -597,6 +597,15 @@ function cargarPorcentajesProducto() {
     }
 }
 
+function formatPrice(price) {
+    // Aquí solo formateamos para la visualización, no alteramos el valor
+    return price.toLocaleString('es-CO', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+
 document.getElementById('productos-container').addEventListener('click', function (event) {
     // Delegación de evento para el botón de agregar cantidad
     if (event.target.classList.contains('btnAgregarCantidad')) {
@@ -683,33 +692,55 @@ document.getElementById('btnCrearVacio').addEventListener('click', function () {
         </div>
     </div>
 
-    <!-- Contenido expandible -->
-    <div class="contenido-expandible" id="contenido-expandible-${nuevoItemNumber}" style="display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
-        <!-- Items seleccionados -->
-        <div class="items-seleccionados">
-            <h4>Items Seleccionados</h4>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Descripción</th>
-                        <th>Unidad</th>
-                        <th>Precio</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="itemsseleccionados-${nuevoItemNumber}">
-                    <!-- Aquí se cargarán los ítems seleccionados -->
-                </tbody>
-            </table>
-        </div>
-    </div>
+<!-- Contenido expandible -->
+<div class="contenido-expandible" id="contenido-expandible-${nuevoItemNumber}" style="display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
+
+    <!-- Tabla de ítems seleccionados -->
+<div class="items-seleccionados" id="itemsSeleccionados-${nuevoItemNumber}">
+    <h4>Ítems Seleccionados</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descripción</th>
+                <th>Unidad</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="itemsseleccionados-${nuevoItemNumber}">
+            <!-- Aquí se cargarán los ítems seleccionados -->
+        </tbody>
+    </table>
+</div>
+
+    <!-- Tabla de ítems sugeridos -->
+<div class="items-sugeridos" id="itemsSugeridos-${nuevoItemNumber}">
+    <h4>Ítems Sugeridos</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descripción</th>
+                <th>Unidad</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="itemssugeridos-${nuevoItemNumber}">
+            <!-- Aquí se cargarán los ítems sugeridos -->
+        </tbody>
+    </table>
+</div>
+
 `;
 
 
 document.addEventListener('click', function (event) {
+    console.log('Evento detectado:', event.target); // Para depuración
+
     const target = event.target;
 
     // Verificar si el botón "Confirmar" fue clickeado
@@ -764,7 +795,36 @@ document.addEventListener('click', function (event) {
             alert(`Producto ${productoId} eliminado.`);
         }
     }
+    // Nuevo bloque: Verificar si el botón "Agregar" en la tabla de ítems fue clickeado
+    else if (target.matches('.btnAgregar')) {
+        const itemRow = target.closest('tr'); // Fila del ítem
+        const productoId = target.closest('.producto').id.split('-')[1]; // ID del producto
+    
+        const item = {
+            id: itemRow.querySelector('td:nth-child(1)').textContent.trim(),
+            descripcion: itemRow.querySelector('td:nth-child(2)').textContent.trim(),
+            unidad: itemRow.querySelector('td:nth-child(3)').textContent.trim(),
+            precio: parseFloat(itemRow.querySelector('td:nth-child(4)').textContent.trim()).toFixed(2),
+        };
+    
+        moverItemASeleccionados(item, productoId);
+        ocultarItemDeSugeridos(item.id, productoId); // Ocultar el ítem de los sugeridos
+    }
+
+    // Verificar si el botón "Eliminar" en los ítems seleccionados fue clickeado
+    else if (target.matches('.btnEliminarItem')) {
+        const itemRow = target.closest('tr'); // Fila del ítem
+        const productoId = target.closest('.producto').id.split('-')[1]; // ID del producto
+        const itemId = itemRow.querySelector('td:nth-child(1)').textContent.trim(); // ID del ítem
+
+        // Eliminar el ítem de la tabla de seleccionados
+        itemRow.remove();
+        
+        // Volver a mostrar el ítem en la tabla de sugeridos
+        mostrarItemEnSugeridos(itemId, productoId);
+    }
 });
+
 
 // Escuchar cambios en el select de producto
 document.addEventListener('change', function (event) {
@@ -786,7 +846,7 @@ document.addEventListener('change', function (event) {
 
 // Función para cargar ítems sugeridos dinámicamente desde el backend
 function cargarItemsSugeridos(productoId, selectedProductoId) {
-    const tbody = document.querySelector(`#itemsseleccionados-${productoId}`);
+    const tbody = document.querySelector(`#itemssugeridos-${productoId}`);
     if (tbody.children.length > 0) return; // Si ya hay ítems, no recargar.
 
     // Hacer la solicitud al backend
@@ -801,16 +861,15 @@ function cargarItemsSugeridos(productoId, selectedProductoId) {
             // Renderizar los ítems en la tabla
             items.forEach(item => {
                 const fila = document.createElement('tr');
+                fila.setAttribute('data-item-id', item.id); // Añadir el atributo data-item-id
                 fila.innerHTML = `
                     <td>${item.id}</td>
                     <td>${item.descripcion}</td>
                     <td>${item.unidad}</td>
                     <td>${item.precio}</td>
                     <td>
-                        <input type="number" value="1" min="1" style="width: 60px;">
+                        <button class="btnAgregar" data-item-id="${item.id}">Agregar</button>
                     </td>
-                    <td>${item.precio}</td>
-                    <td><button class="btnAgregar" data-item-id="${item.id}">Agregar</button></td>
                 `;
                 tbody.appendChild(fila);
             });
@@ -1019,33 +1078,69 @@ function eliminarCantidad(cantidadContainer) {
                         </select>
                     </div>
                 </div>
+
+                <!-- Items Agregados -->
+
+                                <table id="tablaCarrito" border="1">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Descripción</th>
+                            <th>Unidad</th>
+                            <th>Precio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Los ítems seleccionados se agregarán aquí -->
+                    </tbody>
+                </table>
+
             
-                <!-- Items Seleccionados -->
-                <div class="itemsseleccionados">
-                    <h4>Items Seleccionados</h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class ="oculto">ID</th>
-                                <th class ="oculto">Grupo</th>
-                                <th>Descripción</th>
-                                <th>Unidad</th>
-                                <th>Precio</th>
-                                ${cantidadHeader}
-                                ${totalHeader}
-                                <th class="oculto">Tipo</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="itemsseleccionados-${nuevoNumeroProducto}">
-                            <tbody id="materiaprima-${nuevoNumeroProducto}"></tbody>
-                            <tbody id="consumibles-${nuevoNumeroProducto}"></tbody>
-                            <tbody id="servicios-${nuevoNumeroProducto}"></tbody>
-                            <tbody id="manodeobra-${nuevoNumeroProducto}"></tbody>
-                            <tbody id="transporte-${nuevoNumeroProducto}"></tbody>
-                        </tbody>
-                    </table>
-                </div>
+<!-- Contenido expandible -->
+<div class="contenido-expandible" id="contenido-expandible-${nuevoItemNumber}" style="display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
+
+    <!-- Tabla de ítems seleccionados -->
+    <div class="items-seleccionados">
+        <h4>Ítems Seleccionados</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th>Unidad</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="itemsseleccionados-${nuevoItemNumber}">
+                <!-- Aquí se cargarán los ítems seleccionados -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tabla de ítems sugeridos -->
+    <div class="items-sugeridos">
+        <h4>Ítems Sugeridos</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th>Unidad</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="itemssugeridos-${nuevoItemNumber}">
+                <!-- Aquí se cargarán los ítems sugeridos -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
             
                 <!-- Botones de acción para mostrar y agregar ítems -->
                 <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
@@ -1514,89 +1609,114 @@ function toggleFormulario(numeroProducto) {
             
 
 // Función para agregar ítems seleccionados y temporales al producto
-function agregarItemAlProducto(item, itemNumber) {
-    const itemsSeleccionadosContainer = document.getElementById(`itemsseleccionados-${itemNumber}`);
-    const materiaPrimaContainer = document.getElementById(`materiaprima-${itemNumber}`);
-    const consumiblesContainer = document.getElementById(`consumibles-${itemNumber}`);
-    const serviciosContainer = document.getElementById(`servicios-${itemNumber}`);
-    const manoDeObraContainer = document.getElementById(`manodeobra-${itemNumber}`);
-    const transporteContainer = document.getElementById(`transporte-${itemNumber}`);
-    
-    const idsSeleccionados = new Set();
-    document.querySelectorAll(`#itemsseleccionados-${itemNumber} tr`).forEach(fila => {
-        const itemId = fila.querySelector('td:first-child').textContent;
-        idsSeleccionados.add(itemId);
-    });
-
-    const itemId = item.id;
-    if (idsSeleccionados.has(itemId)) {
-        mostrarNotificacion(`El ítem con ID ${itemId} ya ha sido agregado.`, 'warning');
+// Función para mover un ítem a la tabla de seleccionados
+function moverItemASeleccionados(item, productoId) {
+    // Buscar el tbody específico de ítems seleccionados para este producto
+    const tbodySeleccionados = document.getElementById(`itemsseleccionados-${productoId}`);
+    if (!tbodySeleccionados) {
+        console.error(`No se encontró la tabla de ítems seleccionados para el producto ${productoId}`);
         return;
     }
-    
-    const itemGrupo = item.tipo;
-    const itemDescripcion = item.descripcion;
-    const itemUnidad = "Unidad"; // Puedes ajustar esto según sea necesario
-    const preciosEscalonados = item.precios_escalonados; // Obtener precios escalonados del item
 
-    // Crear las celdas de cantidad y total dinámicamente basadas en valoresCantidad
-    const cantidadCeldas = valoresCantidad.map((valor, i) => 
-        `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" onchange="actualizarTotalProducto(${itemNumber})"></td>`
-    ).join('');
-    
-    const totalCeldas = valoresCantidad.map(() => 
-        `<td class="total">0</td>`
-    ).join('');
-    
-    const nuevaFila = document.createElement('tr');
-    nuevaFila.innerHTML = `
-        <td class="oculto">${itemId}</td>
-        <td class="oculto">${itemGrupo}</td>
-        <td>${itemDescripcion}</td>
-        <td>${itemUnidad}</td>
-        <td id="precio-${itemId}">${item.precio || 'SIN PRECIO'}</td>
-        ${cantidadCeldas}
-        ${totalCeldas}
-        <td class="oculto">${itemGrupo}</td>
-        <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
+    // Crear una nueva fila en la tabla seleccionada
+    const nuevaFilaSeleccionada = document.createElement('tr');
+    nuevaFilaSeleccionada.innerHTML = `
+        <td>${item.id}</td>
+        <td>${item.descripcion}</td>
+        <td>${item.unidad}</td>
+        <td>${item.precio}</td>
+        <td>1</td> <!-- Cantidad inicial -->
+        <td>${item.precio}</td> <!-- Total inicial -->
+        <td>
+            <button class="btnAumentarCantidad" type="button">+</button>
+            <button class="btnDisminuirCantidad" type="button">-</button>
+            <button class="btnEliminarItem" type="button">Eliminar</button>
+        </td>
     `;
-    
-    // Guardar precios escalonados en un atributo data
-    nuevaFila.setAttribute('data-precios-escalonados', JSON.stringify(preciosEscalonados));
-    
-    let container;
-    switch (itemGrupo) {
-        case 'Materia Prima':
-            container = materiaPrimaContainer;
-            break;
-        case 'Consumibles':
-            container = consumiblesContainer;
-            break;
-        case 'Servicios':
-            container = serviciosContainer;
-            break;
-        case 'Mano de Obra e Instalacion':
-            container = manoDeObraContainer;
-            break;
-        case 'Transportes':
-            container = transporteContainer;
-            break;
-        default:
-            container = itemsSeleccionadosContainer;
-            break;
-    }
-    
-    if (container && !container.querySelector('.tipo-header')) {
-        const headerRow = document.createElement('tr');
-        headerRow.innerHTML = `<td colspan="${5 + valoresCantidad.length * 2}" class="tipo-header"><strong>${itemGrupo}</strong></td>`;
-        container.appendChild(headerRow);
-    }
-    
-    container.appendChild(nuevaFila);
-    idsSeleccionados.add(itemId);
-    
-    mostrarNotificacion('Ítem agregado correctamente.', 'success');
+
+    // Agregar la fila al tbody correspondiente
+    tbodySeleccionados.appendChild(nuevaFilaSeleccionada);
+
+    // Agregar eventos a los botones de la fila
+    const btnAumentar = nuevaFilaSeleccionada.querySelector('.btnAumentarCantidad');
+    const btnDisminuir = nuevaFilaSeleccionada.querySelector('.btnDisminuirCantidad');
+    const btnEliminar = nuevaFilaSeleccionada.querySelector('.btnEliminarItem');
+
+    btnAumentar.addEventListener('click', function () {
+        cambiarCantidadItem(nuevaFilaSeleccionada, 1);
+    });
+
+    btnDisminuir.addEventListener('click', function () {
+        cambiarCantidadItem(nuevaFilaSeleccionada, -1);
+    });
+
+    btnEliminar.addEventListener('click', function () {
+        // Eliminar el ítem de "Seleccionados"
+        nuevaFilaSeleccionada.remove();
+
+        // Hacer visible el ítem en "Sugeridos" nuevamente
+        mostrarItemEnSugeridos(item, productoId);
+    });
+
+    console.log(`Ítem ${item.id} movido a seleccionados del producto ${productoId}`);
 }
+
+// Función para ocultar un ítem de la tabla de sugeridos
+function ocultarItemDeSugeridos(itemId, productoId) {
+    const itemRow = document.querySelector(`#itemssugeridos-${productoId} tr[data-item-id="${itemId}"]`);
+    
+    // Para depuración: Verifica si el selector encuentra el ítem
+    if (itemRow) {
+        itemRow.style.display = 'none'; // Ocultar la fila
+        console.log(`Ítem ${itemId} oculto de sugeridos para el producto ${productoId}`);
+    } else {
+        console.error(`No se encontró el ítem con ID ${itemId} en la tabla de sugeridos para el producto ${productoId}`);
+    }
+}
+
+// Función para mostrar un ítem en la tabla de sugeridos
+function mostrarItemEnSugeridos(item, productoId) {
+    // Buscar el tbody de "Sugeridos" para este producto
+    const tbodySugeridos = document.querySelector(`#itemssugeridos-${productoId}`);
+    if (!tbodySugeridos) {
+        console.error(`No se encontró la tabla de ítems sugeridos para el producto ${productoId}`);
+        return;
+    }
+
+    // Verificar si el ítem ya está en la tabla de sugeridos
+    const itemExistente = tbodySugeridos.querySelector(`tr[data-item-id="${item.id}"]`);
+    if (itemExistente) {
+        // Si ya existe, solo cambiar su estilo para hacerlo visible
+        if (itemExistente.style.display === 'none') {
+            itemExistente.style.display = '';  // Volver a mostrar el ítem
+            console.log(`Ítem ${item.id} vuelto a mostrar en sugeridos`);
+        } else {
+            console.log(`El ítem ${item.id} ya está visible en la lista de sugeridos`);
+        }
+        return; // No lo agregamos nuevamente
+    }
+
+    // Si no existe, crear y agregar el ítem a sugeridos
+    const filaSugerido = document.createElement('tr');
+    filaSugerido.setAttribute('data-item-id', item.id); // Agregar el ID al atributo
+    filaSugerido.innerHTML = `
+        <td>${item.id}</td>
+        <td>${item.descripcion}</td>
+        <td>${item.unidad}</td>
+        <td>${item.precio}</td>
+        <td>
+            <button class="btnAgregar" data-item-id="${item.id}">Agregar</button>
+        </td>
+    `;
+
+    // Agregar la fila al tbody de sugeridos
+    tbodySugeridos.appendChild(filaSugerido);
+
+    console.log(`Ítem ${item.id} agregado a sugeridos`);
+}
+
+
+
 
 
 
@@ -1712,10 +1832,17 @@ function agregarItemAlProducto(item, itemNumber) {
         const transporteContainer = document.getElementById(`transporte-${itemNumber}`);
         
         const idsSeleccionados = new Set();
-        document.querySelectorAll(`#itemsseleccionados-${itemNumber} tr`).forEach(fila => {
-            const itemId = fila.querySelector('td:first-child').textContent;
-            idsSeleccionados.add(itemId);
-        });
+        const contenedorItemsSeleccionados = document.querySelector(`#itemsseleccionados-${itemNumber}`);
+
+        if (contenedorItemsSeleccionados) {
+            contenedorItemsSeleccionados.querySelectorAll('tr').forEach(fila => {
+                const itemId = fila.querySelector('td:first-child').textContent;
+                idsSeleccionados.add(itemId);
+            });
+        } else {
+            console.warn(`El contenedor #itemsseleccionados-${itemNumber} no existe.`);
+        }
+        
     
         itemsSeleccionados.forEach(itemCheckbox => {
             const itemId = itemCheckbox.value;
@@ -2389,5 +2516,8 @@ function calcularValorDesdePorcentaje(costoDirecto, porcentajeUtilidad) {
             timeout = setTimeout(() => func.apply(this, args), wait);
         };
     }
+
+
+    
 </script>
 </html>

@@ -157,6 +157,7 @@ def items_por_producto(producto_id):
     # Contar el total de ítems y calcular el total de páginas
     total_items = query.count()
     total_paginas = (total_items // items_por_pagina) + (1 if total_items % items_por_pagina > 0 else 0)
+    
 
     # Paginación
     items = query.paginate(page=pagina, per_page=items_por_pagina).items

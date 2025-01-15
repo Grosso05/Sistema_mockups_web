@@ -146,8 +146,8 @@ def get_porcentajes(producto_id):
 # Ruta para traer items por producto
 @routes_blueprint.route('/items_por_producto/<int:producto_id>')
 def items_por_producto(producto_id):
-    pagina = request.args.get('pagina', 1, type=int)
-    items_por_pagina = 20  
+    pagina = request.args.get('pagina', 1, type=int)                        
+    items_por_pagina = 20
 
     query = Items.query \
         .join(ItemsPorProducto, ItemsPorProducto.item_idFK == Items.item_id) \
@@ -169,13 +169,40 @@ def items_por_producto(producto_id):
         'categoria': item.categoria.CATEGORIA_NOMBRE,
         'unidad': item.unidad,
         'tipo': item.tipo,
-        'precio': locale.format_string("%.2f", next((item_prov.precio for item_prov in item.itemproveedores if item_prov.tipo_proveedor == 1), 0), grouping=True)
+        'precio': next((item_prov.precio for item_prov in item.itemproveedores if item_prov.tipo_proveedor == 1), 0)
     } for item in items]
 
     return jsonify({
         'items': items_json,
         'totalPaginas': total_paginas
     })
+
+@routes_blueprint.route('/item_detalle/<int:item_id>')
+def item_detalle(item_id):
+    # Consultar el ítem en la base de datos
+    item = Items.query \
+        .outerjoin(ItemProveedores, (ItemProveedores.item_id == Items.item_id) & (ItemProveedores.tipo_proveedor == 1)) \
+        .filter(Items.item_id == item_id) \
+        .first()
+
+    # Verificar si el ítem existe
+    if not item:
+        return jsonify({'error': 'Ítem no encontrado'}), 404
+
+    # Obtener el precio del proveedor principal (si existe)
+    precio = next((item_prov.precio for item_prov in item.itemproveedores if item_prov.tipo_proveedor == 1), 0)
+
+    # Crear la respuesta JSON con los detalles del ítem
+    item_json = {
+        'id': item.item_id,
+        'descripcion': item.nombre,
+        'categoria': item.categoria.CATEGORIA_NOMBRE,
+        'unidad': item.unidad,
+        'tipo': item.tipo,
+        'precio': precio
+    }
+
+    return jsonify(item_json)
 
 @routes_blueprint.route('/todos_los_items')
 def todos_los_items():

@@ -365,23 +365,22 @@
                 </div>
                 <div class="grupo-columns" id="formulario-cotizacion" style="display: none;">
                     <div class="grupo-columna">
-                        <div class="grupo">
-                            <label for="fecha_cotizacion">Fecha:</label>
-                            <input type="date" id="fecha_cotizacion" name="fecha_cotizacion" value="" required>
-                        </div>
-    
+                        <!-- Cliente -->
                         <div class="grupo">
                             <label for="cliente_cotizacion">Cliente:</label>
                             <input type="text" id="cliente_cotizacion" name="cliente_cotizacion" required>
                         </div>
+                        <!-- Contacto -->
                         <div class="grupo">
                             <label for="contacto_cotizacion">Contacto:</label>
                             <input type="text" id="contacto_cotizacion" name="contacto_cotizacion" required>
                         </div>
+                        <!-- Proyecto -->
                         <div class="grupo">
                             <label for="proyecto_cotizacion">Proyecto:</label>
                             <input type="text" id="proyecto_cotizacion" name="proyecto_cotizacion" required>
                         </div>
+                        <!-- Vendedor -->
                         <div class="grupo">
                             <label for="vendedor_cotizacion">Vendedor:</label>
                             <select id="vendedor_cotizacion" name="vendedor_cotizacion" required>
@@ -392,14 +391,9 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        
-                        
-                        <div class="grupo">
-                            <label for="negociacion">N° Negociación:</label>
-                            <input type="text" id="negociacion" name="negociacion" required>
-                        </div>
                     </div>
                     <div class="grupo-columna">
+                        <!-- Forma de Pago -->
                         <div class="grupo">
                             <label for="forma_pago">Forma de Pago:</label>
                             <select id="forma_pago" name="forma_pago" required>
@@ -410,6 +404,7 @@
                                 <option value="50% abono - 50% entrega">50% Abono - 50% Entrega</option>
                             </select>
                         </div>
+                        <!-- Validez -->
                         <div class="grupo">
                             <label for="validez_cotizacion">Validez:</label>
                             <select id="validez_cotizacion" name="validez_cotizacion" required>
@@ -418,11 +413,13 @@
                                 <option value="60">60 días</option>
                             </select>
                         </div>
+                        <!-- Porcentaje de Descuento -->
                         <div class="grupo">
                             <label for="descuento_cotizacion">Porcentaje Descuento:</label>
                             <input type="number" id="descuento_cotizacion" name="descuento_cotizacion" min="0" max="100" required>
                         </div>
-
+    
+                        <!-- IVA -->
                         <div class="iva-selector">
                             <label for="iva-select">IVA:</label>
                             <select id="iva-select" name="iva">
@@ -432,29 +429,27 @@
                         </div>
                     </div>
                 </div>
+                <!-- Botón para guardar cotización -->
                 <div class="acciones-globales">
                     <button id="guardarCotizacionBtn">Guardar Cotización</button>
                 </div>
             </div>
-            
-            <!-- Sección Derecha -->
-
+            <!-- Fin Sección Derecha -->
+    
+            <!-- Sección de Productos de la Cotización -->
             <div id="productos-cotizacion" class="productos-cotizacion">
                 <h2 style="text-align: center;">Productos de la Cotización</h2>
                 <div id="productos-container" class="grid-container"></div>
-
             </div>
             
+            <!-- Botón para agregar productos -->
             <div id="boton-crear-container" class="centrado">
                 <button id="btnCrearVacio">Agregar Producto</button>
             </div>
             
-            
         </section>
-    
-
-        
     </main>
+    
 
 <script>
 
@@ -502,9 +497,6 @@ function toggleDropdown(id) {
     }
 }
 
-// Fecha de cotización
-const today = new Date().toISOString().slice(0, 10);
-document.getElementById('fecha_cotizacion').value = today;
 
 // Toggle para formulario de cotización
 document.getElementById('toggleDatosBtn').addEventListener('click', function() {
@@ -597,13 +589,6 @@ function cargarPorcentajesProducto() {
     }
 }
 
-function formatPrice(price) {
-    // Aquí solo formateamos para la visualización, no alteramos el valor
-    return price.toLocaleString('es-CO', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-}
 
 
 document.getElementById('productos-container').addEventListener('click', function (event) {
@@ -799,15 +784,20 @@ document.addEventListener('click', function (event) {
     else if (target.matches('.btnAgregar')) {
         const itemRow = target.closest('tr'); // Fila del ítem
         const productoId = target.closest('.producto').id.split('-')[1]; // ID del producto
-    
+        
+        const itemId = parseInt(itemRow.querySelector('td:nth-child(1)').textContent.trim(), 10); // ID del ítem
         const item = {
-            id: itemRow.querySelector('td:nth-child(1)').textContent.trim(),
+            id: itemId,  // Asegurarse de que este es un número
             descripcion: itemRow.querySelector('td:nth-child(2)').textContent.trim(),
             unidad: itemRow.querySelector('td:nth-child(3)').textContent.trim(),
             precio: parseFloat(itemRow.querySelector('td:nth-child(4)').textContent.trim()).toFixed(2),
         };
     
-        moverItemASeleccionados(item, productoId);
+        console.log('Item ID antes de mover:', item.id); // Verificación de item.id
+        console.log('Objeto item:', item);  // Verificación del objeto item
+        
+        // Ahora pasa solo item.id (no todo el objeto) a moverItemASeleccionados
+        moverItemASeleccionados(item.id, productoId);
         ocultarItemDeSugeridos(item.id, productoId); // Ocultar el ítem de los sugeridos
     }
 
@@ -844,6 +834,11 @@ document.addEventListener('change', function (event) {
     }
 });
 
+function formatearPesosColombianos(numero) {
+    return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+
 // Función para cargar ítems sugeridos dinámicamente desde el backend
 function cargarItemsSugeridos(productoId, selectedProductoId) {
     const tbody = document.querySelector(`#itemssugeridos-${productoId}`);
@@ -866,7 +861,7 @@ function cargarItemsSugeridos(productoId, selectedProductoId) {
                     <td>${item.id}</td>
                     <td>${item.descripcion}</td>
                     <td>${item.unidad}</td>
-                    <td>${item.precio}</td>
+                    <td>${formatearPesosColombianos(item.precio)}</td>
                     <td>
                         <button class="btnAgregar" data-item-id="${item.id}">Agregar</button>
                     </td>
@@ -1607,59 +1602,72 @@ function toggleFormulario(numeroProducto) {
             
             
             
+        function formatearPesosColombianos(numero) {
+            return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
 
-// Función para agregar ítems seleccionados y temporales al producto
-// Función para mover un ítem a la tabla de seleccionados
-function moverItemASeleccionados(item, productoId) {
-    // Buscar el tbody específico de ítems seleccionados para este producto
-    const tbodySeleccionados = document.getElementById(`itemsseleccionados-${productoId}`);
-    if (!tbodySeleccionados) {
-        console.error(`No se encontró la tabla de ítems seleccionados para el producto ${productoId}`);
-        return;
-    }
-
-    // Crear una nueva fila en la tabla seleccionada
-    const nuevaFilaSeleccionada = document.createElement('tr');
-    nuevaFilaSeleccionada.innerHTML = `
-        <td>${item.id}</td>
-        <td>${item.descripcion}</td>
-        <td>${item.unidad}</td>
-        <td>${item.precio}</td>
-        <td>1</td> <!-- Cantidad inicial -->
-        <td>${item.precio}</td> <!-- Total inicial -->
-        <td>
-            <button class="btnAumentarCantidad" type="button">+</button>
-            <button class="btnDisminuirCantidad" type="button">-</button>
-            <button class="btnEliminarItem" type="button">Eliminar</button>
-        </td>
-    `;
-
-    // Agregar la fila al tbody correspondiente
-    tbodySeleccionados.appendChild(nuevaFilaSeleccionada);
-
-    // Agregar eventos a los botones de la fila
-    const btnAumentar = nuevaFilaSeleccionada.querySelector('.btnAumentarCantidad');
-    const btnDisminuir = nuevaFilaSeleccionada.querySelector('.btnDisminuirCantidad');
-    const btnEliminar = nuevaFilaSeleccionada.querySelector('.btnEliminarItem');
-
-    btnAumentar.addEventListener('click', function () {
-        cambiarCantidadItem(nuevaFilaSeleccionada, 1);
-    });
-
-    btnDisminuir.addEventListener('click', function () {
-        cambiarCantidadItem(nuevaFilaSeleccionada, -1);
-    });
-
-    btnEliminar.addEventListener('click', function () {
-        // Eliminar el ítem de "Seleccionados"
-        nuevaFilaSeleccionada.remove();
-
-        // Hacer visible el ítem en "Sugeridos" nuevamente
-        mostrarItemEnSugeridos(item, productoId);
-    });
-
-    console.log(`Ítem ${item.id} movido a seleccionados del producto ${productoId}`);
-}
+        function moverItemASeleccionados(itemId, productoId) {
+            // Buscar el tbody específico de ítems seleccionados para este producto
+            const tbodySeleccionados = document.getElementById(`itemsseleccionados-${productoId}`);
+            if (!tbodySeleccionados) {
+                console.error(`No se encontró la tabla de ítems seleccionados para el producto ${productoId}`);
+                return;
+            }
+        
+            console.log(`item id llegando antes del fetch: ${itemId}`);
+            // Solicitar los datos del ítem al backend
+            fetch(`/item_detalle/${itemId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`Error al cargar detalles del ítem ${itemId}`);
+                    return response.json();
+                })
+                .then(item => {
+                    const precioFormateado = formatearPesosColombianos(parseFloat(item.precio)); // Formatear precio
+                    const nuevaFilaSeleccionada = document.createElement('tr');
+                    nuevaFilaSeleccionada.innerHTML = `
+                        <td>${item.id}</td>
+                        <td>${item.descripcion}</td>
+                        <td>${item.unidad}</td>
+                        <td>${precioFormateado}</td>
+                        <td>1</td> <!-- Cantidad inicial -->
+                        <td>${precioFormateado}</td> <!-- Total inicial -->
+                        <td>
+                            <button class="btnAumentarCantidad" type="button">+</button>
+                            <button class="btnDisminuirCantidad" type="button">-</button>
+                            <button class="btnEliminarItem" type="button">Eliminar</button>
+                        </td>
+                    `;
+        
+                    // Agregar la fila al tbody correspondiente
+                    tbodySeleccionados.appendChild(nuevaFilaSeleccionada);
+        
+                    // Agregar eventos a los botones de la fila
+                    const btnAumentar = nuevaFilaSeleccionada.querySelector('.btnAumentarCantidad');
+                    const btnDisminuir = nuevaFilaSeleccionada.querySelector('.btnDisminuirCantidad');
+                    const btnEliminar = nuevaFilaSeleccionada.querySelector('.btnEliminarItem');
+        
+                    btnAumentar.addEventListener('click', function () {
+                        cambiarCantidadItem(nuevaFilaSeleccionada, 1);
+                    });
+        
+                    btnDisminuir.addEventListener('click', function () {
+                        cambiarCantidadItem(nuevaFilaSeleccionada, -1);
+                    });
+        
+                    btnEliminar.addEventListener('click', function () {
+                        // Eliminar el ítem de "Seleccionados"
+                        nuevaFilaSeleccionada.remove();
+        
+                        // Hacer visible el ítem en "Sugeridos" nuevamente
+                        mostrarItemEnSugeridos(item, productoId);
+                    });
+        
+                    console.log(`Ítem ${item.id} movido a seleccionados del producto ${productoId}`);
+                })
+                .catch(error => {
+                    console.error(`Error cargando detalles del ítem: ${error.message}`);
+                });
+        }
 
 // Función para ocultar un ítem de la tabla de sugeridos
 function ocultarItemDeSugeridos(itemId, productoId) {

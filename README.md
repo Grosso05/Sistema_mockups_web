@@ -1,4 +1,10 @@
-## Generador de Catálogos Personalizados (Version 7.1.6) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 7.1.7) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 13 de enero de 2024, 4:30 Pm
+Cambios Recientes
+v 7.1.7
+
+En esta version seguimos haciendo la reformación al front de generar cotización, actualmente nuestros items ya se pasan de la tabla de items sugeridos a items seleccionados, tenemos un bug referente al formato del precio al pasarlos de tabla, y aun no hemos modificado los calculos.
 
 # Fecha de lanzamiento: 10 de enero de 2024, 4:00 Pm
 Cambios Recientes

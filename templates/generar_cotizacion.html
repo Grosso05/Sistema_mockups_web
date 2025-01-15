@@ -41,6 +41,14 @@
             margin-top: 20px; /* Espaciado superior opcional */
         }
         
+        #boton-crear-container {
+            display: flex;
+            justify-content: center; /* Centra el contenido horizontalmente */
+            align-items: center; /* Centra el contenido verticalmente */
+            height: 100vh; /* Esto le da altura al contenedor (puedes ajustar esto según lo necesites) */
+            width: 100%; /* Asegura que el contenedor ocupe todo el ancho disponible */
+        }
+        
         #btnCrearVacio {
             padding: 10px 20px;
             font-size: 16px;
@@ -52,7 +60,9 @@
             background: linear-gradient(135deg, #00b04f, #007b33); /* Deja este estilo si te gusta */
             transition: background 0.3s ease, transform 0.2s;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Opcional */
+            margin-left: 50%;
         }
+        
 
         
 
@@ -444,7 +454,7 @@
             
             <!-- Botón para agregar productos -->
             <div id="boton-crear-container" class="centrado">
-                <button id="btnCrearVacio">Agregar Producto</button>
+                <button id="btnCrearVacio">+</button>
             </div>
             
         </section>
@@ -702,22 +712,54 @@ document.getElementById('btnCrearVacio').addEventListener('click', function () {
 </div>
 
     <!-- Tabla de ítems sugeridos -->
-<div class="items-sugeridos" id="itemsSugeridos-${nuevoItemNumber}">
-    <h4>Ítems Sugeridos</h4>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Descripción</th>
-                <th>Unidad</th>
-                <th>Precio</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody id="itemssugeridos-${nuevoItemNumber}">
-            <!-- Aquí se cargarán los ítems sugeridos -->
-        </tbody>
-    </table>
+<div>
+    <!-- Selector para alternar entre tablas -->
+    <div style="margin-bottom: 10px;">
+        <button class="tab-btn" data-tab="sugeridos-${nuevoItemNumber}">Ítems Sugeridos</button>
+        <button class="tab-btn" data-tab="todos-${nuevoItemNumber}">Todos los Ítems</button>
+    </div>
+
+    <!-- Contenedor de tablas -->
+    <div class="tab-content" id="sugeridos-${nuevoItemNumber}" style="display: block;">
+        <h4>Ítems Sugeridos</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th>Unidad</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="itemssugeridos-${nuevoItemNumber}">
+                <!-- Aquí se cargarán los ítems sugeridos -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="tab-content" id="todos-${nuevoItemNumber}" style="display: none;">
+        <h4>Todos los Ítems</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th>Categoría</th>
+                    <th>Unidad</th>
+                    <th>Tipo</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="todositems-${nuevoItemNumber}">
+                <!-- Aquí se cargarán todos los ítems -->
+            </tbody>
+        </table>
+            <div id="todositems-pagination-1" class="pagination-container" style="text-align: center; margin-top: 10px;">
+        <!-- Aquí se generarán los botones de paginación -->
+    </div>
+    </div>
 </div>
 
 `;
@@ -815,6 +857,26 @@ document.addEventListener('click', function (event) {
     }
 });
 
+document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('tab-btn')) {
+        const tabId = event.target.getAttribute('data-tab');
+
+        // Ocultar todas las tablas
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.style.display = 'none';
+        });
+
+        // Mostrar la tabla seleccionada
+        const selectedTab = document.getElementById(tabId);
+        selectedTab.style.display = 'block';
+
+        // Si es la tabla "Todos los Ítems", cargar los datos
+        if (tabId.startsWith('todos-')) {
+            const productoId = tabId.split('-')[1]; // Extraer el ID del producto
+            cargarTodosLosItems(productoId); // Llamar a la función para cargar los ítems
+        }
+    }
+});
 
 // Escuchar cambios en el select de producto
 document.addEventListener('change', function (event) {
@@ -876,6 +938,94 @@ function cargarItemsSugeridos(productoId, selectedProductoId) {
         });
 }
 
+
+function cargarTodosLosItems(productoId, pagina = 1, busqueda = '') {
+    const tbody = document.querySelector(`#todositems-${productoId}`);
+    const paginationContainer = document.querySelector(`#todositems-pagination-${productoId}`);
+    
+    if (!tbody) {
+        console.error(`No se encontró el tbody con el ID todositems-${productoId}`);
+        return;
+    }
+    if (!paginationContainer) {
+        console.error(`No se encontró el contenedor de paginación con el ID todositems-pagination-${productoId}`);
+        return;
+    }
+
+    tbody.innerHTML = '<tr><td colspan="7">Cargando...</td></tr>';
+
+    fetch(`/todos_los_items?pagina=${pagina}&busqueda=${encodeURIComponent(busqueda)}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error al cargar todos los ítems');
+            return response.json();
+        })
+        .then(data => {
+            const { items, totalPaginas } = data;
+
+            tbody.innerHTML = ''; // Limpiar el mensaje de carga
+
+            // Renderizar los ítems
+            items.forEach(item => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.descripcion}</td>
+                    <td>${item.categoria || 'Sin Categoría'}</td>
+                    <td>${item.unidad}</td>
+                    <td>${item.tipo}</td>
+                    <td>${item.precio}</td>
+                    <td>
+                        <button class="btnAgregar" data-item-id="${item.id}">Agregar</button>
+                    </td>
+                `;
+                tbody.appendChild(fila);
+            });
+
+            // Renderizar la paginación dinámica
+            paginationContainer.innerHTML = ''; // Limpiar los botones existentes
+            const maxVisibleButtons = 9;
+            const startPage = Math.max(1, pagina - Math.floor(maxVisibleButtons / 2));
+            const endPage = Math.min(totalPaginas, startPage + maxVisibleButtons - 1);
+
+            // Botón "Anterior"
+            if (pagina > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.textContent = 'Anterior';
+                prevButton.classList.add('pagination-btn');
+                prevButton.addEventListener('click', () => {
+                    cargarTodosLosItems(productoId, pagina - 1, busqueda);
+                });
+                paginationContainer.appendChild(prevButton);
+            }
+
+            // Botones de páginas visibles
+            for (let i = startPage; i <= endPage; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.classList.add('pagination-btn');
+                if (i === pagina) button.classList.add('active');
+                button.addEventListener('click', () => {
+                    cargarTodosLosItems(productoId, i, busqueda);
+                });
+                paginationContainer.appendChild(button);
+            }
+
+            // Botón "Siguiente"
+            if (pagina < totalPaginas) {
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'Siguiente';
+                nextButton.classList.add('pagination-btn');
+                nextButton.addEventListener('click', () => {
+                    cargarTodosLosItems(productoId, pagina + 1, busqueda);
+                });
+                paginationContainer.appendChild(nextButton);
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando todos los ítems:', error);
+            tbody.innerHTML = '<tr><td colspan="7">Error al cargar los ítems.</td></tr>';
+        });
+}
 
 
 

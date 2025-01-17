@@ -147,7 +147,7 @@ def get_porcentajes(producto_id):
 @routes_blueprint.route('/items_por_producto/<int:producto_id>')
 def items_por_producto(producto_id):
     pagina = request.args.get('pagina', 1, type=int)                        
-    items_por_pagina = 20
+    items_por_pagina = 70
 
     query = Items.query \
         .join(ItemsPorProducto, ItemsPorProducto.item_idFK == Items.item_id) \
@@ -206,48 +206,42 @@ def item_detalle(item_id):
 
 @routes_blueprint.route('/todos_los_items')
 def todos_los_items():
-    pagina = request.args.get('pagina', 1, type=int)  # Obtener la página actual
-    busqueda = request.args.get('busqueda', '', type=str)  # Obtener el término de búsqueda
-    items_por_pagina = 20  # Número de ítems por página
+    try:
+        pagina = request.args.get('pagina', 1, type=int)
+        busqueda = request.args.get('busqueda', '', type=str)
+        print(f"Búsqueda recibida: {busqueda}")
 
-    # Crear la consulta base para la tabla Items
-    query = Items.query
+        items_por_pagina = 20
+        query = Items.query
 
-    # Filtrar por búsqueda si se proporciona
-    if busqueda:
-        query = query.filter(Items.nombre.ilike(f'%{busqueda}%'))  # Usar LIKE para búsqueda
+        if busqueda:
+            query = query.filter(Items.nombre.ilike(f'%{busqueda}%'))
 
-    # Contar el total de ítems y calcular el total de páginas
-    total_items = query.count()
-    total_paginas = (total_items // items_por_pagina) + (1 if total_items % items_por_pagina > 0 else 0)
+        total_items = query.count()
+        total_paginas = (total_items + items_por_pagina - 1) // items_por_pagina
+        items = query.offset((pagina - 1) * items_por_pagina).limit(items_por_pagina).all()
 
-    # Paginación
-    items = query.paginate(page=pagina, per_page=items_por_pagina).items
+        items_json = []
+        for item in items:
+            proveedor = next((prov for prov in item.itemproveedores if prov.tipo_proveedor == 1), None)
+            item_precio = proveedor.precio if proveedor else 'SIN PRECIO'
+            items_json.append({
+                'id': item.item_id,
+                'descripcion': item.nombre,
+                'categoria': item.categoria.CATEGORIA_NOMBRE if item.categoria else None,
+                'unidad': item.unidad,
+                'tipo': item.tipo,
+                'precio': f"{item_precio:.2f}" if isinstance(item_precio, (int, float)) else item_precio,
+            })
 
-    # Crear la respuesta JSON con los ítems encontrados
-    items_json = []
-    for item in items:
-        # Buscar el proveedor con tipo_proveedor = 1 para obtener el precio
-        proveedor = next((prov for prov in item.itemproveedores if prov.tipo_proveedor == 1), None)
-        item_precio = None
-        
-        if proveedor:
-            item_precio = proveedor.precio  # Obtener el precio del proveedor
-
-        # Agregar el ítem al JSON
-        items_json.append({
-            'id': item.item_id,
-            'descripcion': item.nombre,
-            'categoria': item.categoria.CATEGORIA_NOMBRE if item.categoria else None,  # Manejar relación
-            'unidad': item.unidad,
-            'tipo': item.tipo,
-            'precio': locale.format_string("%.2f", item_precio, grouping=True) if item_precio else 'SIN PRECIO',
+        return jsonify({
+            'items': items_json,
+            'totalPaginas': total_paginas
         })
+    except Exception as e:
+        print(f"Error al procesar la solicitud: {e}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
 
-    return jsonify({
-        'items': items_json,
-        'totalPaginas': total_paginas
-    })
 
 @routes_blueprint.route('/agregar_item_temporal', methods=['POST'])
 def agregar_item_temporal():

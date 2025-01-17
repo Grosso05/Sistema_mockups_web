@@ -408,14 +408,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 unidad: itemRow.querySelector('td:nth-child(3)').textContent.trim(),
                 precio: parseFloat(itemRow.querySelector('td:nth-child(4)').textContent.trim()).toFixed(2),
             };
-
+        
             console.log('Item ID antes de mover:', item.id); // Verificación de item.id
             console.log('Objeto item:', item);  // Verificación del objeto item
             
             // Ahora pasa solo item.id (no todo el objeto) a moverItemASeleccionados
             moverItemASeleccionados(item.id, productoId);
-            ocultarItemDeSugeridos(item.id, productoId); // Ocultar el ítem de los sugeridos
+        
+            // Ocultar el ítem de las tablas de sugeridos y todos los ítems
+            ocultarItemDeSugeridos(item.id, productoId);
         }
+        
 
         // Verificar si el botón "Eliminar" en los ítems seleccionados fue clickeado
         else if (target.matches('.btnEliminarItem')) {
@@ -471,8 +474,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         function formatearPesosColombianos(numero) {
-        return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            // Asegurarse de que el precio sea un número
+            let precio = parseFloat(numero);
+        
+            // Verificar si el precio es un número válido
+            if (isNaN(precio)) {
+                return 'SIN PRECIO'; // En caso de que no sea un precio válido
+            }
+        
+            // Formatear el precio con puntos como separadores de miles
+            let precioFormateado = precio.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+            return precioFormateado;
         }
+        
+        
 
 
         // Función para cargar ítems sugeridos dinámicamente desde el backend
@@ -570,6 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Renderizar la tabla
                     items.forEach(item => {
                         const fila = document.createElement('tr');
+                        fila.setAttribute('data-item-id', item.id);  // Aquí agregamos el atributo data-item-id
                         fila.innerHTML = `
                             <td>${item.id}</td>
                             <td>${item.descripcion}</td>
@@ -581,6 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                         tbody.appendChild(fila);
                     });
+                    
         
                     // Configurar el evento en los inputs dinámicos
                     console.log("Configurando eventos para inputs dinámicos...");
@@ -606,13 +624,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         }
         
-        // Manejo del evento input
+        let debounceTimer; // Variable global para el temporizador
+
+        // Manejo del evento input con debounce
         function handleBusqueda(event) {
             const input = event.target;
             const productoId = input.id.split('-')[1];
             const busqueda = input.value.trim();
-            console.log(`Input detectado en producto ${productoId}: Buscando "${busqueda}"`);
-            cargarTodosLosItems(productoId, 1, busqueda); // Reiniciar a la página 1
+        
+            // Limpiar cualquier temporizador anterior
+            clearTimeout(debounceTimer);
+        
+            // Configurar un nuevo temporizador
+            debounceTimer = setTimeout(() => {
+                console.log(`Input detectado en producto ${productoId}: Buscando "${busqueda}"`);
+                cargarTodosLosItems(productoId, 1, busqueda); // Llamar la función después del retraso
+            }, 1200); // 
         }
         
         
@@ -702,6 +729,74 @@ document.addEventListener('DOMContentLoaded', () => {
             actualizarValoresCantidad(cantidadContainer);
         }
         }
+
+
+        function ocultarItemDeSugeridos(itemId, productoId) {
+            // Ocultar en la tabla de sugeridos
+            const itemRowSugeridos = document.querySelector(`#itemssugeridos-${productoId} tr[data-item-id="${itemId}"]`);
+            
+            if (itemRowSugeridos) {
+                itemRowSugeridos.style.display = 'none'; // Ocultar la fila
+                console.log(`Ítem ${itemId} oculto de sugeridos para el producto ${productoId}`);
+            } else {
+                console.error(`No se encontró el ítem con ID ${itemId} en la tabla de sugeridos para el producto ${productoId}`);
+            }
+        
+            // Ocultar en la tabla de todos los ítems
+            const itemRowTodos = document.querySelector(`#todositems-${productoId} tr[data-item-id="${itemId}"]`);
+            
+            if (itemRowTodos) {
+                itemRowTodos.style.display = 'none'; // Ocultar la fila
+                console.log(`Ítem ${itemId} oculto de todos los ítems para el producto ${productoId}`);
+            } else {
+                console.error(`No se encontró el ítem con ID ${itemId} en la tabla de todos los ítems para el producto ${productoId}`);
+            }
+        }
+        
+        
+
+        // Función para mostrar un ítem en la tabla de sugeridos
+        function mostrarItemEnSugeridos(item, productoId) {
+        // Buscar el tbody de "Sugeridos" para este producto
+        const tbodySugeridos = document.querySelector(`#itemssugeridos-${productoId}`);
+        if (!tbodySugeridos) {
+            console.error(`No se encontró la tabla de ítems sugeridos para el producto ${productoId}`);
+            return;
+        }
+
+        // Verificar si el ítem ya está en la tabla de sugeridos
+        const itemExistente = tbodySugeridos.querySelector(`tr[data-item-id="${item.id}"]`);
+        if (itemExistente) {
+            // Si ya existe, solo cambiar su estilo para hacerlo visible
+            if (itemExistente.style.display === 'none') {
+                itemExistente.style.display = '';  // Volver a mostrar el ítem
+                console.log(`Ítem ${item.id} vuelto a mostrar en sugeridos`);
+            } else {
+                console.log(`El ítem ${item.id} ya está visible en la lista de sugeridos`);
+            }
+            return; // No lo agregamos nuevamente
+        }
+
+        // Si no existe, crear y agregar el ítem a sugeridos
+        const filaSugerido = document.createElement('tr');
+        filaSugerido.setAttribute('data-item-id', item.id); // Agregar el ID al atributo
+        filaSugerido.innerHTML = `
+            <td>${item.id}</td>
+            <td>${item.descripcion}</td>
+            <td>${item.unidad}</td>
+            <td>${item.precio}</td>
+            <td>
+                <button class="btnAgregar" data-item-id="${item.id}">Agregar</button>
+            </td>
+        `;
+
+        // Agregar la fila al tbody de sugeridos
+        tbodySugeridos.appendChild(filaSugerido);
+
+        console.log(`Ítem ${item.id} agregado a sugeridos`);
+        }
+
+
 
         /* NO HEMOS MODIFICADO MÁS ABAJO*/
 
@@ -1407,61 +1502,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
             }
 
+            
+
         // Función para ocultar un ítem de la tabla de sugeridos
-        function ocultarItemDeSugeridos(itemId, productoId) {
-        const itemRow = document.querySelector(`#itemssugeridos-${productoId} tr[data-item-id="${itemId}"]`);
-
-        // Para depuración: Verifica si el selector encuentra el ítem
-        if (itemRow) {
-            itemRow.style.display = 'none'; // Ocultar la fila
-            console.log(`Ítem ${itemId} oculto de sugeridos para el producto ${productoId}`);
-        } else {
-            console.error(`No se encontró el ítem con ID ${itemId} en la tabla de sugeridos para el producto ${productoId}`);
-        }
-        }
-
-        // Función para mostrar un ítem en la tabla de sugeridos
-        function mostrarItemEnSugeridos(item, productoId) {
-        // Buscar el tbody de "Sugeridos" para este producto
-        const tbodySugeridos = document.querySelector(`#itemssugeridos-${productoId}`);
-        if (!tbodySugeridos) {
-            console.error(`No se encontró la tabla de ítems sugeridos para el producto ${productoId}`);
-            return;
-        }
-
-        // Verificar si el ítem ya está en la tabla de sugeridos
-        const itemExistente = tbodySugeridos.querySelector(`tr[data-item-id="${item.id}"]`);
-        if (itemExistente) {
-            // Si ya existe, solo cambiar su estilo para hacerlo visible
-            if (itemExistente.style.display === 'none') {
-                itemExistente.style.display = '';  // Volver a mostrar el ítem
-                console.log(`Ítem ${item.id} vuelto a mostrar en sugeridos`);
-            } else {
-                console.log(`El ítem ${item.id} ya está visible en la lista de sugeridos`);
-            }
-            return; // No lo agregamos nuevamente
-        }
-
-        // Si no existe, crear y agregar el ítem a sugeridos
-        const filaSugerido = document.createElement('tr');
-        filaSugerido.setAttribute('data-item-id', item.id); // Agregar el ID al atributo
-        filaSugerido.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.descripcion}</td>
-            <td>${item.unidad}</td>
-            <td>${item.precio}</td>
-            <td>
-                <button class="btnAgregar" data-item-id="${item.id}">Agregar</button>
-            </td>
-        `;
-
-        // Agregar la fila al tbody de sugeridos
-        tbodySugeridos.appendChild(filaSugerido);
-
-        console.log(`Ítem ${item.id} agregado a sugeridos`);
-        }
-
-
+ 
 
 
 

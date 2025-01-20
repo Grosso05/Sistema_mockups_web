@@ -256,26 +256,79 @@ document.addEventListener('DOMContentLoaded', () => {
         <!-- Contenido expandible -->
         <div class="contenido-expandible" id="contenido-expandible-${nuevoItemNumber}" style="display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
 
-        <!-- Tabla de ítems seleccionados -->
-        <div class="items-seleccionados" id="itemsSeleccionados-${nuevoItemNumber}">
-        <h4>Ítems Seleccionados</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Descripción</th>
-                    <th>Unidad</th>
-                    <th>Precio</th>
-                    <th>Cantidad</th>
-                    <th>Total</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="itemsseleccionados-${nuevoItemNumber}">
-                <!-- Aquí se cargarán los ítems seleccionados -->
-            </tbody>
-        </table>
-        </div>
+<!-- Tabla de ítems seleccionados -->
+<div class="items-seleccionados" id="itemsSeleccionados-${nuevoItemNumber}">
+    <h4>Ítems Seleccionados</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descripción</th>
+                <th>Unidad</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="itemsseleccionados-${nuevoItemNumber}">
+            <!-- Aquí se cargarán los ítems seleccionados -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Resumen de Costos -->
+<div class="resumen-costos" id="resumenCostos-${nuevoItemNumber}">
+    <h4>Resumen de Costos</h4>
+    <table>
+        <tbody>
+            <tr>
+                <td>Costo Directo:</td>
+                <td id="costoDirecto-${nuevoItemNumber}">0</td>
+            </tr>
+            <tr>
+                <td>Costo Directo Unitario:</td>
+                <td id="costoDirectoUnitario-${nuevoItemNumber}">0</td>
+            </tr>
+            <tr>
+                <td>Administración:</td>
+                <td id="administracion-${nuevoItemNumber}">0</td>
+            </tr>
+            <tr>
+                <td>Imprevistos:</td>
+                <td id="imprevistos-${nuevoItemNumber}">0</td>
+            </tr>
+            <tr>
+                <td>Utilidad:</td>
+                <td id="utilidad-${nuevoItemNumber}">0</td>
+            </tr>
+            <tr>
+                <td>Porcentaje de Utilidad:</td>
+                <td id="porcentajeUtilidad-${nuevoItemNumber}">0</td>
+            </tr>
+            <tr>
+                <td>Valor Manual de Utilidad:</td>
+                <td id="valorManualUtilidad-${nuevoItemNumber}">0</td>
+            </tr>
+            <tr>
+                <td>Oferta Antes de IVA:</td>
+                <td id="ofertaAntesIVA-${nuevoItemNumber}">0</td>
+            </tr>
+            <tr>
+                <td>Precio Unitario de Venta:</td>
+                <td id="precioUnitarioVenta-${nuevoItemNumber}">0</td>
+            </tr>
+            <tr>
+                <td>IVA:</td>
+                <td id="iva-${nuevoItemNumber}">0</td>
+            </tr>
+            <tr>
+                <td>Valor Oferta Impuestos Incluidos:</td>
+                <td id="valorOfertaImpuestos-${nuevoItemNumber}">0</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
         <!-- Tabla de ítems sugeridos -->
         <div>
@@ -417,6 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
             // Ocultar el ítem de las tablas de sugeridos y todos los ítems
             ocultarItemDeSugeridos(item.id, productoId);
+            actualizarCostoDirecto(productoId);
         }
         
 
@@ -431,6 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Volver a mostrar el ítem en la tabla de sugeridos
             mostrarItemEnSugeridos(itemId, productoId);
+            actualizarCostoDirecto();
         }
         });
 
@@ -608,14 +663,45 @@ document.addEventListener('DOMContentLoaded', () => {
                         input.addEventListener('input', handleBusqueda);
                     });
         
+                  
                     // Actualizar paginación
                     paginationContainer.innerHTML = '';
-                    for (let i = 1; i <= totalPaginas; i++) {
+                    const maxVisibleButtons = 9; // Máximo de botones visibles
+                    const half = Math.floor(maxVisibleButtons / 2);
+                    let startPage = Math.max(1, pagina - half);
+                    let endPage = Math.min(totalPaginas, pagina + half);
+
+                    if (endPage - startPage + 1 < maxVisibleButtons) {
+                        if (startPage === 1) {
+                            endPage = Math.min(totalPaginas, startPage + maxVisibleButtons - 1);
+                        } else if (endPage === totalPaginas) {
+                            startPage = Math.max(1, endPage - maxVisibleButtons + 1);
+                        }
+                    }
+
+                    // Botón "Anterior"
+                    if (pagina > 1) {
+                        const prevButton = document.createElement('button');
+                        prevButton.textContent = '«';
+                        prevButton.addEventListener('click', () => cargarTodosLosItems(productoId, pagina - 1, busqueda));
+                        paginationContainer.appendChild(prevButton);
+                    }
+
+                    // Botones de las páginas
+                    for (let i = startPage; i <= endPage; i++) {
                         const button = document.createElement('button');
                         button.textContent = i;
                         if (i === pagina) button.classList.add('active');
                         button.addEventListener('click', () => cargarTodosLosItems(productoId, i, busqueda));
                         paginationContainer.appendChild(button);
+                    }
+
+                    // Botón "Siguiente"
+                    if (pagina < totalPaginas) {
+                        const nextButton = document.createElement('button');
+                        nextButton.textContent = '»';
+                        nextButton.addEventListener('click', () => cargarTodosLosItems(productoId, pagina + 1, busqueda));
+                        paginationContainer.appendChild(nextButton);
                     }
                 })
                 .catch(error => {
@@ -796,530 +882,136 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Ítem ${item.id} agregado a sugeridos`);
         }
 
+        function formatearPesosColombianos(numero) {
+            // Asegurarse de que el precio sea un número
+            let precio = parseFloat(numero);
+        
+            // Verificar si el precio es un número válido
+            if (isNaN(precio)) {
+                return 'SIN PRECIO'; // En caso de que no sea un precio válido
+            }
+        
+            // Convertir el número a una cadena con dos decimales
+            const precioConDecimales = precio.toFixed(2);
+        
+            // Formatear el precio con puntos como separadores de miles
+            const precioFormateado = precioConDecimales.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+            return precioFormateado;
+        }
+        
+    // Función para mover el item a la tabla de seleccionados
+    function moverItemASeleccionados(itemId, productoId) {
+        const tbodySeleccionados = document.getElementById(`itemsseleccionados-${productoId}`);
+        if (!tbodySeleccionados) {
+            console.error(`No se encontró la tabla de ítems seleccionados para el producto ${productoId}`);
+            return;
+        }
 
+        fetch(`/item_detalle/${itemId}`)
+            .then(response => {
+                if (!response.ok) throw new Error(`Error al cargar detalles del ítem ${itemId}`);
+                return response.json();
+            })
+            .then(item => {
+                const precioUnitario = parseFloat(item.precio);
+                const precioFormateado = formatearPesosColombianos(precioUnitario);
+                const nuevaFilaSeleccionada = document.createElement('tr');
+
+                nuevaFilaSeleccionada.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.descripcion}</td>
+                    <td>${item.unidad}</td>
+                    <td>${precioFormateado}</td>
+                    <td><input type="number" class="cantidadInput" step="any" min="0.1" value="1"></td>
+                    <td>${precioFormateado}</td>
+                    <td><button class="btnEliminarItem" type="button">Eliminar</button></td>
+                `;
+
+                tbodySeleccionados.appendChild(nuevaFilaSeleccionada);
+
+                // Obtener referencias a los elementos dinámicos
+                const inputCantidad = nuevaFilaSeleccionada.querySelector('.cantidadInput');
+                const celdaTotal = nuevaFilaSeleccionada.querySelector('td:nth-child(6)');
+                const btnEliminar = nuevaFilaSeleccionada.querySelector('.btnEliminarItem');
+
+                // Evento para actualizar el total al cambiar la cantidad
+                inputCantidad.addEventListener('input', function () {
+                    let cantidad = parseFloat(inputCantidad.value);
+                    if (isNaN(cantidad) || cantidad < 0.1) {
+                        cantidad = 0.1; // Restablecer a 0.1 si el valor no es válido
+                        inputCantidad.value = cantidad;
+                    }
+                    const nuevoTotal = (precioUnitario * cantidad).toFixed(2);
+                    celdaTotal.textContent = formatearPesosColombianos(nuevoTotal);
+
+                    // Recalcular el costo directo cada vez que se cambia la cantidad
+                    actualizarCostoDirecto(productoId);
+                });
+
+                // Evento para eliminar el ítem
+                btnEliminar.addEventListener('click', function () {
+                    nuevaFilaSeleccionada.remove();
+                    mostrarItemEnSugeridos(item, productoId);
+
+                    // Recalcular el costo directo después de eliminar un ítem
+                    actualizarCostoDirecto(productoId);
+                });
+
+                console.log(`Ítem ${item.id} movido a seleccionados del producto ${productoId}`);
+                
+                // Actualizar el costo directo inmediatamente después de agregar el ítem
+                actualizarCostoDirecto(productoId);
+            })
+            .catch(error => {
+                console.error(`Error cargando detalles del ítem: ${error.message}`);
+            });
+    }
+
+    function formatearPesosColombianos(numero) {
+        // Asegurarse de que el precio sea un número
+        let precio = parseFloat(numero);
+
+        // Verificar si el precio es un número válido
+        if (isNaN(precio)) {
+            return 'SIN PRECIO'; // En caso de que no sea un precio válido
+        }
+
+        // Formatear el precio con puntos como separadores de miles
+        let precioFormateado = precio.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+        return precioFormateado;
+    }
+
+    // Función para actualizar el costo directo
+    function actualizarCostoDirecto(productoId) {
+        const tbodySeleccionados = document.getElementById(`itemsseleccionados-${productoId}`);
+        let costoDirectoTotal = 0;
+    
+        tbodySeleccionados.querySelectorAll('tr').forEach(fila => {
+            // Extraer y limpiar el precio unitario
+            const precioUnitarioTexto = fila.querySelector('td:nth-child(4)').textContent.replace(/\./g, '').replace(/[^0-9.-]+/g, '');
+            const precioUnitario = parseFloat(precioUnitarioTexto);
+    
+            // Obtener cantidad
+            const cantidadInput = fila.querySelector('.cantidadInput');
+            const cantidad = parseFloat(cantidadInput.value);
+    
+            // Validar y sumar si los valores son válidos
+            if (!isNaN(precioUnitario) && !isNaN(cantidad)) {
+                costoDirectoTotal += precioUnitario * cantidad;
+            }
+        });
+    
+        // Actualizar el valor formateado en el DOM
+        const costoDirectoElement = document.querySelector(`#costoDirecto-${productoId}`);
+        costoDirectoElement.textContent = formatearPesosColombianos(costoDirectoTotal.toFixed(2));
+    }
 
         /* NO HEMOS MODIFICADO MÁS ABAJO*/
 
 
-        document.getElementById('btnCrear').addEventListener('click', function() {
-            const descripcionInput = document.getElementById('descripcion');
-            const altoInput = document.querySelector('.alto-input');
-            const anchoInput = document.querySelector('.ancho-input');
-            const fondoInput = document.querySelector('.fondo-input');        
-            const productoSelect = document.getElementById('seleccionarProducto');
-            const cantidadInput = document.querySelector('.cantidad-input');
-            
-            const descripcion = descripcionInput.value.trim();
-            const productoId = productoSelect.value;  
-            const productoNombre = productoSelect.options[productoSelect.selectedIndex].text;
-            
-            const alto = altoInput.value.trim();
-            const ancho = anchoInput.value.trim();
-            let fondo = fondoInput.value.trim();
-
-            
-            if (fondo === null || fondo === "") {
-                fondo = "0";
-            }
-            
-            const cantidad = parseInt(cantidadInput.value.trim(), 10);
-            
-            if (descripcion === "" || productoId === "" || cantidad <= 0) {
-                alert("Por favor, ingrese una descripción, seleccione un producto y asegúrese de que la cantidad sea mayor a 0.");
-                return;
-            }
-
-            let nuevoNumeroProducto;
-
-            if (numerosEliminados.length > 0) {
-                nuevoNumeroProducto = numerosEliminados.shift(); 
-            } else {
-                nuevoNumeroProducto = ++itemNumber; 
-            }
-
-            
-            const nuevoProducto = document.createElement('div');
-            nuevoProducto.className = 'producto';
-            nuevoProducto.id = `producto-${nuevoNumeroProducto}`;
-
-            
-            const { cantidadHeader, totalHeader } = generarCabeceras();
-
-            
-            const cantidadesSeleccionadasHTML = valoresCantidad.map((valor, index) => 
-                `<h4>Cantidad seleccionada (${index + 1}): ${valor} unidades</h4>`
-            ).join('');
-
-            
-            fetch(`/porcentajes/${productoId}`)
-                .then(response => response.json())
-                .then(porcentajes => {
-                    nuevoProducto.dataset.administracion = porcentajes.administracion;
-                    nuevoProducto.dataset.imprevistos = porcentajes.imprevistos;
-                    nuevoProducto.dataset.utilidad = porcentajes.utilidad;
-
-                    
-                    nuevoProducto.innerHTML = `
-                    <div class="producto" id="producto-${nuevoNumeroProducto}" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                        <!-- Información del Producto: Título y Descripción -->
-                        <div style="grid-column: span 2;">
-                            <h3 contenteditable="true" style="color: #00b04f; margin: 0; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Producto ${nuevoNumeroProducto}: ${productoNombre}</h3> 
-                            <h4 contenteditable="true" style="margin: 3px 0;">Descripción: ${descripcion}</h4>
-                            <h4 contenteditable="true" style="margin: 3px 0;">Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |</h4>
-                        </div>
-                
-                        <!-- Cargar Imagen -->
-                        <div style="display: flex; align-items: center; justify-content: flex-start;">
-                            <label for="imagen-${nuevoNumeroProducto}" style="font-weight: bold; margin-right: 5px;">Cargar Imagen:</label>
-                            <input 
-                                type="file" 
-                                id="imagen-${nuevoNumeroProducto}" 
-                                name="imagen_producto" 
-                                accept="image/*" 
-                                style="padding: 6px; border: 1px solid #00b04f; border-radius: 4px; cursor: pointer; background-color: #f5f5f5; transition: border-color 0.3s ease;"
-                                onfocus="this.style.borderColor='#007bff';"
-                                onblur="this.style.borderColor='#00b04f';"
-                            >
-                        </div>
-                
-                        <!-- Añadimos el productoId con un nombre diferente -->
-                        <input type="hidden" name="producto_seleccionado_id" value="${productoId}">
-                
-                        <!-- Cantidades -->
-                    <div class="cantidad-container" style="display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, auto); gap: 10px;">
-                        <label>Cantidad:</label>
-                        <input type="number" class="cantidad-input" name="cantidadUnidades" min="1" value="1">
-                        <button class="btnAgregarCantidad" type="button">+</button>
-                        <button class="btnEliminarCantidad" type="button">-</button>
-                    </div>
-
-                        
-                        <!-- Selects: Línea y Producto -->
-                        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; flex: 1; max-width: 25%;">
-                            <select class="linea-select">
-                                <option value="">Seleccionar Línea</option>
-                                <!-- Opciones aquí -->
-                            </select>
-                            <select class="producto-select">
-                                <option value="">Seleccionar Producto</option>
-                                <!-- Opciones aquí -->
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Items Agregados -->
-
-                                    <table id="tablaCarrito" border="1">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Descripción</th>
-                                <th>Unidad</th>
-                                <th>Precio</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Los ítems seleccionados se agregarán aquí -->
-                        </tbody>
-                    </table>
-
-                
-        <!-- Contenido expandible -->
-        <div class="contenido-expandible" id="contenido-expandible-${nuevoItemNumber}" style="display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
-
-        <!-- Tabla de ítems seleccionados -->
-        <div class="items-seleccionados">
-            <h4>Ítems Seleccionados</h4>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Descripción</th>
-                        <th>Unidad</th>
-                        <th>Precio</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="itemsseleccionados-${nuevoItemNumber}">
-                    <!-- Aquí se cargarán los ítems seleccionados -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Tabla de ítems sugeridos -->
-        <div class="items-sugeridos">
-            <h4>Ítems Sugeridos</h4>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Descripción</th>
-                        <th>Unidad</th>
-                        <th>Precio</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="itemssugeridos-${nuevoItemNumber}">
-                    <!-- Aquí se cargarán los ítems sugeridos -->
-                </tbody>
-            </table>
-        </div>
-        </div>
-
-                
-                    <!-- Botones de acción para mostrar y agregar ítems -->
-                    <div id="seleccion-items-container-${nuevoNumeroProducto}" style="display: none;">
-                        <div>
-                            <h4>Seleccionar Ítems</h4>
-                            <input type="text" id="buscar-item-${nuevoNumeroProducto}" placeholder="Buscar ítems" style="display:none;">
-                            <div id="seleccion-items-${nuevoNumeroProducto}"></div>
-                            <div id="paginacion-items-${nuevoNumeroProducto}"></div>
-                            <div class="botones-container">
-                                <button class="boton-ver-todos custom-boton-ver-todos" onclick="verTodosItems(${nuevoNumeroProducto}, 1, '')">Ver Todos los Componentes</button>
-                                <button class="boton-agregar-temporal custom-boton-agregar-temporal" id="toggleFormularioBtn-${nuevoNumeroProducto}" onclick="toggleFormulario(${nuevoNumeroProducto})">Agregar Componente Temporal</button>
-                                <button class="boton-agregar-seleccionados custom-boton-agregar-seleccionados" onclick="agregarItemsSeleccionados(${nuevoNumeroProducto})">Agregar Componentes Seleccionados</button>
-                            </div>
-                        </div>
-                    </div>
-                
-                    <!-- Formulario para agregar ítems temporales -->
-                    <div class="form-agregar-item-manual" id="formAgregarItem-${nuevoNumeroProducto}" data-producto-id="${nuevoNumeroProducto}">
-                        <h4>Agregar Componente Temporal</h4>
-                        <input type="text" id="nuevo-item-descripcion-${nuevoNumeroProducto}" placeholder="Descripción del Ítem">
-                        <input type="number" id="nuevo-item-precio-${nuevoNumeroProducto}" placeholder="Precio del Ítem">
-                        <input type="number" id="nuevo-item-cantidad-${nuevoNumeroProducto}" placeholder="Cantidad del Ítem" value="1" min="1">
-                        <input type="text" id="nuevo-item-proveedor-${nuevoNumeroProducto}" placeholder="Proveedor del Ítem">
-                        <button id="btnAgregarItemTemporal-${nuevoNumeroProducto}" onclick="agregarItemTemporal(${nuevoNumeroProducto})">Agregar Componente Temporal</button>
-                    </div>
-                
-                    <!-- Resumen de Costos -->
-                    <div class="resumen-costos-container">
-                        ${valoresCantidad.map((valor, index) => `
-                            <div class="resumen-costos-individual" id="resumen-costos-${nuevoNumeroProducto}-${index}">
-                                <h4>Resumen de Costos (${valor})</h4>
-                                <p id="costo-directo-${nuevoNumeroProducto}-${index}">Costo Directo: 0</p>
-                                <p id="costo-unitario-${nuevoNumeroProducto}-${index}">Costo Directo Unitario: 0</p>
-                                <p id="administracion-${nuevoNumeroProducto}-${index}">Administración: 0 <span id="porcentaje-administracion-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                <p id="imprevistos-${nuevoNumeroProducto}-${index}">Imprevistos: 0 <span id="porcentaje-imprevistos-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                                <p id="utilidad-${nuevoNumeroProducto}-${index}">Utilidad: 0 <span id="porcentaje-utilidad-${nuevoNumeroProducto}-${index}">(0%)</span></p>
-                
-                                <!-- Opción 1: Ingresar el porcentaje de utilidad -->
-                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                                    <label for="utilidadPorcentaje-${nuevoNumeroProducto}-${index}" style="flex: 0 0 150px;">Porcentaje de Utilidad:</label>
-                                    <input type="number" 
-                                        id="utilidadPorcentaje-${nuevoNumeroProducto}-${index}" 
-                                        value="${porcentajes.utilidad + 15}" 
-                                        onchange="actualizarTotalProducto(${nuevoNumeroProducto}, ${index})"
-                                        style="width: 150px; height: 25px; margin-left: 2px;" 
-                                        title="El porcentaje mínimo es: ${porcentajes.utilidad}">
-                                    <input type="radio" 
-                                        name="opcionUtilidad-${nuevoNumeroProducto}-${index}" 
-                                        value="porcentaje" 
-                                        checked 
-                                        onclick="cambiarMetodoUtilidad(${nuevoNumeroProducto}, ${index}, 'porcentaje')" 
-                                        style="margin-left: 20px; width: 15px; height: 15px;">
-                                </div>
-                
-                                <!-- Opción 2: Ingresar el valor manualmente -->
-                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                                    <label for="utilidadValor-${nuevoNumeroProducto}-${index}" style="flex: 0 0 150px;">Valor Manual de Utilidad:</label>
-                                    <input type="number" 
-                                        id="utilidadValor-${nuevoNumeroProducto}-${index}" 
-                                        value="" 
-                                        onchange="actualizarTotalProducto(${nuevoNumeroProducto}, ${index})"
-                                        style="width: 150px; height: 25px; margin-left: 2px;" 
-                                        title="Ingresa un valor manual para la utilidad">
-                                    <input type="radio" 
-                                        name="opcionUtilidad-${nuevoNumeroProducto}-${index}" 
-                                        value="manual" 
-                                        onclick="cambiarMetodoUtilidad(${nuevoNumeroProducto}, ${index}, 'manual')" 
-                                        style="margin-left: 20px; width: 15px; height: 15px;">
-                                </div>
-                
-                                <p id="oferta-antes-iva-${nuevoNumeroProducto}-${index}">Oferta Antes De IVA: 0</p>
-                                <p id="precio-unitario-venta-${nuevoNumeroProducto}-${index}" style="color: #00b04f;">Precio Unitario De Venta: 0</p>
-                                <p id="iva-${nuevoNumeroProducto}-${index}">IVA: 0</p>
-                                <p style="color: #00b04f;" id="valor-oferta-${nuevoNumeroProducto}-${index}">Valor Oferta Impuestos Incluidos: 0</p>
-                            </div>
-                        `).join('')}
-                    </div>
-                
-                    <!-- Acciones del producto -->
-                    <div class="acciones">
-                        <button class="editar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Editar Producto</button>
-                        <button class="confirmar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Confirmar Producto</button>
-                        <button class="eliminar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Eliminar Producto</button>
-                        <button class="duplicar-producto-btn" data-producto-id="${nuevoNumeroProducto}">Duplicar Producto</button>
-                    </div>
-                `;
-
-                    productosContainer.appendChild(nuevoProducto);
-
-                    // Limpiar los campos de entrada después de agregar el producto
-                    descripcionInput.value = '';
-                    productoSelect.value = '';
-                    
-                    // Insertar el nuevo producto en la posición correcta
-                    let insertado = false;
-                    productosContainer.querySelectorAll('.producto').forEach(producto => {
-                        const numeroProducto = parseInt(producto.id.split('-')[1], 10);
-                        if (nuevoNumeroProducto < numeroProducto) {
-                            productosContainer.insertBefore(nuevoProducto, producto);
-                            insertado = true;
-                            return false; 
-                        }
-                    });
-                    if (!insertado) {
-                        productosContainer.appendChild(nuevoProducto); // Si no se insertó, agregar al final
-                    }
-
-                    // Actualizar el número de producto dentro del div itemNumber
-                    actualizarNumeroProducto();
-
-                    cargarItemsProducto(productoId, nuevoNumeroProducto, 1, '');
-
-                // Añadir manejadores de eventos para la utilidad
-                let timeout;
-                valoresCantidad.forEach((valor, index) => {
-                    const utilidadInput = document.getElementById(`utilidadSeleccionada-${nuevoNumeroProducto}-${index}`);
-                    if (utilidadInput) {
-                        utilidadInput.addEventListener('input', function() {
-                            clearTimeout(timeout);
-                            timeout = setTimeout(() => {
-                                const nuevoValorUtilidad = parseFloat(this.value);
-                                if (!isNaN(nuevoValorUtilidad)) {
-                                    const productoElement = document.querySelector(`#producto-${nuevoNumeroProducto}`);
-                                    if (productoElement) {
-                                        const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
-                                        if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
-                                            // Solo realiza el cálculo y actualización si el valor es válido
-                                            actualizarTotalProducto(nuevoNumeroProducto, nuevoValorUtilidad);
-                                        } else {
-                                            alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
-                                            this.value = ''; // Limpiar el campo para forzar un valor válido
-                                        }
-                                    }
-                                }
-                            }, 300); 
-                        });
-                    } else {
-                        console.error(`Elemento con ID utilidadSeleccionada-${nuevoNumeroProducto}-${index} no encontrado.`);
-                    }
-                });
-
-                // Actualizar los totales al agregar un nuevo producto
-                actualizarTotalesExtras(nuevoNumeroProducto, 0); // Inicia con costo directo 0
-            })
-            .catch(error => {
-                console.error('Error al cargar los porcentajes:', error);
-            });
-        });
-
-        // Delegación de eventos para los botones de productos
-        document.addEventListener('click', function(event) {
-        const target = event.target;
-
-        if (target.matches('.confirmar-producto-btn')) {
-            const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
-            seleccionItemsContainer.style.display = 'none';
-        } else if (target.matches('.editar-producto-btn')) {
-            const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${target.dataset.productoId}`);
-            seleccionItemsContainer.style.display = 'block';
-
-        } else if (target.matches('.eliminar-producto-btn')) {
-            // Confirmación antes de eliminar el producto
-            const confirmacion = confirm("¿Estás seguro de que deseas eliminar este producto?");
-            
-            if (confirmacion) {
-                const producto = document.getElementById(`producto-${target.dataset.productoId}`);
-                numerosEliminados.push(parseInt(target.dataset.productoId, 10)); // Añadir el número del producto eliminado al array
-                producto.remove();
-                actualizarNumeroProducto(); // Actualizar el número de producto visible
-                actualizarResumenesDeCostos(); // Actualizar los resúmenes de costos
-            } else {
-                console.log('Eliminación cancelada');
-            }
-
-        } else if (target.matches('.duplicar-producto-btn')) {
-            let nuevoNumeroProductoDuplicado;
-            if (numerosEliminados.length > 0) {
-                nuevoNumeroProductoDuplicado = numerosEliminados.shift();
-            } else {
-                nuevoNumeroProductoDuplicado = ++itemNumber;
-            }
-
-            // Clonar el producto
-            const productoOriginal = document.getElementById(`producto-${target.dataset.productoId}`);
-            const nuevoProductoDuplicado = productoOriginal.cloneNode(true);
-
-            // Actualizar el ID del producto clonado
-            nuevoProductoDuplicado.id = `producto-${nuevoNumeroProductoDuplicado}`;
-
-        // Actualizar los IDs de los elementos internos y los eventos del producto duplicado
-        const actualizarIdsYEventos = (element, nuevoId) => {
-            element.querySelectorAll('[id]').forEach(child => {
-                const partesId = child.id.split('-');
-                partesId[partesId.length - 1] = nuevoId;
-                child.id = partesId.join('-');
-            });
-            element.querySelectorAll('[for]').forEach(child => {
-                const partesFor = child.getAttribute('for').split('-');
-                partesFor[partesFor.length - 1] = nuevoId;
-                child.setAttribute('for', partesFor.join('-'));
-            });
-            element.querySelectorAll('[name]').forEach(child => {
-                const partesName = child.name.split('-');
-                partesName[partesName.length - 1] = nuevoId;
-                child.name = partesName.join('-');
-            });
-            element.querySelectorAll('[data-producto-id]').forEach(child => {
-                child.setAttribute('data-producto-id', nuevoId);
-            });
-
-            // Actualizar los eventos `onclick` de los botones
-            element.querySelectorAll('button').forEach(button => {
-                const originalOnClick = button.getAttribute('onclick');
-                if (originalOnClick) {
-                    button.setAttribute('onclick', originalOnClick.replace(/\d+/, nuevoId));
-                }
-            });
-
-            // Asegurarse de que los eventos de cambio de cantidad y utilidad están configurados
-            element.querySelectorAll('.cantidad').forEach(input => {
-                input.addEventListener('change', function() {
-                    actualizarTotalProducto(nuevoId);
-                    actualizarResumenDeCostos(nuevoId); // Actualiza el resumen de costos
-                });
-            });
-            element.querySelectorAll('.utilidadSeleccionada').forEach(input => {
-                input.addEventListener('input', function() {
-                    let timeout;
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => {
-                        const nuevoValorUtilidad = parseFloat(this.value);
-                        if (!isNaN(nuevoValorUtilidad)) {
-                            const productoElement = document.querySelector(`#producto-${nuevoId}`);
-                            if (productoElement) {
-                                const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
-                                if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
-                                    actualizarTotalProducto(nuevoId, nuevoValorUtilidad);
-                                    actualizarResumenDeCostos(nuevoId); // Actualiza el resumen de costos
-                                } else {
-                                    alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
-                                }
-                            }
-                        }
-                    }, 300);
-                });
-            });
-        };
-
-        // Después de duplicar el producto, actualiza los IDs y agrega los eventos
-        actualizarIdsYEventos(nuevoProductoDuplicado, nuevoNumeroProductoDuplicado);
-
-            // Actualizar el contenido específico del producto duplicado
-            nuevoProductoDuplicado.querySelector('h3').textContent = `Producto ${nuevoNumeroProductoDuplicado}: ${productoOriginal.querySelector('h3').textContent.split(': ')[1]}`;
-
-            // Agregar el producto duplicado al contenedor de productos
-            productosContainer.appendChild(nuevoProductoDuplicado);
-
-            // Actualizar el número de producto visible
-            actualizarNumeroProducto();
-
-
-        // Añadir manejadores de eventos a los nuevos elementos del producto duplicado
-        let timeout;
-        nuevoProductoDuplicado.querySelectorAll('.utilidadSeleccionada').forEach(input => {
-        input.addEventListener('input', function() {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                const nuevoValorUtilidad = parseFloat(this.value);
-                if (!isNaN(nuevoValorUtilidad)) {
-                    const productoElement = document.querySelector(`#producto-${nuevoNumeroProductoDuplicado}`);
-                    if (productoElement) {
-                        const porcentajeMinimoUtilidad = parseFloat(productoElement.dataset.utilidad);
-                        if (nuevoValorUtilidad >= porcentajeMinimoUtilidad) {
-                            actualizarTotalProducto(nuevoNumeroProductoDuplicado, nuevoValorUtilidad);
-                            actualizarResumenDeCostos(nuevoNumeroProductoDuplicado); // Actualiza el resumen de costos
-                        } else {
-                            alert(`El porcentaje de utilidad debe ser al menos ${porcentajeMinimoUtilidad}%`);
-                        }
-                    }
-                }
-            }, 300);
-        });
-        });
-
-        // Añadir manejador de eventos para cambios en las cantidades
-        nuevoProductoDuplicado.querySelectorAll('.cantidad').forEach(input => {
-        input.addEventListener('change', function() {
-            actualizarTotalProducto(nuevoNumeroProductoDuplicado);
-            actualizarResumenDeCostos(nuevoNumeroProductoDuplicado); // Actualiza el resumen de costos
-        });
-        });
-
-
-        function guardarCambios(productoId) {
-        const producto = document.getElementById(`producto-${productoId}`);
-
-        // Obtener valores editados
-        const descripcion = producto.querySelector('h4').textContent.replace('Descripción: ', '').trim();
-        const alto = producto.querySelector('h4:nth-of-type(2)').textContent.split('Alto (Cm): ')[1].split(' || ')[0].trim();
-        const ancho = producto.querySelector('h4:nth-of-type(2)').textContent.split('Ancho (Cm): ')[1].split(' || ')[0].trim();
-        const fondo = producto.querySelector('h4:nth-of-type(2)').textContent.split('Fondo (Cm): ')[1].trim();
-
-        // Actualizar los datos del producto en el DOM si es necesario
-        producto.querySelector('h4').textContent = `Descripción: ${descripcion}`;
-        producto.querySelector('h4:nth-of-type(2)').textContent = `Alto (Cm): ${alto} || Ancho (Cm): ${ancho} || Fondo (Cm): ${fondo} |`;
-
-        // Puedes agregar lógica adicional si necesitas actualizar el backend o hacer otras operaciones
-
-        alert('Cambios guardados.');
-        }
-
-
-            // Modificación para manejar eventos en el producto duplicado
-            nuevoProductoDuplicado.querySelectorAll('.confirmar-producto-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${nuevoNumeroProductoDuplicado}`);
-                    seleccionItemsContainer.style.display = 'none';
-                });
-            });
-
-            nuevoProductoDuplicado.querySelectorAll('.editar-producto-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const seleccionItemsContainer = document.getElementById(`seleccion-items-container-${nuevoNumeroProductoDuplicado}`);
-                    seleccionItemsContainer.style.display = 'block';
-                });
-            });
-
-            nuevoProductoDuplicado.querySelectorAll('.eliminar-producto-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const producto = document.getElementById(`producto-${nuevoNumeroProductoDuplicado}`);
-                    numerosEliminados.push(parseInt(nuevoNumeroProductoDuplicado, 10)); // Añadir el número del producto eliminado al array
-                    producto.remove();
-                    actualizarNumeroProducto(); // Actualizar el número de producto visible
-                    actualizarResumenesDeCostos(); // Actualizar los resúmenes de costos
-                });
-            });
-
-            // Botón para Agregar Ítems
-            const btnAgregarItemTemporal = nuevoProductoDuplicado.querySelector(`#btnAgregarItemTemporal-${nuevoNumeroProductoDuplicado}`);
-            if (btnAgregarItemTemporal) {
-                btnAgregarItemTemporal.addEventListener('click', function() {
-                    agregarItemTemporal(nuevoNumeroProductoDuplicado);
-                });
-            }
-
-            const agregarItemsSeleccionadosBtn = nuevoProductoDuplicado.querySelector(`button[onclick^="agregarItemsSeleccionados"]`);
-            if (agregarItemsSeleccionadosBtn) {
-                agregarItemsSeleccionadosBtn.setAttribute('onclick', `agregarItemsSeleccionados(${nuevoNumeroProductoDuplicado})`);
-            }
-        }
-        });
+  
 
 
 
@@ -1435,82 +1127,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 
                 
-            function formatearPesosColombianos(numero) {
-                return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            }
-
-            function moverItemASeleccionados(itemId, productoId) {
-                // Buscar el tbody específico de ítems seleccionados para este producto
-                const tbodySeleccionados = document.getElementById(`itemsseleccionados-${productoId}`);
-                if (!tbodySeleccionados) {
-                    console.error(`No se encontró la tabla de ítems seleccionados para el producto ${productoId}`);
-                    return;
-                }
-            
-                console.log(`item id llegando antes del fetch: ${itemId}`);
-                // Solicitar los datos del ítem al backend
-                fetch(`/item_detalle/${itemId}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error(`Error al cargar detalles del ítem ${itemId}`);
-                        return response.json();
-                    })
-                    .then(item => {
-                        const precioFormateado = formatearPesosColombianos(parseFloat(item.precio)); // Formatear precio
-                        const nuevaFilaSeleccionada = document.createElement('tr');
-                        nuevaFilaSeleccionada.innerHTML = `
-                            <td>${item.id}</td>
-                            <td>${item.descripcion}</td>
-                            <td>${item.unidad}</td>
-                            <td>${precioFormateado}</td>
-                            <td>1</td> <!-- Cantidad inicial -->
-                            <td>${precioFormateado}</td> <!-- Total inicial -->
-                            <td>
-                                <button class="btnAumentarCantidad" type="button">+</button>
-                                <button class="btnDisminuirCantidad" type="button">-</button>
-                                <button class="btnEliminarItem" type="button">Eliminar</button>
-                            </td>
-                        `;
-            
-                        // Agregar la fila al tbody correspondiente
-                        tbodySeleccionados.appendChild(nuevaFilaSeleccionada);
-            
-                        // Agregar eventos a los botones de la fila
-                        const btnAumentar = nuevaFilaSeleccionada.querySelector('.btnAumentarCantidad');
-                        const btnDisminuir = nuevaFilaSeleccionada.querySelector('.btnDisminuirCantidad');
-                        const btnEliminar = nuevaFilaSeleccionada.querySelector('.btnEliminarItem');
-            
-                        btnAumentar.addEventListener('click', function () {
-                            cambiarCantidadItem(nuevaFilaSeleccionada, 1);
-                        });
-            
-                        btnDisminuir.addEventListener('click', function () {
-                            cambiarCantidadItem(nuevaFilaSeleccionada, -1);
-                        });
-            
-                        btnEliminar.addEventListener('click', function () {
-                            // Eliminar el ítem de "Seleccionados"
-                            nuevaFilaSeleccionada.remove();
-            
-                            // Hacer visible el ítem en "Sugeridos" nuevamente
-                            mostrarItemEnSugeridos(item, productoId);
-                        });
-            
-                        console.log(`Ítem ${item.id} movido a seleccionados del producto ${productoId}`);
-                    })
-                    .catch(error => {
-                        console.error(`Error cargando detalles del ítem: ${error.message}`);
-                    });
-            }
 
             
 
         // Función para ocultar un ítem de la tabla de sugeridos
  
-
-
-
-
-
         function actualizarNumeroProducto() {
             const itemNumberDiv = document.getElementById('itemNumber');
             if (itemNumberDiv) {
@@ -1521,198 +1142,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-
-        function cargarItemsProducto(productoId, itemNumber, pagina) {
-            const buscador = document.getElementById(`buscar-item-${itemNumber}`);
-            buscador.style.display = 'none'; // Ocultar el buscador
-
-            fetch(`/items_por_producto/${productoId}?pagina=${pagina}`)
-                .then(response => response.json())
-                .then(data => {
-                    const items = data.items;
-                    const totalPaginas = data.totalPaginas;
-                    const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
-                    const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
-
-                    seleccionItemsContainer.innerHTML = '';
-
-                    const table = document.createElement('table');
-                    table.innerHTML = `
-                        <thead>
-                            <tr>
-                                <th>Seleccionar</th>
-                                <th class="oculto">Grupo</th>
-                                <th>Descripción</th>
-                                <th>Unidad</th>
-                                <th>Precio</th>
-                                <th class="oculto">Tipo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${items.map(item => `
-                                <tr>
-                                    <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
-                                    <td class="oculto">${item.categoria}</td>
-                                    <td>${item.descripcion}</td>
-                                    <td>${item.unidad}</td>
-                                    <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
-                                    <td class="oculto">${item.tipo}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    `;
-                    seleccionItemsContainer.appendChild(table);
-
-                    // Actualizar paginación
-                    paginacionContainer.innerHTML = '';
-                    const maxPagesToShow = 5;
-                    const half = Math.floor(maxPagesToShow / 2);
-                    let startPage = Math.max(1, pagina - half);
-                    let endPage = Math.min(totalPaginas, pagina + half);
-
-                    if (pagina - half < 1) {
-                        endPage = Math.min(totalPaginas, endPage + (half - pagina + 1));
-                    }
-                    if (pagina + half > totalPaginas) {
-                        startPage = Math.max(1, startPage - (pagina + half - totalPaginas));
-                    }
-
-                    if (pagina > 1) {
-                        const firstButton = document.createElement('button');
-                        firstButton.textContent = '<<';
-                        firstButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, 1));
-                        paginacionContainer.appendChild(firstButton);
-
-                        const prevButton = document.createElement('button');
-                        prevButton.textContent = '<';
-                        prevButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, pagina - 1));
-                        paginacionContainer.appendChild(prevButton);
-                    }
-
-                    for (let i = startPage; i <= endPage; i++) {
-                        const button = document.createElement('button');
-                        button.textContent = i;
-                        button.disabled = i === pagina;
-                        button.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, i));
-                        paginacionContainer.appendChild(button);
-                    }
-
-                    if (pagina < totalPaginas) {
-                        const nextButton = document.createElement('button');
-                        nextButton.textContent = '>';
-                        nextButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, pagina + 1));
-                        paginacionContainer.appendChild(nextButton);
-
-                        const lastButton = document.createElement('button');
-                        lastButton.textContent = '>>';
-                        lastButton.addEventListener('click', () => cargarItemsProducto(productoId, itemNumber, totalPaginas));
-                        paginacionContainer.appendChild(lastButton);
-                    }
-                });
-        }
-
-
-
-        function agregarItemsSeleccionados(itemNumber) {
-            const itemsSeleccionados = document.querySelectorAll(`#seleccion-items-${itemNumber} input[type="checkbox"]:checked`);
-            const materiaPrimaContainer = document.getElementById(`materiaprima-${itemNumber}`);
-            const consumiblesContainer = document.getElementById(`consumibles-${itemNumber}`);
-            const serviciosContainer = document.getElementById(`servicios-${itemNumber}`);
-            const manoDeObraContainer = document.getElementById(`manodeobra-${itemNumber}`);
-            const transporteContainer = document.getElementById(`transporte-${itemNumber}`);
-            
-            const idsSeleccionados = new Set();
-            const contenedorItemsSeleccionados = document.querySelector(`#itemsseleccionados-${itemNumber}`);
-
-            if (contenedorItemsSeleccionados) {
-                contenedorItemsSeleccionados.querySelectorAll('tr').forEach(fila => {
-                    const itemId = fila.querySelector('td:first-child').textContent;
-                    idsSeleccionados.add(itemId);
-                });
-            } else {
-                console.warn(`El contenedor #itemsseleccionados-${itemNumber} no existe.`);
-            }
-            
-
-            itemsSeleccionados.forEach(itemCheckbox => {
-                const itemId = itemCheckbox.value;
-                if (idsSeleccionados.has(itemId)) {
-                    mostrarNotificacion(`El ítem con ID ${itemId} ya ha sido agregado.`, 'warning');
-                    return;
-                }
-
-                const itemGrupo = itemCheckbox.closest('tr').querySelector('td:nth-child(2)').textContent;
-                const itemDescripcion = itemCheckbox.closest('tr').querySelector('td:nth-child(3)').textContent;
-                const itemUnidad = itemCheckbox.closest('tr').querySelector('td:nth-child(4)').textContent;
-                const itemPrecio = itemCheckbox.closest('tr').querySelector('td:nth-child(5)').textContent;
-                const itemTipo = itemCheckbox.closest('tr').querySelector('td:nth-child(6)').textContent;
-
-                // Crear las celdas de cantidad y total dinámicamente basadas en valoresCantidad
-                const cantidadCeldas = valoresCantidad.map((valor, i) => 
-                `<td><input type="number" min="1" value="${valor}" class="cantidad" data-index="${i}" 
-                    onchange="actualizarTotalProducto(${itemNumber})" style="width: 70px;"></td>`
-                    ).join('');
-                    
-                    const totalCeldas = valoresCantidad.map(() => 
-                        `<td class="total" style="width: 80px;">0</td>`
-                    ).join('');
-
-                const nuevaFila = document.createElement('tr');
-                nuevaFila.innerHTML = `
-                    <td class="oculto">${itemId}</td>
-                    <td class="oculto">${itemGrupo}</td>
-                    <td>${itemDescripcion}</td>
-                    <td>${itemUnidad}</td>
-                    <td>${itemPrecio}</td>
-                    ${cantidadCeldas} <!-- Aquí se generan los td de cantidad -->
-                    ${totalCeldas}    <!-- Aquí se generan los td de total -->
-                    <td class="oculto">${itemTipo}</td>
-                    <td><button onclick="eliminarItemSeleccionado(this)">Eliminar</button></td>
-                `;
-
-                let container;
-                switch (itemTipo) {
-                    case 'Materia Prima':
-                        container = materiaPrimaContainer;
-                        break;
-                    case 'Consumibles':
-                        container = consumiblesContainer;
-                        break;
-                    case 'Servicios':
-                        container = serviciosContainer;
-                        break;
-                    case 'Mano de Obra e Instalacion':
-                        container = manoDeObraContainer;
-                        break;
-                    case 'Transportes':
-                        container = transporteContainer;
-                        break;
-                    default:
-                        console.error('Tipo de ítem desconocido:', itemTipo);
-                        return;
-                }
-
-                // Añadir encabezado si aún no existe
-                if (container && !container.querySelector('.tipo-header')) {
-                    const headerRow = document.createElement('tr');
-                    headerRow.innerHTML = `<td colspan="${5 + valoresCantidad.length * 2}" class="tipo-header"><strong>${itemTipo}</strong></td>`;
-                    container.appendChild(headerRow);
-                }
-
-                container.appendChild(nuevaFila);
-                idsSeleccionados.add(itemId);
-                actualizarTotalProducto(itemNumber);
-            });
-
-            // Deseleccionar todos los checkboxes seleccionados
-            itemsSeleccionados.forEach(itemCheckbox => {
-                itemCheckbox.checked = false;
-            });
-
-            alert('Ítems agregados correctamente.', 'success');
-        }
-
-
 
 
         function calcularPrecioUnitario(preciosEscalonados, cantidad) {
@@ -1807,7 +1236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Llamada para actualizar todos los resúmenes de costos cuando se modifiquen los items
-        function actualizarResumenDeCostos(productoId) {
+/*         function actualizarResumenDeCostos(productoId) {
             
             const productoElement = document.getElementById(`producto-${productoId}`);
             if (productoElement) {
@@ -1838,7 +1267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`No se encontró el producto para ID ${productoId}`);
             }
         }
-
+ */
             
             
             function calcularPorcentaje(valor, porcentaje) {
@@ -1983,126 +1412,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let isLoading = false;
 
-        function verTodosItems(itemNumber, pagina, busqueda) {
-            if (isLoading) return; // Evitar que se realicen búsquedas adicionales mientras se está cargando
 
-            isLoading = true;
-
-            const seleccionItemsContainer = document.getElementById(`seleccion-items-${itemNumber}`);
-            const paginacionContainer = document.getElementById(`paginacion-items-${itemNumber}`);
-            const buscador = document.getElementById(`buscar-item-${itemNumber}`);
-
-            // Mostrar el buscador al ver todos los items
-            buscador.style.display = 'block'; // Mostrar el buscador
-
-            // Mostrar animación de carga
-            seleccionItemsContainer.innerHTML = '<div class="loading">Cargando...</div>';
-            seleccionItemsContainer.classList.add('loading-active'); // Añadir clase de carga
-
-            fetch(`/todos_los_items?pagina=${pagina}&busqueda=${busqueda}`)
-                .then(response => {
-                    if (!response.ok) throw new Error('Error en la respuesta del servidor');
-                    return response.json();
-                })
-                .then(data => {
-                    const items = data.items;
-                    const totalPaginas = data.totalPaginas;
-
-                    // Limpiar animación de carga
-                    seleccionItemsContainer.innerHTML = '';
-                    seleccionItemsContainer.classList.remove('loading-active'); // Quitar clase de carga
-                    
-                    // Mostrar resultados en la tabla
-                    const table = document.createElement('table');
-                    table.innerHTML = `
-                        <thead>
-                            <tr>
-                                <th>Seleccionar</th>
-                                <th class="oculto">Grupo</th>
-                                <th>Descripción</th>
-                                <th>Unidad</th>
-                                <th>Precio</th>
-                                <th class="oculto">Tipo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${items.map(item => `
-                                <tr>
-                                    <td><input type="checkbox" id="item-${item.id}-${itemNumber}" value="${item.id}"></td>
-                                    <td class="oculto">${item.categoria || 'N/A'}</td>
-                                    <td>${item.descripcion}</td>
-                                    <td>${item.unidad}</td>
-                                    <td>${item.precio !== null ? item.precio : 'SIN PRECIO'}</td>
-                                    <td class="oculto">${item.tipo || 'N/A'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    `;
-                    seleccionItemsContainer.appendChild(table);
-
-                    // Actualizar paginación
-                    paginacionContainer.innerHTML = '';
-                    const maxPagesToShow = 5;
-                    const half = Math.floor(maxPagesToShow / 2);
-                    let startPage = Math.max(1, pagina - half);
-                    let endPage = Math.min(totalPaginas, pagina + half);
-
-                    if (pagina - half < 1) {
-                        endPage = Math.min(totalPaginas, endPage + (half - pagina + 1));
-                    }
-                    if (pagina + half > totalPaginas) {
-                        startPage = Math.max(1, startPage - (pagina + half - totalPaginas));
-                    }
-
-                    if (pagina > 1) {
-                        const firstButton = document.createElement('button');
-                        firstButton.textContent = '<<';
-                        firstButton.addEventListener('click', () => verTodosItems(itemNumber, 1, busqueda));
-                        paginacionContainer.appendChild(firstButton);
-
-                        const prevButton = document.createElement('button');
-                        prevButton.textContent = '<';
-                        prevButton.addEventListener('click', () => verTodosItems(itemNumber, pagina - 1, busqueda));
-                        paginacionContainer.appendChild(prevButton);
-                    }
-
-                    for (let i = startPage; i <= endPage; i++) {
-                        const button = document.createElement('button');
-                        button.textContent = i;
-                        button.disabled = i === pagina;
-                        button.addEventListener('click', () => verTodosItems(itemNumber, i, busqueda));
-                        paginacionContainer.appendChild(button);
-                    }
-
-                    if (pagina < totalPaginas) {
-                        const nextButton = document.createElement('button');
-                        nextButton.textContent = '>';
-                        nextButton.addEventListener('click', () => verTodosItems(itemNumber, pagina + 1, busqueda));
-                        paginacionContainer.appendChild(nextButton);
-
-                        const lastButton = document.createElement('button');
-                        lastButton.textContent = '>>';
-                        lastButton.addEventListener('click', () => verTodosItems(itemNumber, totalPaginas, busqueda));
-                        paginacionContainer.appendChild(lastButton);
-                    }
-
-                    isLoading = false; // Rehabilitar búsqueda
-                })
-                .catch(error => {
-                    console.error('Error fetching items:', error);
-                    seleccionItemsContainer.innerHTML = '<div class="error">Error al cargar los ítems.</div>'; // Mostrar error
-                    isLoading = false; // Rehabilitar búsqueda
-                });
-
-            // Asignar el evento de búsqueda solo una vez
-            if (!buscador.dataset.eventBound) {
-                buscador.addEventListener('input', debounce(() => {
-                    const busqueda = buscador.value;
-                    verTodosItems(itemNumber, 1, busqueda);
-                }, 1000));
-                buscador.dataset.eventBound = true; // Marcar el evento como asignado
-            }
-        }
 
 
         document.addEventListener('DOMContentLoaded', function() {

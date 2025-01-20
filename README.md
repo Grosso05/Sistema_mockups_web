@@ -1,4 +1,10 @@
-## Generador de Catálogos Personalizados (Version 7.2.3) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 7.2.4) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 20 de enero de 2025, 9:00 Am
+Cambios Recientes
+v 7.2.4
+
+En esta version seguimos trabajando en el resumen de costos de la nueva versión, agregamos la funcionabilidad de el costo directo unitario con todas sus pruebas, pasamos a calculo de AIU
 
 # Fecha de lanzamiento: 20 de enero de 2025, 7:30 Am
 Cambios Recientes

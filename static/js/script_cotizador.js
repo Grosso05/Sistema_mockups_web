@@ -1008,17 +1008,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatearPesosColombianos(numero) {
         // Asegurarse de que el precio sea un número
         let precio = parseFloat(numero);
-
+    
         // Verificar si el precio es un número válido
         if (isNaN(precio)) {
             return 'SIN PRECIO'; // En caso de que no sea un precio válido
         }
-
+    
+        // Redondear a la unidad más cercana
+        precio = Math.round(precio); // Redondeo normal a la unidad más cercana
+    
         // Formatear el precio con puntos como separadores de miles
         let precioFormateado = precio.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
+    
         return precioFormateado;
     }
+    
 
     // Función para actualizar el costo directo
     function actualizarCostoDirecto(productoId) {
@@ -1084,9 +1088,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Actualizar el costo directo unitario cada vez que se actualice el costo directo
     function actualizarResumenCostos(productoId) {
+        // Primero actualizamos los costos directos y unitarios
         actualizarCostoDirecto(productoId); // Calcula y actualiza el costo directo
         actualizarCostoDirectoUnitario(productoId); // Calcula y actualiza el costo directo unitario
+        
+        // Recalcular AIU usando los porcentajes cargados en el DOM
+        const porcentajeAdministracion = parseFloat(document.getElementById(`porcentajeAdministracion-${productoId}`).textContent.replace('%', ''));
+        const porcentajeImprevistos = parseFloat(document.getElementById(`porcentajeImprevistos-${productoId}`).textContent.replace('%', ''));
+        const porcentajeUtilidad = parseFloat(document.getElementById(`porcentajeUtilidad-${productoId}`).textContent.replace('%', ''));
+        
+        if (!isNaN(porcentajeAdministracion) && !isNaN(porcentajeImprevistos) && !isNaN(porcentajeUtilidad)) {
+            actualizarAIU(productoId, porcentajeAdministracion, porcentajeImprevistos, porcentajeUtilidad);
+        } else {
+            console.error(`Porcentajes inválidos para el producto ${productoId}`);
+        }
+        
+        // Obtener valores base del DOM
+        const costoDirectoElement = document.getElementById(`costoDirecto-${productoId}`);
+        const administracionElement = document.getElementById(`administracion-${productoId}`);
+        const imprevistosElement = document.getElementById(`imprevistos-${productoId}`);
+        const utilidadElement = document.getElementById(`utilidad-${productoId}`);
+        
+        const costoDirecto = parseFloat(costoDirectoElement.textContent.replace(/\./g, '').replace(',', '.')) || 0;
+        const administracion = parseFloat(administracionElement.textContent.replace(/\./g, '').replace(',', '.')) || 0;
+        const imprevistos = parseFloat(imprevistosElement.textContent.replace(/\./g, '').replace(',', '.')) || 0;
+        const utilidad = parseFloat(utilidadElement.textContent.replace(/\./g, '').replace(',', '.')) || 0;
+    
+        // Cálculo: Oferta Antes de IVA
+        const ofertaAntesIVA = costoDirecto + administracion + imprevistos + utilidad;
+        document.getElementById(`ofertaAntesIVA-${productoId}`).textContent = formatearPesosColombianos(ofertaAntesIVA.toFixed(2));
+    
+        // Obtener la cantidad desde el input correspondiente
+        const cantidadInput = document.querySelector(`#producto-${productoId} .cantidad-input`);
+        const cantidad = parseFloat(cantidadInput?.value) || 1; // Fallback a 1 si no es válido
+    
+        // Cálculo: Precio Unitario de Venta
+        const precioUnitarioVenta = ofertaAntesIVA / cantidad;
+        document.getElementById(`precioUnitarioVenta-${productoId}`).textContent = formatearPesosColombianos(precioUnitarioVenta.toFixed(2));
+    
+        // Cálculo: IVA (19%)
+        const iva = ofertaAntesIVA * 0.19;
+        document.getElementById(`iva-${productoId}`).textContent = formatearPesosColombianos(iva.toFixed(2));
+    
+        // Cálculo: Valor Oferta Impuestos Incluidos
+        const valorOfertaImpuestos = ofertaAntesIVA + iva;
+        document.getElementById(`valorOfertaImpuestos-${productoId}`).textContent = formatearPesosColombianos(valorOfertaImpuestos.toFixed(2));
     }
+    // Escuchar cambios en los inputs relevantes para recalcular todo
+    document.querySelectorAll('.cantidad-input').forEach(input => {
+        input.addEventListener('input', function () {
+            let nuevaCantidad = parseFloat(input.value);
+            if (isNaN(nuevaCantidad) || nuevaCantidad < 1) {
+                nuevaCantidad = 1; // Evitar valores no válidos o menores que 1
+                input.value = nuevaCantidad;
+            }
+            const productoId = input.closest('.resumen-costos').id.split('-')[1];
+            actualizarResumenCostos(productoId);
+        });
+    });
+    
     
 
     function obtenerYMostrarPorcentajes(productoCotizacionId, productoId) {
@@ -1100,7 +1160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById(`porcentajeAdministracion-${productoCotizacionId}`).textContent = `${data.administracion}%`;
                     document.getElementById(`porcentajeImprevistos-${productoCotizacionId}`).textContent = `${data.imprevistos}%`;
                     document.getElementById(`porcentajeUtilidad-${productoCotizacionId}`).textContent = `${data.utilidad}%`;
-                    
+    
                     // Actualizamos los valores de administración, imprevistos y utilidad en el DOM
                     actualizarAIU(productoCotizacionId, data.administracion, data.imprevistos, data.utilidad);
                 } else {
@@ -1117,6 +1177,28 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(`porcentajeImprevistos-${productoCotizacionId}`).textContent = '%';
         document.getElementById(`porcentajeUtilidad-${productoCotizacionId}`).textContent = '%';
         // También se puede limpiar otros campos relacionados si es necesario
+    }
+
+    function actualizarAIU(productoId, porcentajeAdministracion, porcentajeImprevistos, porcentajeUtilidad) {
+        // Obtener el costo directo del DOM
+        const costoDirectoElement = document.getElementById(`costoDirecto-${productoId}`);
+        const costoDirectoTexto = costoDirectoElement.textContent.replace(/\./g, '').replace(',', '.');
+        const costoDirecto = parseFloat(costoDirectoTexto);
+    
+        if (isNaN(costoDirecto) || costoDirecto <= 0) {
+            console.error(`Costo directo inválido para el producto ${productoId}`);
+            return;
+        }
+    
+        // Calcular los valores de administración, imprevistos y utilidad
+        const administracion = (costoDirecto * porcentajeAdministracion) / 100;
+        const imprevistos = (costoDirecto * porcentajeImprevistos) / 100;
+        const utilidad = (costoDirecto * porcentajeUtilidad) / 100;
+    
+        // Actualizar los valores en el DOM
+        document.getElementById(`administracion-${productoId}`).textContent = formatearPesosColombianos(administracion.toFixed(2));
+        document.getElementById(`imprevistos-${productoId}`).textContent = formatearPesosColombianos(imprevistos.toFixed(2));
+        document.getElementById(`utilidad-${productoId}`).textContent = formatearPesosColombianos(utilidad.toFixed(2));
     }
 
 

@@ -277,58 +277,51 @@ document.addEventListener('DOMContentLoaded', () => {
     </table>
 </div>
 
-<!-- Resumen de Costos -->
-<div class="resumen-costos" id="resumenCostos-${nuevoItemNumber}">
-    <h4>Resumen de Costos</h4>
-    <table>
-        <tbody>
-            <tr>
-                <td>Costo Directo:</td>
-                <td id="costoDirecto-${nuevoItemNumber}">0</td>
-            </tr>
-            <tr>
-                <td>Costo Directo Unitario:</td>
-                <td id="costoDirectoUnitario-${nuevoItemNumber}">0</td>
-            </tr>
-            <tr>
-                <td>Administración:</td>
-                <td id="administracion-${nuevoItemNumber}">0</td>
-            </tr>
-            <tr>
-                <td>Imprevistos:</td>
-                <td id="imprevistos-${nuevoItemNumber}">0</td>
-            </tr>
-            <tr>
-                <td>Utilidad:</td>
-                <td id="utilidad-${nuevoItemNumber}">0</td>
-            </tr>
-            <tr>
-                <td>Porcentaje de Utilidad:</td>
-                <td id="porcentajeUtilidad-${nuevoItemNumber}">0</td>
-            </tr>
-            <tr>
-                <td>Valor Manual de Utilidad:</td>
-                <td id="valorManualUtilidad-${nuevoItemNumber}">0</td>
-            </tr>
-            <tr>
-                <td>Oferta Antes de IVA:</td>
-                <td id="ofertaAntesIVA-${nuevoItemNumber}">0</td>
-            </tr>
-            <tr>
-                <td>Precio Unitario de Venta:</td>
-                <td id="precioUnitarioVenta-${nuevoItemNumber}">0</td>
-            </tr>
-            <tr>
-                <td>IVA:</td>
-                <td id="iva-${nuevoItemNumber}">0</td>
-            </tr>
-            <tr>
-                <td>Valor Oferta Impuestos Incluidos:</td>
-                <td id="valorOfertaImpuestos-${nuevoItemNumber}">0</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+    <!-- Resumen de Costos -->
+    <div class="resumen-costos" id="resumenCostos-${nuevoItemNumber}">
+        <h4>Resumen de Costos</h4>
+        <table>
+            <tbody>
+                <tr>
+                    <td>Costo Directo:</td>
+                    <td id="costoDirecto-${nuevoItemNumber}">0</td>
+                </tr>
+                <tr>
+                    <td>Costo Directo Unitario:</td>
+                    <td id="costoDirectoUnitario-${nuevoItemNumber}">0</td>
+                </tr>
+                <tr>
+                    <td>Administración:</td>
+                    <td id="administracion-${nuevoItemNumber}">0</td>
+                </tr>
+                <tr>
+                    <td>Imprevistos:</td>
+                    <td id="imprevistos-${nuevoItemNumber}">0</td>
+                </tr>
+                <tr>
+                    <td>Utilidad:</td>
+                    <td id="utilidad-${nuevoItemNumber}">0</td>
+                </tr>
+
+                <tr>
+                    <td>Oferta Antes de IVA:</td>
+                    <td id="ofertaAntesIVA-${nuevoItemNumber}">0</td>
+                </tr>
+                <tr>
+                    <td>Precio Unitario de Venta:</td>
+                    <td id="precioUnitarioVenta-${nuevoItemNumber}">0</td>
+                </tr>
+                <tr>
+                    <td>IVA:</td>
+                    <td id="iva-${nuevoItemNumber}">0</td>
+                </tr>
+                <tr>
+                    <td>Valor Oferta Impuestos Incluidos:</td>
+                    <td id="valorOfertaImpuestos-${nuevoItemNumber}">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
         <!-- Tabla de ítems sugeridos -->
         <div>
@@ -391,6 +384,24 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         `;
+
+            // Agregar el producto al DOM
+
+
+    // Seleccionar el campo de cantidad
+    const cantidadInput = nuevoProducto.querySelector('.cantidad-input');
+
+    // Añadir evento input para recalcular el Costo Directo Unitario
+    cantidadInput.addEventListener('input', function () {
+        let cantidad = parseFloat(cantidadInput.value);
+        if (isNaN(cantidad) || cantidad < 1) {
+            cantidad = 1; // Restablecer a 1 si el valor no es válido
+            cantidadInput.value = cantidad;
+        }
+
+        // Recalcular los costos asociados al producto
+        actualizarResumenCostos(nuevoItemNumber);
+    });
 
         document.addEventListener('click', function (event) {   
         console.log('Evento detectado:', event.target); // Para depuración
@@ -485,9 +496,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Volver a mostrar el ítem en la tabla de sugeridos
             mostrarItemEnSugeridos(itemId, productoId);
-            actualizarCostoDirecto();
+            actualizarResumenCostos();
         }
         });
+        
+        
 
         document.addEventListener('click', function (event) {
         if (event.target.classList.contains('tab-btn')) {
@@ -946,7 +959,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     celdaTotal.textContent = formatearPesosColombianos(nuevoTotal);
 
                     // Recalcular el costo directo cada vez que se cambia la cantidad
-                    actualizarCostoDirecto(productoId);
+                    actualizarResumenCostos(productoId);
                 });
 
                 // Evento para eliminar el ítem
@@ -955,13 +968,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     mostrarItemEnSugeridos(item, productoId);
 
                     // Recalcular el costo directo después de eliminar un ítem
-                    actualizarCostoDirecto(productoId);
+                    actualizarResumenCostos(productoId);
                 });
 
                 console.log(`Ítem ${item.id} movido a seleccionados del producto ${productoId}`);
                 
                 // Actualizar el costo directo inmediatamente después de agregar el ítem
-                actualizarCostoDirecto(productoId);
+                actualizarResumenCostos(productoId);
             })
             .catch(error => {
                 console.error(`Error cargando detalles del ítem: ${error.message}`);
@@ -1007,6 +1020,51 @@ document.addEventListener('DOMContentLoaded', () => {
         const costoDirectoElement = document.querySelector(`#costoDirecto-${productoId}`);
         costoDirectoElement.textContent = formatearPesosColombianos(costoDirectoTotal.toFixed(2));
     }
+
+    // Función para actualizar el costo directo unitario
+    function actualizarCostoDirectoUnitario(productoId) {
+        // Obtener el costo directo
+        const costoDirectoElement = document.getElementById(`costoDirecto-${productoId}`);
+        const costoDirectoTexto = costoDirectoElement.textContent.replace(/\./g, '').replace(',', '.');
+        const costoDirecto = parseFloat(costoDirectoTexto);
+    
+        // Obtener la cantidad desde el input correspondiente
+        const cantidadInput = document.querySelector(`#producto-${productoId} .cantidad-input`);
+        const cantidad = parseFloat(cantidadInput?.value);
+    
+        // Elemento donde se mostrará el costo directo unitario
+        const costoDirectoUnitarioElement = document.getElementById(`costoDirectoUnitario-${productoId}`);
+    
+        // Validar los valores y realizar el cálculo
+        if (!isNaN(costoDirecto) && !isNaN(cantidad) && cantidad > 0) {
+            const costoDirectoUnitario = costoDirecto / cantidad;
+            costoDirectoUnitarioElement.textContent = formatearPesosColombianos(costoDirectoUnitario.toFixed(2));
+        } else {
+            costoDirectoUnitarioElement.textContent = '0'; // Fallback si los datos son inválidos
+        }
+    }
+    
+
+    // Escuchar cambios en el input de cantidad
+    document.querySelectorAll('.cantidad-input').forEach(input => {
+        input.addEventListener('input', function () {
+            let nuevaCantidad = parseFloat(input.value);
+            if (isNaN(nuevaCantidad) || nuevaCantidad < 1) {
+                nuevaCantidad = 1; // Evitar valores no válidos o menores que 1
+                input.value = nuevaCantidad;
+            }
+            const productoId = input.closest('.resumen-costos').id.split('-')[1];
+            actualizarCostoDirectoUnitario(productoId);
+        });
+    });
+
+    // Actualizar el costo directo unitario cada vez que se actualice el costo directo
+    function actualizarResumenCostos(productoId) {
+        actualizarCostoDirecto(productoId); // Calcula y actualiza el costo directo
+        actualizarCostoDirectoUnitario(productoId); // Calcula y actualiza el costo directo unitario
+    }
+    
+
 
         /* NO HEMOS MODIFICADO MÁS ABAJO*/
 

@@ -181,24 +181,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         document.getElementById('btnCrearVacio').addEventListener('click', function () {
-        if (lineas.length === 0) {
-            console.error('Las líneas aún no han sido cargadas');
-            return;
-        }
-
-        // Usamos el primer número disponible de los eliminados, si no hay ninguno, incrementamos itemNumber
-        let nuevoItemNumber = productosEliminados.length > 0 ? productosEliminados.shift() : ++itemNumber;
-
-        const nuevoProducto = document.createElement('div');
-        nuevoProducto.className = 'producto';
-        nuevoProducto.id = `producto-${nuevoItemNumber}`;
-        nuevoProducto.style.marginBottom = '15px';
-        nuevoProducto.style.border = '1px solid #ccc';
-        nuevoProducto.style.padding = '10px';
-        nuevoProducto.style.borderRadius = '5px';
-
-        // Crear el contenido dinámico del producto
-        nuevoProducto.innerHTML = `
+            if (lineas.length === 0) {
+                console.error('Las líneas aún no han sido cargadas');
+                return;
+            }
+        
+            // Usamos el primer número disponible de los eliminados, si no hay ninguno, incrementamos itemNumber
+            let nuevoItemNumber = productosEliminados.length > 0 ? productosEliminados.shift() : ++itemNumber;
+        
+            const nuevoProducto = document.createElement('div');
+            nuevoProducto.className = 'producto';
+            nuevoProducto.id = `producto-${nuevoItemNumber}`;
+            nuevoProducto.style.marginBottom = '15px';
+            nuevoProducto.style.border = '1px solid #ccc';
+            nuevoProducto.style.padding = '10px';
+            nuevoProducto.style.borderRadius = '5px';
+        
+            // Crear el contenido dinámico del producto (producto vacío)
+            nuevoProducto.innerHTML = `
         <!-- Título del producto -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
             <h3 contenteditable="true" style="margin: 0;">Producto ${nuevoItemNumber}</h3>
@@ -277,6 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </table>
 </div>
 
+        <!-- Resumen de Costos -->
     <!-- Resumen de Costos -->
     <div class="resumen-costos" id="resumenCostos-${nuevoItemNumber}">
         <h4>Resumen de Costos</h4>
@@ -293,14 +294,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tr>
                     <td>Administración:</td>
                     <td id="administracion-${nuevoItemNumber}">0</td>
+                    <td id="porcentajeAdministracion-${nuevoItemNumber}">%</td> <!-- Aquí va el porcentaje -->
                 </tr>
                 <tr>
                     <td>Imprevistos:</td>
                     <td id="imprevistos-${nuevoItemNumber}">0</td>
+                    <td id="porcentajeImprevistos-${nuevoItemNumber}">%</td> <!-- Aquí va el porcentaje -->
                 </tr>
                 <tr>
                     <td>Utilidad:</td>
                     <td id="utilidad-${nuevoItemNumber}">0</td>
+                    <td id="porcentajeUtilidad-${nuevoItemNumber}">%</td> <!-- Aquí va el porcentaje -->
                 </tr>
 
                 <tr>
@@ -385,9 +389,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         `;
 
-            // Agregar el producto al DOM
-
-
+        document.addEventListener('change', function (event) {
+            if (event.target.matches('.producto-select')) {
+                const selectProducto = event.target;
+                const productoCotizacionId = selectProducto.closest('.producto').id.split('-')[1]; // Obtener el nuevoItemNumber (ID de la cotización)
+                const productoId = selectProducto.value; // Obtener el productoId real seleccionado
+        
+                if (productoId) {
+                    console.log(`Producto seleccionado con ID: ${productoId}`);
+                    obtenerYMostrarPorcentajes(productoCotizacionId, productoId);  // Pasamos el nuevoItemNumber y el productoId
+                } else {
+                    console.log("No se ha seleccionado un producto.");
+                }
+            }
+        });
+        
     // Seleccionar el campo de cantidad
     const cantidadInput = nuevoProducto.querySelector('.cantidad-input');
 
@@ -523,23 +539,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         });
 
-        // Escuchar cambios en el select de producto
         document.addEventListener('change', function (event) {
-        if (event.target.matches('.producto-select')) {
-            const selectProducto = event.target;
-            const productoId = selectProducto.closest('.producto').id.split('-')[1]; // Obtener el id del producto
-
-            const selectedProductoId = selectProducto.value;
-            if (selectedProductoId) {
-                // Si hay un producto seleccionado, cargar los ítems sugeridos
-                cargarItemsSugeridos(productoId, selectedProductoId);
-            } else {
-                // Si no hay producto seleccionado, limpiar los ítems
-                const tbody = document.querySelector(`#itemsseleccionados-${productoId}`);
-                tbody.innerHTML = ''; // Limpiar la tabla de ítems
+            if (event.target.matches('.producto-select')) {
+                const selectProducto = event.target;
+                const productoId = selectProducto.value; // Obtener el productoId directamente desde el select
+        
+                console.log(`Producto seleccionado con ID: ${productoId}`); // Verificamos el id seleccionado
+        
+                if (productoId) {
+                    // Si se selecciona un producto, cargar los ítems sugeridos
+                    const productoDiv = selectProducto.closest('.producto');
+                    const nuevoItemNumber = productoDiv.id.split('-')[1]; // Extraemos el nuevoItemNumber asociado al div
+                    cargarItemsSugeridos(nuevoItemNumber, productoId);
+        
+                    // Llamamos a obtener los porcentajes del producto seleccionado
+                    obtenerYMostrarPorcentajes(productoId);
+                } else {
+                    // Si no hay producto seleccionado, limpiar los ítems
+                    const productoDiv = selectProducto.closest('.producto');
+                    const productoId = productoDiv.id.split('-')[1]; // Obtener el productoId del div
+                    const tbody = document.querySelector(`#itemsseleccionados-${productoId}`);
+                    tbody.innerHTML = ''; // Limpiar la tabla de ítems
+                }
             }
-        }
         });
+        
 
         function formatearPesosColombianos(numero) {
             // Asegurarse de que el precio sea un número
@@ -1064,6 +1088,36 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarCostoDirectoUnitario(productoId); // Calcula y actualiza el costo directo unitario
     }
     
+
+    function obtenerYMostrarPorcentajes(productoCotizacionId, productoId) {
+        console.log(`Obteniendo porcentajes para el producto real con ID: ${productoId}`);
+        
+        fetch(`/porcentajes/${productoId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.administracion && data.imprevistos && data.utilidad) {
+                    // Actualizamos los porcentajes en el DOM del producto de la cotización
+                    document.getElementById(`porcentajeAdministracion-${productoCotizacionId}`).textContent = `${data.administracion}%`;
+                    document.getElementById(`porcentajeImprevistos-${productoCotizacionId}`).textContent = `${data.imprevistos}%`;
+                    document.getElementById(`porcentajeUtilidad-${productoCotizacionId}`).textContent = `${data.utilidad}%`;
+                    
+                    // Actualizamos los valores de administración, imprevistos y utilidad en el DOM
+                    actualizarAIU(productoCotizacionId, data.administracion, data.imprevistos, data.utilidad);
+                } else {
+                    console.error('No se encontraron los porcentajes para el producto real');
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener los porcentajes:', error);
+            });
+    }
+    
+    function limpiarPorcentajes(productoCotizacionId) {
+        document.getElementById(`porcentajeAdministracion-${productoCotizacionId}`).textContent = '%';
+        document.getElementById(`porcentajeImprevistos-${productoCotizacionId}`).textContent = '%';
+        document.getElementById(`porcentajeUtilidad-${productoCotizacionId}`).textContent = '%';
+        // También se puede limpiar otros campos relacionados si es necesario
+    }
 
 
         /* NO HEMOS MODIFICADO MÁS ABAJO*/

@@ -1,4 +1,10 @@
-## Generador de Catálogos Personalizados (Version 7.2.5) desarrollada por: Brayan Grosso
+## Generador de Catálogos Personalizados (Version 7.2.6) desarrollada por: Brayan Grosso
+
+# Fecha de lanzamiento: 20 de enero de 2025, 3:12 pm
+Cambios Recientes
+v 7.2.6
+
+En esta version seguimos trabajando en el resumen de costos de la nueva versión, actualmente ya tenemos todo el resumen con redondeo y funcionando perfectamente, unicamente nos hace falta hacer funcionales los input de utilidad y administracion y pasar a generar dinamicamente esos resumen segun cantidades
 
 # Fecha de lanzamiento: 20 de enero de 2025, 12:00 pm
 Cambios Recientes
